@@ -1,0 +1,51 @@
+.item-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    transition: border-color 0.2s;
+}
+
+.item-card:hover {
+    border-color: var(--accent);
+}
+
+.item-card--oos {
+    opacity: 0.5;
+}
+
+.item-card__info {
+    flex: 1;
+}
+
+.item-card__name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.item-card__desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    line-height: 1.45;
+}
+
+.item-card__price {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.oos-badge {
+    margin-top: 6px;
+}
+
+.item-card__action {
+    flex-shrink: 0;
+}
+
+.add-btn {
+    padding: 8px 18px;
+    font-size: 0.85rem;
+}
