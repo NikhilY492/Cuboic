@@ -6,7 +6,7 @@ export class RestaurantsService {
     constructor(private prisma: PrismaService) { }
 
     findById(id: string) {
-        return this.prisma.restaurant.findUnique({ where: { id } });
+        return this.prisma.restaurant.findUnique({ where: { id }, include: { tables: true } });
     }
 
     findAll() {
