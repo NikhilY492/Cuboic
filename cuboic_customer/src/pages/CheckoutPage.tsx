@@ -63,8 +63,8 @@ export function CheckoutPage() {
             const order = await placeOrder({
                 restaurantId: restaurantId,
                 tableId: tableId,
-                customer_sessionid: sessionId ?? SESSION_ID,
-                items: items.map(c => ({ itemid: c.item.id, quantity: c.quantity })),
+                customerSessionId: sessionId ?? SESSION_ID,
+                items: items.map(c => ({ itemId: c.item.id, quantity: c.quantity })),
             });
 
             navigate(`/order/${order.id}`, { replace: true });

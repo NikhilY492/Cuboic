@@ -1,14 +1,14 @@
 import api from './client';
 
 export interface OrderItem {
-    itemid: string;
+    itemId: string;
     quantity: number;
 }
 
 export interface PlaceOrderPayload {
     restaurantId: string;
     tableId: string;
-    customer_sessionid: string;
+    customerSessionId: string;
     items: OrderItem[];
 }
 

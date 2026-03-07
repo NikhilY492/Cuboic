@@ -11,7 +11,9 @@ const REPLACEMENTS = [
     { search: /categoryid/g, replace: 'categoryId' },
     { search: /tableid/g, replace: 'tableId' },
     { search: /orderid/g, replace: 'orderId' },
-    { search: /robotid/g, replace: 'robotId' }
+    { search: /robotid/g, replace: 'robotId' },
+    { search: /itemid/g, replace: 'itemId' },
+    { search: /customer_sessionid/g, replace: 'customerSessionId' },
 ];
 
 function processDirectory(dir) {

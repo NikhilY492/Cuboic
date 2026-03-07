@@ -14,7 +14,7 @@ export function MenuPage() {
     const restaurantId = params.get('r') ?? '';
     const tableId = params.get('t') ?? '';
 
-    const [restaurantName, setRestaurantName] = useState('Cuboic Kitchen');
+    const [restaurantName, setRestaurantName] = useState('Food Guru');
     const [categories, setCategories] = useState<Category[]>([]);
     const [allItems, setAllItems] = useState<MenuItem[]>([]);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -110,7 +110,7 @@ export function MenuPage() {
                         <span className="menu-header__logo">⬡</span>
                         <div>
                             <div className="menu-header__name">{restaurantName}</div>
-                            <div className="menu-header__sub">Cuboic · Robot Delivery</div>
+                            <div className="menu-header__sub">Cuboic</div>
                         </div>
                     </div>
 
@@ -249,7 +249,7 @@ export function MenuPage() {
                         Autonomous restaurant delivery, powered by robots.
                     </p>
                     <div className="menu-footer__links">
-                        <a href="mailto:hello@cuboic.com">hello@cuboic.com</a>
+                        <a href="mailto:hello@cuboic.com">placeholder@cuboic.com</a>
                         <span className="menu-footer__dot">·</span>
                         <a href="https://cuboic.com" target="_blank" rel="noopener noreferrer">cuboic.com</a>
                         <span className="menu-footer__dot">·</span>

@@ -12,8 +12,8 @@ export interface LoginResponse {
 }
 
 export const authApi = {
-    login: (userid: string, password: string) =>
-        apiClient.post<LoginResponse>('/auth/login', { userid, password }),
+    login: (userId: string, password: string) =>
+        apiClient.post<LoginResponse>('/auth/login', { userId, password }),
 
     me: () => apiClient.get('/auth/me'),
 }

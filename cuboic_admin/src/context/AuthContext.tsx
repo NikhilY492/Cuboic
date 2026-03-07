@@ -12,7 +12,7 @@ interface User {
 interface AuthContextValue {
     user: User | null
     token: string | null
-    login: (userid: string, password: string) => Promise<void>
+    login: (userId: string, password: string) => Promise<void>
     logout: () => void
     isLoading: boolean
 }
@@ -36,8 +36,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false)
     }, [])
 
-    const login = async (userid: string, password: string) => {
-        const res = await authApi.login(userid, password)
+    const login = async (userId: string, password: string) => {
+        const res = await authApi.login(userId, password)
         const { access_token, user } = res.data
         localStorage.setItem('cuboic_admin_token', access_token)
         localStorage.setItem('cuboic_admin_user', JSON.stringify(user))
