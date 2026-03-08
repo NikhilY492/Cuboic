@@ -32,7 +32,7 @@ export function ItemCard({ item, cartItem, onAdd, onRemove }: Props) {
                     <div className="item-card__oos-overlay">Out of Stock</div>
                 )}
                 {/* Price badge on image */}
-                <div className="item-card__price-badge">₹{item.price.toFixed(2)}</div>
+                <div className="item-card__price-badge">₹{(Number(item.price) || 0).toFixed(2)}</div>
             </div>
 
             {/* Body */}

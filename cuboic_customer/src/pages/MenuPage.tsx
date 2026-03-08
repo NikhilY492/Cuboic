@@ -4,6 +4,7 @@ import { getRestaurant, getCategories, getMenuItems, type Category, type MenuIte
 import { useCart } from '../hooks/useCart';
 import { ItemCard } from '../components/ItemCard';
 import { CartDrawer } from '../components/CartDrawer';
+import { SearchOverlay } from '../components/SearchOverlay';
 import './MenuPage.css';
 
 // Stable session id per tab
@@ -20,6 +21,7 @@ export function MenuPage() {
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [cartOpen, setCartOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [tableLabel, setTableLabel] = useState<string>('');
 
@@ -95,6 +97,15 @@ export function MenuPage() {
         if (e.target.value) setActiveCategory(null); // reset category when typing
     };
 
+    const handleSearchOpen = () => {
+        setSearchOpen(true);
+    };
+
+    const handleSearchClose = () => {
+        setSearchOpen(false);
+        setSearchQuery('');
+    };
+
     /* show QR hint if no params */
     if (!restaurantId) {
         return (
@@ -122,37 +133,20 @@ export function MenuPage() {
                         </div>
                     </div>
 
-                    {/* Search bar */}
-                    <div className="search-wrap">
+                    {/* Search bar button toggle */}
+                    <div className="search-trigger" onClick={handleSearchOpen}>
                         <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
-                        <input
-                            className="search-input"
-                            type="search"
-                            placeholder="Search dishes or categories…"
-                            value={searchQuery}
-                            onChange={handleSearchChange}
-                            aria-label="Search menu"
-                        />
-                        {searchQuery && (
-                            <button className="search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">✕</button>
-                        )}
+                        <div className="search-placeholder">
+                            <span className="desktop-search-text">Search for restaurants or dishes</span>
+                            <span className="mobile-search-text">Search...</span>
+                        </div>
                     </div>
 
-                    {/* Table tag + cart */}
+                    {/* Table tag */}
                     <div className="menu-header__actions">
                         {tableLabel && <div className="table-tag">{tableLabel}</div>}
-                        <button
-                            className={`cart-btn ${cart.count > 0 ? 'cart-btn--active' : ''}`}
-                            onClick={() => setCartOpen(true)}
-                            aria-label="Open cart"
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg>
-                            {cart.count > 0 && (
-                                <span className="cart-btn__badge">{cart.count}</span>
-                            )}
-                        </button>
                     </div>
                 </div>
             </header>
@@ -186,7 +180,7 @@ export function MenuPage() {
             )}
 
             {/* ── Search results label ────────────────────────────── */}
-            {searchLower && (
+            {searchLower && !searchOpen && (
                 <div className="search-results-bar">
                     {visibleItems.length > 0
                         ? <>{visibleItems.length} result{visibleItems.length !== 1 ? 's' : ''} for "<strong>{searchQuery}</strong>"</>
@@ -246,6 +240,19 @@ export function MenuPage() {
                 )}
             </main>
 
+            {/* ── Full-screen search ─────────────────────────────── */}
+            <SearchOverlay
+                open={searchOpen}
+                onClose={handleSearchClose}
+                query={searchQuery}
+                onQueryChange={handleSearchChange}
+                onClear={() => setSearchQuery('')}
+                results={visibleItems}
+                cartItems={cart.items}
+                onAdd={cart.add}
+                onRemove={cart.remove}
+            />
+
             {/* ── Footer ─────────────────────────────────────────── */}
             <footer className="menu-footer">
                 <div className="menu-footer__inner">
@@ -291,6 +298,7 @@ export function MenuPage() {
                 total={cart.total}
                 restaurantId={restaurantId}
                 tableId={tableId}
+                tableLabel={tableLabel}
                 sessionId={SESSION_ID}
                 onAdd={cart.add}
                 onRemove={cart.remove}

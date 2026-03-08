@@ -23,7 +23,7 @@ class UpdateMenuItemDto {
 exports.UpdateMenuItemDto = UpdateMenuItemDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsMongoId)(),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateMenuItemDto.prototype, "categoryId", void 0);
 __decorate([

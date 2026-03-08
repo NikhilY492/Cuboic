@@ -11,6 +11,7 @@ interface LocationState {
     total: number;
     restaurantId: string;
     tableId: string;
+    tableLabel?: string;
     sessionId: string;
 }
 
@@ -41,7 +42,7 @@ export function CheckoutPage() {
         );
     }
 
-    const { items, total, restaurantId, tableId, sessionId } = state;
+    const { items, total, restaurantId, tableId, tableLabel, sessionId } = state;
     const taxAmount = total * 0.05;
     const grandTotal = total + taxAmount;
 
@@ -79,7 +80,10 @@ export function CheckoutPage() {
         <div className="checkout-page fade-in">
             <header className="checkout-header">
                 <div className="container">
-                    <Link to="/" className="checkout-back">← Menu</Link>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Link to="/" className="checkout-back">← Menu</Link>
+                        {tableLabel && <div className="table-tag" style={{ margin: 0, padding: '4px 8px', fontSize: '0.75rem', borderRadius: '4px', background: 'var(--surface2)', color: 'var(--text-muted)', fontWeight: 600 }}>{tableLabel}</div>}
+                    </div>
                     <p className="checkout-brand">Cuboic</p>
                 </div>
             </header>
@@ -92,7 +96,7 @@ export function CheckoutPage() {
                         {items.map(c => (
                             <div key={c.item.id} className="co-item-row">
                                 <span className="co-item-name">{c.quantity}× {c.item.name}</span>
-                                <span className="co-item-price">₹{(c.item.price * c.quantity).toFixed(2)}</span>
+                                <span className="co-item-price">₹{((Number(c.item.price) || 0) * (Number(c.quantity) || 1)).toFixed(2)}</span>
                             </div>
                         ))}
                     </div>

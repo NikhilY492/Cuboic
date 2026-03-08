@@ -22,10 +22,12 @@ let OrdersService = class OrdersService {
         this.eventsGateway = eventsGateway;
     }
     async create(dto) {
+        console.log('[DEBUG] createOrder DTO:', JSON.stringify(dto, null, 2));
         const itemDocs = await this.prisma.menuItem.findMany({
             where: { id: { in: dto.items.map((i) => i.itemId) } },
         });
         if (itemDocs.length !== dto.items.length) {
+            console.log('[DEBUG] itemDocs found:', itemDocs.map(d => d.id), 'but expected:', dto.items.map(i => i.itemId));
             throw new common_1.BadRequestException('One or more menu items not found');
         }
         const orderItems = dto.items.map((i) => {

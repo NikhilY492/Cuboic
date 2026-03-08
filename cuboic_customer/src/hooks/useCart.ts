@@ -30,8 +30,8 @@ export function useCart() {
 
     const clear = useCallback(() => setItems([]), []);
 
-    const total = items.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
-    const count = items.reduce((sum, c) => sum + c.quantity, 0);
+    const total = items.reduce((sum, c) => sum + (Number(c.item.price) || 0) * (Number(c.quantity) || 1), 0);
+    const count = items.reduce((sum, c) => sum + (Number(c.quantity) || 0), 0);
 
     return { items, add, remove, clear, total, count };
 }

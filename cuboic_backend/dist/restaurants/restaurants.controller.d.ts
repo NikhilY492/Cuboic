@@ -12,6 +12,15 @@ export declare class RestaurantsController {
         logo_url: string | null;
     }[]>;
     getById(id: string): Promise<{
+        tables: {
+            restaurantId: string;
+            id: string;
+            table_number: string;
+            is_active: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+        }[];
+    } & {
         name: string;
         description: string | null;
         id: string;

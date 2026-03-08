@@ -23,11 +23,11 @@ class CreateMenuItemDto {
 }
 exports.CreateMenuItemDto = CreateMenuItemDto;
 __decorate([
-    (0, class_validator_1.IsMongoId)(),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateMenuItemDto.prototype, "restaurantId", void 0);
 __decorate([
-    (0, class_validator_1.IsMongoId)(),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateMenuItemDto.prototype, "categoryId", void 0);
 __decorate([

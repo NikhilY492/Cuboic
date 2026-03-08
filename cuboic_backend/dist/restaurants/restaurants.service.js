@@ -18,7 +18,7 @@ let RestaurantsService = class RestaurantsService {
         this.prisma = prisma;
     }
     findById(id) {
-        return this.prisma.restaurant.findUnique({ where: { id } });
+        return this.prisma.restaurant.findUnique({ where: { id }, include: { tables: true } });
     }
     findAll() {
         return this.prisma.restaurant.findMany();
