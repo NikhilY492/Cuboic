@@ -1,10 +1,10 @@
-import { IsString, IsNumber, IsBoolean, IsOptional, IsMongoId, Min } from 'class-validator';
+import { IsString, IsNumber, IsBoolean, IsOptional, Min } from 'class-validator';
 
 export class CreateMenuItemDto {
-    @IsMongoId()
+    @IsString()
     restaurantId: string;
 
-    @IsMongoId()
+    @IsString()
     categoryId: string;
 
     @IsString()

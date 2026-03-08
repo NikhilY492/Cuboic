@@ -81,7 +81,7 @@
     border: 1.5px solid var(--border);
     background: var(--surface2);
     padding: 0 36px 0 38px;
-    font-size: 0.88rem;
+    font-size: 16px;
     color: var(--text);
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     outline: none;
@@ -94,7 +94,7 @@
 .search-input:focus {
     border-color: var(--accent);
     background: var(--surface);
-    box-shadow: 0 0 0 3px var(--accent-dim);
+    box-shadow: 0 0 0 4px var(--accent-dim), 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* hide browser's native clear button */
@@ -399,10 +399,10 @@
     gap: 12px;
 }
 
-/* Single column on very narrow screens */
+/* Keep 2 columns even on very narrow screens, just reduce the gap */
 @media (max-width: 360px) {
     .item-grid {
-        grid-template-columns: 1fr;
+        gap: 8px;
     }
 }
 
