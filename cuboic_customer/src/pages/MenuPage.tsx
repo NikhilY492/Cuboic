@@ -105,7 +105,7 @@ export function MenuPage() {
     /* group items by category for the "All" grouped view */
     const grouped = useMemo(() => {
         if (searchLower) return null; // flat results for search
-        if (activeCategory) return null;
+        if (activeCategory) return null; // flat results for specific category
         const map = new Map<string, MenuItem[]>();
         for (const cat of categories) map.set(cat.id, []);
         for (const item of allItems) {
@@ -113,52 +113,11 @@ export function MenuPage() {
             map.get(item.categoryId)!.push(item);
         }
         return map;
-    }, [allItems, categories, activeCategory, searchLower]);
-
-    const [isManualScroll, setIsManualScroll] = useState(false);
-
-    /* Intersection Observer for Auto-Scroll Tracking */
-    useEffect(() => {
-        if (!grouped || isManualScroll || searchLower) return;
-
-        const observer = new IntersectionObserver((entries) => {
-            const visible = entries.filter((e) => e.isIntersecting);
-            if (visible.length > 0) {
-                // Get the top-most visible section
-                const topVisible = visible.reduce((prev, current) =>
-                    (prev.boundingClientRect.top < current.boundingClientRect.top) ? prev : current
-                );
-                const catId = topVisible.target.id.replace('cat-', '');
-                setActiveCategory(catId);
-            }
-        }, {
-            rootMargin: '-120px 0px -60% 0px',
-            threshold: 0
-        });
-
-        const sections = document.querySelectorAll('.menu-section[id^="cat-"]');
-        sections.forEach((s) => observer.observe(s));
-
-        return () => observer.disconnect();
-    }, [grouped, isManualScroll, searchLower]);
+    }, [allItems, categories, searchLower, activeCategory]);
 
     const scrollToCategory = (catId: string | null) => {
         setActiveCategory(catId);
-        if (!catId) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
-
-        const el = document.getElementById(`cat-${catId}`);
-        if (el) {
-            setIsManualScroll(true);
-            const yOffset = -100; // Account for sticky headers
-            const y = el.getBoundingClientRect().top + window.scrollY + yOffset;
-            window.scrollTo({ top: y, behavior: 'smooth' });
-
-            // Re-enable observer after scrolling finishes
-            setTimeout(() => setIsManualScroll(false), 800);
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
