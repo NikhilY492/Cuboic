@@ -34,6 +34,11 @@ export class OrdersController {
         return this.ordersService.updateStatus(id, dto);
     }
 
+    @Patch(':id/table')
+    updateTable(@Param('id') id: string, @Body('tableId') tableId: string) {
+        return this.ordersService.updateTable(id, tableId);
+    }
+
     @Patch(':id/confirm')
     confirmDelivery(@Param('id') id: string) {
         return this.ordersService.confirmDelivery(id);

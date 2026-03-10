@@ -37,3 +37,6 @@ export const placeOrder = (payload: PlaceOrderPayload) =>
 
 export const getOrder = (id: string) =>
     api.get<Order>(`/orders/${id}`).then(r => r.data);
+
+export const updateOrderTable = (id: string, tableId: string) =>
+    api.patch<Order>(`/orders/${id}/table`, { tableId }).then(r => r.data);

@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getRestaurant, getCategories, getMenuItems, type Category, type MenuItem } from '../api/menu';
+import { updateOrderTable } from '../api/orders';
 import { useCart } from '../hooks/useCart';
 import { ItemCard } from '../components/ItemCard';
 import { CartDrawer } from '../components/CartDrawer';
 import { OrdersDrawer, type ActiveOrderSession } from '../components/OrdersDrawer';
 import { TableSelectorModal } from '../components/TableSelectorModal';
+import { ConfirmTableMoveModal } from '../components/ConfirmTableMoveModal';
 import { SearchOverlay } from '../components/SearchOverlay';
 import { SkeletonLoader } from '../components/SkeletonLoader';
 import './MenuPage.css';
@@ -26,6 +28,7 @@ export function MenuPage() {
     const [cartOpen, setCartOpen] = useState(false);
     const [ordersOpen, setOrdersOpen] = useState(false);
     const [tablesOpen, setTablesOpen] = useState(false);
+    const [pendingTableMove, setPendingTableMove] = useState<{ id: string; number: string } | null>(null);
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [tableLabel, setTableLabel] = useState<string>('');
@@ -44,6 +47,25 @@ export function MenuPage() {
     }, []);
 
     const handleTableSelect = (newTableId: string) => {
+        if (activeOrders.length > 0) {
+            const tbl = availableTables.find(t => t.id === newTableId);
+            if (tbl) {
+                setPendingTableMove({ id: tbl.id, number: tbl.table_number.toString() });
+            }
+            setTablesOpen(false);
+        } else {
+            proceedWithTableMove(newTableId, false);
+        }
+    };
+
+    const proceedWithTableMove = async (newTableId: string, moveOrders: boolean) => {
+        if (moveOrders && activeOrders.length > 0) {
+            try {
+                await Promise.all(activeOrders.map(o => updateOrderTable(o.id, newTableId)));
+            } catch (err) {
+                console.error("Failed to move active orders to new table", err);
+            }
+        }
         setParams(prev => {
             const next = new URLSearchParams(prev);
             next.set('t', newTableId);
@@ -51,6 +73,7 @@ export function MenuPage() {
         });
         // Clear cart if swapping table
         cart.clear();
+        setPendingTableMove(null);
         setTablesOpen(false);
     };
 
@@ -427,6 +450,19 @@ export function MenuPage() {
                 tables={availableTables}
                 currentTableId={tableId}
                 onSelect={handleTableSelect}
+            />
+
+            {/* ── Confirm table move modal ───────────────────────── */}
+            <ConfirmTableMoveModal
+                open={!!pendingTableMove}
+                orderCount={activeOrders.length}
+                newTableNumber={pendingTableMove?.number || ''}
+                onCancel={() => setPendingTableMove(null)}
+                onConfirm={(moveOrders) => {
+                    if (pendingTableMove) {
+                        proceedWithTableMove(pendingTableMove.id, moveOrders);
+                    }
+                }}
             />
         </div>
     );

@@ -78,6 +78,16 @@ export class OrdersService {
         return order;
     }
 
+    async updateTable(id: string, tableId: string) {
+        const order = await this.prisma.order.update({
+            where: { id },
+            data: { tableId },
+        });
+        if (!order) throw new NotFoundException('Order not found');
+        this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
+        return order;
+    }
+
     async confirmDelivery(id: string) {
         const order = await this.prisma.order.update({
             where: { id },
