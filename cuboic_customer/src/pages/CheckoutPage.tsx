@@ -70,6 +70,21 @@ export function CheckoutPage() {
 
             localStorage.removeItem('cuboic_cart');
 
+            // Save order history array
+            try {
+                const stored = localStorage.getItem('cuboic_active_orders');
+                const prevOrders = stored ? JSON.parse(stored) : [];
+                const newOrderSession = {
+                    id: order.id,
+                    time: Date.now(),
+                    total: grandTotal,
+                    itemCount: items.reduce((sum, c) => sum + c.quantity, 0)
+                };
+                localStorage.setItem('cuboic_active_orders', JSON.stringify([...prevOrders, newOrderSession]));
+            } catch (err) {
+                console.error('Failed to log active order', err);
+            }
+
             navigate(`/order/${order.id}`, { replace: true });
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;

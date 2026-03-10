@@ -4,6 +4,7 @@ import { getRestaurant, getCategories, getMenuItems, type Category, type MenuIte
 import { useCart } from '../hooks/useCart';
 import { ItemCard } from '../components/ItemCard';
 import { CartDrawer } from '../components/CartDrawer';
+import { OrdersDrawer, type ActiveOrderSession } from '../components/OrdersDrawer';
 import { SearchOverlay } from '../components/SearchOverlay';
 import { SkeletonLoader } from '../components/SkeletonLoader';
 import './MenuPage.css';
@@ -22,11 +23,22 @@ export function MenuPage() {
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [cartOpen, setCartOpen] = useState(false);
+    const [ordersOpen, setOrdersOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [tableLabel, setTableLabel] = useState<string>('');
+    const [activeOrders, setActiveOrders] = useState<ActiveOrderSession[]>([]);
 
     const cart = useCart();
+
+    useEffect(() => {
+        try {
+            const o = localStorage.getItem('cuboic_active_orders');
+            if (o) setActiveOrders(JSON.parse(o));
+        } catch (e) {
+            console.error('Failed to parse active orders', e);
+        }
+    }, []);
 
     interface FlyingItem {
         id: number;
@@ -324,8 +336,18 @@ export function MenuPage() {
                 </div>
             </footer>
 
+            {/* ── Active Orders pill ──────────────────────────────── */}
+            {activeOrders.length > 0 && !cartOpen && !ordersOpen && (
+                <div className="track-float" style={{ bottom: cart.count > 0 ? '88px' : '24px' }}>
+                    <button className="track-float__btn" onClick={() => setOrdersOpen(true)}>
+                        <span className="track-float__icon">📍</span>
+                        <span>Track {activeOrders.length} Order{activeOrders.length > 1 ? 's' : ''}</span>
+                    </button>
+                </div>
+            )}
+
             {/* ── Floating cart pill ─────────────────────────────── */}
-            {cart.count > 0 && !cartOpen && (
+            {cart.count > 0 && !cartOpen && !ordersOpen && (
                 <div className="cart-float">
                     <button className="cart-float__btn" onClick={() => setCartOpen(true)}>
                         <div className="cart-float__left">
@@ -353,6 +375,15 @@ export function MenuPage() {
                 onAdd={cart.add}
                 onRemove={cart.remove}
                 onClear={cart.clear}
+            />
+
+            {/* ── Orders bottom sheet ────────────────────────────── */}
+            <OrdersDrawer
+                open={ordersOpen}
+                onClose={() => setOrdersOpen(false)}
+                orders={activeOrders}
+                restaurantId={restaurantId}
+                tableId={tableId}
             />
         </div>
     );
