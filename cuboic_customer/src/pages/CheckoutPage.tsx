@@ -68,6 +68,8 @@ export function CheckoutPage() {
                 items: items.map(c => ({ itemId: c.item.id, quantity: c.quantity })),
             });
 
+            localStorage.removeItem('cuboic_cart');
+
             navigate(`/order/${order.id}`, { replace: true });
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;

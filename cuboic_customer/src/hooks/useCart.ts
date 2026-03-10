@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { MenuItem } from '../api/menu';
 
 export interface CartItem {
@@ -7,7 +7,19 @@ export interface CartItem {
 }
 
 export function useCart() {
-    const [items, setItems] = useState<CartItem[]>([]);
+    const [items, setItems] = useState<CartItem[]>(() => {
+        try {
+            const saved = localStorage.getItem('cuboic_cart');
+            if (saved) return JSON.parse(saved);
+        } catch (e) {
+            console.error(e);
+        }
+        return [];
+    });
+
+    useEffect(() => {
+        localStorage.setItem('cuboic_cart', JSON.stringify(items));
+    }, [items]);
 
     const add = useCallback((item: MenuItem) => {
         setItems(prev => {
