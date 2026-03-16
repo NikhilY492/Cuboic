@@ -357,7 +357,7 @@ export function MenuScreen() {
 const styles = StyleSheet.create({
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        padding: 16, paddingTop: 42, backgroundColor: COLORS.surface,
+        padding: 16, paddingTop: 48, backgroundColor: COLORS.surface,
         borderBottomWidth: 1, borderBottomColor: COLORS.border,
     },
     title: { fontSize: 26, fontWeight: '800', color: COLORS.text },

@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     body: { padding: 16, paddingBottom: 40 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingTop: 44, marginBottom: 20,
+        paddingTop: 48, marginBottom: 20,
     },
     title: { fontSize: 26, fontWeight: '800', color: COLORS.text },
     sub: { fontSize: 13, color: COLORS.textMuted, marginTop: 2 },

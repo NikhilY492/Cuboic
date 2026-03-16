@@ -155,7 +155,7 @@ export function PaymentsScreen() {
 
 const styles = StyleSheet.create({
     body: { padding: 16, paddingBottom: 40, gap: 12 },
-    header: { paddingTop: 44, paddingBottom: 16 },
+    header: { paddingTop: 48, paddingBottom: 16 },
     title: { fontSize: 26, fontWeight: '800', color: COLORS.text },
     kpiRow: { flexDirection: 'row', gap: 12, marginBottom: 4 },
     filterRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-end', marginBottom: 4 },

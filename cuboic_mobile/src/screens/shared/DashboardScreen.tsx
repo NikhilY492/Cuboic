@@ -49,6 +49,12 @@ export function DashboardScreen() {
         load().finally(() => setLoading(false));
     }, [load]);
 
+    // Poll every 1 second
+    useEffect(() => {
+        const interval = setInterval(load, 1000);
+        return () => clearInterval(interval);
+    }, [load]);
+
     useSocket(restaurantId, {
         'order:new': () => load(),
         'order:updated': () => load(),
@@ -122,7 +128,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: 44,
+        paddingTop: 48,
         paddingBottom: 24,
     },
     greeting: { fontSize: 20, fontWeight: '800', color: COLORS.text },

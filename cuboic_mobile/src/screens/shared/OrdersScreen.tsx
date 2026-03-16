@@ -11,14 +11,13 @@ import { useSocket } from '../../hooks/useSocket';
 import { StatusBadge } from '../../components/StatusBadge';
 import { COLORS, S, statusColor } from '../../theme';
 
-const ALL_STATUSES = ['All', 'Pending', 'Confirmed', 'Preparing', 'Ready', 'Assigned', 'Delivered', 'Cancelled'];
+const ALL_STATUSES = ['All', 'Pending', 'Confirmed', 'Ready', 'Delivered', 'Cancelled']; // Removed Preparing and Assigned from here
 
-const ACTIVE_STATUSES = ['Pending', 'Confirmed', 'Preparing', 'Ready', 'Assigned'];
-
+const ACTIVE_STATUSES = ['Pending', 'Confirmed', 'Ready']; //Removed Preparing and Assigned from here
 const NEXT_STATUS: Record<string, string> = {
     Pending: 'Confirmed',
-    Confirmed: 'Preparing',
-    Preparing: 'Ready',
+    Confirmed: 'Ready', // Preparing is not needed can change later.So removed Preparing:Ready Stage
+    Ready: 'Delivered',
 };
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -43,7 +42,7 @@ interface TableSummary {
 
 function buildTableSummaries(orders: Order[], allTables: RestaurantTable[]): TableSummary[] {
     const map = new Map<string, Order[]>();
-    
+
     // Seed the map with all tables so idle ones show up
     for (const t of allTables) {
         const num = String(t.table_number);
@@ -200,6 +199,12 @@ export function OrdersScreen() {
     }, [restaurantId]);
 
     useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
+    
+    // Poll every 1 second
+    useEffect(() => {
+        const interval = setInterval(load, 1000);
+        return () => clearInterval(interval);
+    }, [load]);
 
     useSocket(restaurantId, {
         'order:new': () => load(),
@@ -332,11 +337,12 @@ export function OrdersScreen() {
 const styles = StyleSheet.create({
     header: {
         padding: 16,
-        paddingTop: 42,
+        paddingTop: 48,
         backgroundColor: COLORS.surface,
         borderBottomWidth: 1,
         borderBottomColor: COLORS.border,
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         gap: 10,
     },
@@ -383,7 +389,7 @@ const styles = StyleSheet.create({
     tableIdle: { fontSize: 12, color: COLORS.textDim, fontWeight: '500' },
 
     // filter tabs
-    tabsContainer: { backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+    tabsContainer: { backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.border, maxHeight: 80 },
     tabsContent: { paddingHorizontal: 10, paddingVertical: 20, flexDirection: 'row', alignItems: 'center' },
     tab: {
         paddingHorizontal: 14,
