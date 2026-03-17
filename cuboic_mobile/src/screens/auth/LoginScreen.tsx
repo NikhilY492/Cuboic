@@ -29,7 +29,7 @@ export function LoginScreen() {
 
     return (
         <LinearGradient
-            colors={['#FFFFFF', '#FFFFFF', '#121212', '#121212']}
+            colors={['#ffffffff', '#ffffffff', '#121212', '#121212ff']}
             locations={[0, 0.5, 0.5, 1]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -46,7 +46,6 @@ export function LoginScreen() {
                             source={require('../../../assets/images/cuboic_logo.png')}
                             style={styles.logoImage}
                         />
-                        <Text style={styles.logoTitle}>CUBOIC</Text>
                         <Text style={styles.logoSub}>Restaurant Admin</Text>
                     </View>
 
@@ -101,8 +100,8 @@ export function LoginScreen() {
 const styles = StyleSheet.create({
     screen: { flex: 1 },
     inner: { flexGrow: 1, justifyContent: 'flex-start', padding: 28, paddingTop: 60 },
-    logoArea: { alignItems: 'center', marginBottom: 78 },
-    logoImage: { width: 150, height: 150, marginBottom: -30, borderRadius: 30 },
+    logoArea: { alignItems: 'center', marginBottom: 38 },
+    logoImage: { width: 200, height: 200, marginBottom: -30, borderRadius: 30 },
     logoTitle: { fontSize: 36, fontWeight: '800', color: '#e76837ff', letterSpacing: 1, textShadowColor: 'rgba(0,0,0,0.1)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 2 },
     logoSub: { fontSize: 14, color: '#8b8aa0', marginTop: 4, fontWeight: '600' },
     form: {
@@ -112,9 +111,9 @@ const styles = StyleSheet.create({
         borderColor: '#050505ff',
         padding: 24,
         // Card elevation/shadow for split background
-        shadowColor: '#e06f3bff',
+        shadowColor: '#3fb938ff',
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 100,
+        shadowOpacity: 10,
         shadowRadius: 20,
         elevation: 10,
     },
@@ -130,7 +129,7 @@ const styles = StyleSheet.create({
     },
     btn: {
         marginTop: 20,
-        backgroundColor: COLORS.accent,
+        backgroundColor: '#7CC018',
         borderRadius: 12,
         padding: 16,
         alignItems: 'center',

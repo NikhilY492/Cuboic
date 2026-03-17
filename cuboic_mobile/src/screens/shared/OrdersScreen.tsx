@@ -10,6 +10,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../hooks/useSocket';
 import { StatusBadge } from '../../components/StatusBadge';
 import { COLORS, S, statusColor } from '../../theme';
+import * as Speech from 'expo-speech';
+import { Audio } from 'expo-av';
 
 const ALL_STATUSES = ['All', 'Pending', 'Confirmed', 'Ready', 'Delivered', 'Cancelled']; // Removed Preparing and Assigned from here
 
@@ -175,11 +177,31 @@ function OrderCard({
 export function OrdersScreen() {
     const { user } = useAuth();
     const restaurantId = user?.restaurantId ?? '';
+    console.log(`[DEBUG] OrdersScreen restaurantId: "${restaurantId}"`);
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [tables, setTables] = useState<RestaurantTable[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [preferredVoice, setPreferredVoice] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        const initVoices = async () => {
+            try {
+                console.log('[DEBUG] Fetching available voices...');
+                const voices = await Speech.getAvailableVoicesAsync();
+                console.log(`[DEBUG] Found ${voices.length} voices.`);
+                // Prioritize en-IN, then en-US/GB/AU, then any en
+                const inVoice = voices.find(v => v.language.startsWith('en-IN'))?.identifier;
+                const enVoice = voices.find(v => v.language.startsWith('en-'))?.identifier;
+                console.log(`[DEBUG] Preferred voice: ${inVoice || enVoice || 'Default'}`);
+                setPreferredVoice(inVoice || enVoice);
+            } catch (err) {
+                console.error('[DEBUG] Error fetching voices:', err);
+            }
+        };
+        initVoices();
+    }, []);
 
     // table-view state
     const [selectedTable, setSelectedTable] = useState<string | null>(null);
@@ -199,7 +221,7 @@ export function OrdersScreen() {
     }, [restaurantId]);
 
     useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
-    
+
     // Poll every 1 second
     useEffect(() => {
         const interval = setInterval(load, 1000);
@@ -207,7 +229,29 @@ export function OrdersScreen() {
     }, [load]);
 
     useSocket(restaurantId, {
-        'order:new': () => load(),
+        'order:new': async (newOrder: Order) => {
+            console.log('[DEBUG] Received order:new event:', newOrder.id);
+
+            load();
+
+            // Voice announcement
+            const tableNum = getTableNum(newOrder);
+
+            const itemsList = newOrder.items
+                .map(it => `${it.quantity} ${it.name}`)
+                .join(', ');
+
+            const message = `New order for Table ${tableNum}. Items: ${itemsList}.`;
+            console.log(`[DEBUG] Speaking: "${message}" with voice: ${preferredVoice}`);
+            Speech.stop();
+            Speech.speak(message, {
+                voice: preferredVoice,
+                rate: 0.85,
+                pitch: 1.0,
+                onError: (err) => console.error('[DEBUG] Speech error:', err),
+            });
+        },
+
         'order:updated': () => load(),
     });
 
@@ -307,10 +351,18 @@ export function OrdersScreen() {
         <View style={S.screen}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.title}>Orders</Text>
-                <Text style={styles.sub}>
-                    {activeTableCount} active table{activeTableCount !== 1 ? 's' : ''} · {tableSummaries.length} total
-                </Text>
+                <View>
+                    <Text style={styles.title}>Orders</Text>
+                    <Text style={styles.sub}>
+                        {activeTableCount} active table{activeTableCount !== 1 ? 's' : ''} · {tableSummaries.length} total
+                    </Text>
+                </View>
+                <TouchableOpacity
+                    onPress={() => Speech.speak("Test voice message", { voice: preferredVoice, rate: 0.85 })}
+                    style={{ padding: 8, backgroundColor: COLORS.surface2, borderRadius: 8 }}
+                >
+                    <Feather name="volume-2" size={20} color={COLORS.accent} />
+                </TouchableOpacity>
             </View>
 
             {tableSummaries.length === 0 ? (

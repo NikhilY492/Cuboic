@@ -71,6 +71,10 @@
     background: linear-gradient(135deg, var(--surface) 0%, rgba(240, 240, 245, 0.4) 100%);
 }
 
+.bento-notes {
+    grid-column: span 2;
+}
+
 .bento-payment {
     grid-column: span 2;
 }
@@ -92,6 +96,7 @@
         grid-template-columns: 1fr 1fr;
         grid-template-areas:
             "items totals"
+            "notes notes"
             "payment action";
     }
 
@@ -101,6 +106,10 @@
 
     .bento-totals {
         grid-area: totals;
+    }
+
+    .bento-notes {
+        grid-area: notes;
     }
 
     .bento-payment {
