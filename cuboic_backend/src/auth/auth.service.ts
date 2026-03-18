@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
@@ -35,5 +35,12 @@ export class AuthService {
                 restaurantId: user.restaurantId,
             },
         };
+    }
+
+    async changePassword(userId: string, oldPass: string, newPass: string) {
+        const valid = await this.validateUser(userId, oldPass);
+        if (!valid) throw new UnauthorizedException('Invalid old password');
+        const hash = await bcrypt.hash(newPass, 10);
+        return this.usersService.updatePassword(valid.id, hash);
     }
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getRestaurant, getCategories, getMenuItems, type Category, type MenuItem } from '../api/menu';
 import { updateOrderTable } from '../api/orders';
 import { useCart } from '../hooks/useCart';
@@ -8,6 +8,9 @@ import { CartDrawer } from '../components/CartDrawer';
 import { OrdersDrawer, type ActiveOrderSession } from '../components/OrdersDrawer';
 import { TableSelectorModal } from '../components/TableSelectorModal';
 import { ConfirmTableMoveModal } from '../components/ConfirmTableMoveModal';
+import { CustomerAuthModal } from '../components/CustomerAuthModal';
+import { OrderTypeModal } from '../components/OrderTypeModal';
+import { type Customer } from '../api/customers';
 import { SearchOverlay } from '../components/SearchOverlay';
 import { SkeletonLoader } from '../components/SkeletonLoader';
 import './MenuPage.css';
@@ -32,10 +35,14 @@ export function MenuPage() {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [tableLabel, setTableLabel] = useState<string>('');
-    const [availableTables, setAvailableTables] = useState<Array<{ id: string; table_number: number }>>([]);
+    const [availableTables, setAvailableTables] = useState<any[]>([]);
     const [activeOrders, setActiveOrders] = useState<ActiveOrderSession[]>([]);
+    
+    const [authOpen, setAuthOpen] = useState(false);
+    const [orderTypeOpen, setOrderTypeOpen] = useState(false);
 
     const cart = useCart();
+    const navigate = useNavigate();
 
     useEffect(() => {
         try {
@@ -75,6 +82,58 @@ export function MenuPage() {
         cart.clear();
         setPendingTableMove(null);
         setTablesOpen(false);
+    };
+
+    const handleCheckoutInit = () => {
+        const custStr = localStorage.getItem('cuboic_customer');
+        if (!custStr) {
+            setCartOpen(false);
+            setAuthOpen(true);
+            return;
+        }
+        const customer = JSON.parse(custStr);
+        proceedWithAuth(customer);
+    };
+
+    const proceedWithAuth = (customer: Customer) => {
+        if (!tableId) {
+            setCartOpen(false);
+            setOrderTypeOpen(true);
+            return;
+        }
+        goToCheckout(tableId, tableLabel, customer);
+    };
+
+    const handleOrderTypeSelect = (type: 'Dine-in' | 'Takeaway') => {
+        setOrderTypeOpen(false);
+        if (type === 'Dine-in') {
+            setTablesOpen(true);
+        } else {
+            const takeawayTbl = availableTables.find(t => String(t.table_number).toLowerCase() === 'takeaway');
+            const tId = takeawayTbl ? takeawayTbl.id : 'takeaway_virtual';
+            const customer = JSON.parse(localStorage.getItem('cuboic_customer')!);
+            goToCheckout(tId, 'Takeaway', customer);
+        }
+    };
+
+    const goToCheckout = (tId: string, tLabel: string, customer: Customer) => {
+        navigate('/checkout', {
+            state: { 
+                items: cart.items, 
+                total: cart.total, 
+                restaurantId, 
+                tableId: tId, 
+                tableLabel: tLabel, 
+                sessionId: SESSION_ID,
+                customerId: customer.id
+            },
+        });
+    };
+
+    const handleAuthSuccess = (customer: Customer) => {
+        localStorage.setItem('cuboic_customer', JSON.stringify(customer));
+        setAuthOpen(false);
+        proceedWithAuth(customer);
     };
 
     interface FlyingItem {
@@ -432,6 +491,19 @@ export function MenuPage() {
                 onAdd={cart.add}
                 onRemove={cart.remove}
                 onClear={cart.clear}
+                onCheckout={handleCheckoutInit}
+            />
+
+            <CustomerAuthModal
+                open={authOpen}
+                onClose={() => setAuthOpen(false)}
+                onSuccess={handleAuthSuccess}
+            />
+
+            <OrderTypeModal
+                open={orderTypeOpen}
+                onClose={() => setOrderTypeOpen(false)}
+                onSelect={handleOrderTypeSelect}
             />
 
             {/* ── Orders bottom sheet ────────────────────────────── */}

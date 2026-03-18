@@ -15,6 +15,8 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 import { RobotRuntimeModule } from './robot-runtime/robot-runtime.module';
 import { HealthModule } from './health/health.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TablesModule } from './tables/tables.module';
+import { CustomersModule } from './customers/customers.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     RobotRuntimeModule,
     HealthModule,
     ScheduleModule.forRoot(),
+    TablesModule,
+    CustomersModule,
   ],
 })
 export class AppModule { }

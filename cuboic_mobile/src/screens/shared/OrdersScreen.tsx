@@ -96,7 +96,9 @@ function TableCard({ summary, onPress }: { summary: TableSummary; onPress: () =>
             activeOpacity={0.75}
         >
             <View style={[styles.tableDot, { backgroundColor: dotColor }]} />
-            <Text style={styles.tableNum}>T{summary.tableNum}</Text>
+            <Text style={[styles.tableNum, summary.tableNum.toLowerCase() === 'takeaway' && { fontSize: 18 }]}>
+                {summary.tableNum.toLowerCase() === 'takeaway' ? 'Takeaway' : `T${summary.tableNum}`}
+            </Text>
             {hasActive ? (
                 <Text style={[styles.tableOrderCount, { color: dotColor }]}>
                     {summary.activeOrders.length} order{summary.activeOrders.length !== 1 ? 's' : ''}
@@ -112,17 +114,47 @@ function OrderCard({
     item,
     onAdvance,
     onCancel,
+    onMarkPaid,
 }: {
     item: Order;
     onAdvance: (o: Order) => void;
     onCancel: (o: Order) => void;
+    onMarkPaid: (o: Order) => void;
 }) {
     return (
         <View style={styles.card}>
             <View style={styles.cardHeader}>
                 <View style={{ flex: 1 }}>
-                    <Text style={styles.cardTitle}>Order #{item.id.slice(-5).toUpperCase()}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <Text style={styles.cardTitle}>Order #{item.id.slice(-5).toUpperCase()}</Text>
+                        
+                        {item.table?.table_number?.toLowerCase() === 'takeaway' && (
+                            <View style={{ backgroundColor: '#fdf4ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#e879f9' }}>
+                                <Text style={{ fontSize: 10, color: '#c026d3', fontWeight: 'bold' }}>TAKEAWAY</Text>
+                            </View>
+                        )}
+
+                        {item.payment?.status === 'Pending' && (
+                            <View style={{ backgroundColor: '#fef3c7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                                <Text style={{ fontSize: 10, color: '#d97706', fontWeight: 'bold' }}>UNPAID</Text>
+                            </View>
+                        )}
+                        {item.payment?.status === 'Paid' && (
+                            <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>PAID</Text>
+                            </View>
+                        )}
+                    </View>
                     <Text style={styles.cardTime}>{new Date(item.createdAt).toLocaleTimeString()}</Text>
+                    
+                    {item.customer && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                            <Feather name="user" size={12} color={COLORS.textMuted} />
+                            <Text style={{ fontSize: 12, color: COLORS.textMuted }}>
+                                {item.customer.name} • {item.customer.phone}
+                            </Text>
+                        </View>
+                    )}
                 </View>
                 <StatusBadge status={item.status} />
             </View>
@@ -148,6 +180,15 @@ function OrderCard({
             <View style={styles.cardFooter}>
                 <Text style={styles.total}>₹{item.total.toFixed(2)}</Text>
                 <View style={styles.actions}>
+                    {item.payment?.status === 'Pending' && (
+                        <TouchableOpacity
+                            style={[styles.btnAdvance, { backgroundColor: '#10b981' }]}
+                            onPress={() => onMarkPaid(item)}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={[styles.btnAdvanceText, { color: 'white' }]}>Mark Paid</Text>
+                        </TouchableOpacity>
+                    )}
                     {NEXT_STATUS[item.status] && (
                         <TouchableOpacity
                             style={styles.btnAdvance}
@@ -280,6 +321,13 @@ export function OrdersScreen() {
         ]);
     };
 
+    const handleMarkPaid = async (order: Order) => {
+        try {
+            await ordersApi.markAsPaid(order.id);
+            load();
+        } catch { Alert.alert('Error', 'Failed to mark order as paid'); }
+    };
+
     if (loading) return (
         <View style={S.screen}>
             <ActivityIndicator style={{ marginTop: 80 }} color={COLORS.accent} size="large" />
@@ -304,7 +352,9 @@ export function OrdersScreen() {
                         <Feather name="arrow-left" size={20} color={COLORS.accent} />
                     </Pressable>
                     <View style={{ flex: 1 }}>
-                        <Text style={styles.title}>T{selectedTable}</Text>
+                        <Text style={styles.title}>
+                            {selectedTable?.toLowerCase() === 'takeaway' ? 'Takeaway' : `T${selectedTable}`}
+                        </Text>
                         <Text style={styles.sub}>{tableOrders.length} order{tableOrders.length !== 1 ? 's' : ''} total</Text>
                     </View>
                 </View>
@@ -334,7 +384,7 @@ export function OrdersScreen() {
                     contentContainerStyle={styles.list}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.accent} />}
                     renderItem={({ item }) => (
-                        <OrderCard item={item} onAdvance={handleAdvance} onCancel={handleCancel} />
+                        <OrderCard item={item} onAdvance={handleAdvance} onCancel={handleCancel} onMarkPaid={handleMarkPaid} />
                     )}
                     ListEmptyComponent={
                         <Text style={styles.empty}>No orders for "{filterStatus}"</Text>

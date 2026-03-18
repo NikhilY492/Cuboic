@@ -133,11 +133,23 @@ model User {
   restaurant Restaurant? @relation(fields: [restaurantId], references: [id])
 }
 
+model Customer {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  name      String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  orders    Order[]
+}
+
 // items stored as Json: [{item_id, name, unit_price, quantity}]
 model Order {
   id                  String      @id @default(cuid())
   restaurantId        String
   tableId             String
+  customerId          String?
   customer_session_id String
   items               Json
   subtotal            Float
@@ -151,6 +163,7 @@ model Order {
 
   restaurant Restaurant @relation(fields: [restaurantId], references: [id])
   table      Table      @relation(fields: [tableId], references: [id])
+  customer   Customer?  @relation(fields: [customerId], references: [id])
   payment    Payment?
 }
 

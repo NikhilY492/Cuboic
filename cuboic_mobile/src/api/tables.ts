@@ -9,5 +9,11 @@ export interface RestaurantTable {
 
 export const tablesApi = {
     findAll: (restaurantId: string) =>
-        api.get<any>(`/restaurants/${restaurantId}`).then(r => (r.data?.tables || []) as RestaurantTable[]),
+        api.get<RestaurantTable[]>(`/restaurants/${restaurantId}/tables`).then(r => r.data),
+    
+    create: (data: { restaurantId: string; table_number: string }) =>
+        api.post<RestaurantTable>('/tables', data).then(r => r.data),
+        
+    updateStatus: (id: string, is_active: boolean) =>
+        api.patch<RestaurantTable>(`/tables/${id}`, { is_active }).then(r => r.data),
 };

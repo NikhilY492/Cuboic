@@ -4,7 +4,7 @@ import { placeOrder } from '../api/orders';
 import type { CartItem } from '../hooks/useCart';
 import './CheckoutPage.css';
 
-type PaymentMethod = 'Card' | 'UPI' | 'Cash';
+
 
 interface LocationState {
     items: CartItem[];
@@ -13,6 +13,7 @@ interface LocationState {
     tableId: string;
     tableLabel?: string;
     sessionId: string;
+    customerId?: string;
 }
 
 // Stable per-session UUID
@@ -23,10 +24,6 @@ export function CheckoutPage() {
     const navigate = useNavigate();
     const state = location.state as LocationState | null;
 
-    const [method, setMethod] = useState<PaymentMethod>('UPI');
-    const [cardNumber, setCardNumber] = useState('');
-    const [expiry, setExpiry] = useState('');
-    const [cvv, setCvv] = useState('');
     const [notes, setNotes] = useState('');
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState('');
@@ -43,28 +40,21 @@ export function CheckoutPage() {
         );
     }
 
-    const { items, total, restaurantId, tableId, tableLabel, sessionId } = state;
+    const { items, total, restaurantId, tableId, tableLabel, sessionId, customerId } = state;
     const taxAmount = total * 0.05;
     const grandTotal = total + taxAmount;
 
     const handlePay = async () => {
-        if (method === 'Card') {
-            if (!cardNumber.trim() || !expiry.trim() || !cvv.trim()) {
-                setError('Please fill in all card details.');
-                return;
-            }
-        }
         setError('');
         setProcessing(true);
 
         try {
-            // Simulate payment gateway processing (FR-4: payment before order creation)
-            await new Promise<void>(resolve => setTimeout(resolve, 1500));
 
             // Payment "succeeded" — now create the order
             const order = await placeOrder({
                 restaurantId: restaurantId,
                 tableId: tableId,
+                customerId: customerId,
                 customerSessionId: sessionId ?? SESSION_ID,
                 notes: notes.trim() || undefined,
                 items: items.map(c => ({ itemId: c.item.id, quantity: c.quantity })),
@@ -148,74 +138,13 @@ export function CheckoutPage() {
                     />
                 </section>
 
-                {/* ── Payment Method Tile ── */}
+                {/* ── Payment Information Tile ── */}
                 <section className="bento-tile bento-payment fade-up" style={{ animationDelay: '0.2s' }}>
-                    <h2 className="bento-title">Payment Method</h2>
-
-                    <div className="co-methods">
-                        {(['Card', 'UPI', 'Cash'] as PaymentMethod[]).map(m => (
-                            <button
-                                key={m}
-                                className={`co-method-btn ${method === m ? 'co-method-btn--active' : ''}`}
-                                onClick={() => setMethod(m)}
-                            >
-                                <span className="co-method-icon">
-                                    {m === 'Card' ? '💳' : m === 'UPI' ? '📱' : '💵'}
-                                </span>
-                                <span>{m}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Card fields */}
-                    {method === 'Card' && (
-                        <div className="co-card-fields fade-in">
-                            <div className="co-field">
-                                <label>Card Number</label>
-                                <input
-                                    type="text"
-                                    placeholder="1234 5678 9012 3456"
-                                    maxLength={19}
-                                    value={cardNumber}
-                                    onChange={e => setCardNumber(e.target.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim())}
-                                />
-                            </div>
-                            <div className="co-field-row">
-                                <div className="co-field">
-                                    <label>Expiry</label>
-                                    <input
-                                        type="text"
-                                        placeholder="MM/YY"
-                                        maxLength={5}
-                                        value={expiry}
-                                        onChange={e => setExpiry(e.target.value)}
-                                    />
-                                </div>
-                                <div className="co-field">
-                                    <label>CVV</label>
-                                    <input
-                                        type="password"
-                                        placeholder="•••"
-                                        maxLength={4}
-                                        value={cvv}
-                                        onChange={e => setCvv(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {method === 'UPI' && (
-                        <p className="co-method-hint fade-in">
-                            Redirecting to your UPI app soon.
-                        </p>
-                    )}
-
-                    {method === 'Cash' && (
-                        <p className="co-method-hint fade-in">
-                            Please pay at the end of your meal.
-                        </p>
-                    )}
+                    <h2 className="bento-title">Payment</h2>
+                    <p className="co-method-hint fade-in" style={{ marginTop: 0 }}>
+                        <span style={{ fontSize: '1.25rem', marginRight: '8px', verticalAlign: 'middle' }}>💵</span>
+                        <span>Please pay at the counter.</span>
+                    </p>
                 </section>
 
                 {/* ── Checkout Action Tile ── */}
@@ -233,7 +162,7 @@ export function CheckoutPage() {
                                 Processing…
                             </span>
                         ) : (
-                            `Pay ₹${grandTotal.toFixed(2)}`
+                            `Place Order • ₹${grandTotal.toFixed(2)}`
                         )}
                     </button>
                     <p className="co-secure-note">Secured & encrypted</p>

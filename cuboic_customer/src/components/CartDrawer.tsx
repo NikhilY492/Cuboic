@@ -14,6 +14,7 @@ interface CartDrawerProps {
     onAdd: (item: any) => void;
     onRemove: (itemId: string) => void;
     onClear: () => void;
+    onCheckout: () => void;
 }
 
 export function CartDrawer({
@@ -27,6 +28,8 @@ export function CartDrawer({
     sessionId,
     onAdd,
     onRemove,
+    onClear,
+    onCheckout,
 }: CartDrawerProps) {
     const navigate = useNavigate();
 
@@ -35,12 +38,9 @@ export function CartDrawer({
     const taxAmount = total * 0.05;
     const grandTotal = total + taxAmount;
 
-    const handleCheckout = () => {
+    const handleCheckoutClick = () => {
         if (items.length === 0) return;
-        onClose();
-        navigate('/checkout', {
-            state: { items, total, restaurantId, tableId, tableLabel, sessionId },
-        });
+        onCheckout();
     };
 
     return (
@@ -102,7 +102,7 @@ export function CartDrawer({
                                 <span>Total</span><span>₹{grandTotal.toFixed(2)}</span>
                             </div>
                         </div>
-                        <button className="cart-cta" onClick={handleCheckout}>
+                        <button className="cart-cta" onClick={handleCheckoutClick}>
                             <span>Proceed to Payment</span>
                             <span className="cart-cta__total">₹{grandTotal.toFixed(2)} →</span>
                         </button>

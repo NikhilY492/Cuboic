@@ -13,7 +13,7 @@ import { KpiCard } from '../../components/KpiCard';
 import { COLORS } from '../../theme';
 
 export function DashboardScreen() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const restaurantId = user?.restaurantId ?? '';
 
     const [summary, setSummary] = useState({ order_count: 0, total_revenue: 0 });
@@ -92,9 +92,6 @@ export function DashboardScreen() {
                     <Text style={styles.greeting}>Welcome back, {user?.name?.split(' ')[0]}</Text>
                     <Text style={styles.role}>{user?.role} Dashboard</Text>
                 </View>
-                <TouchableOpacity onPress={logout} style={styles.logoutBtn} activeOpacity={0.8}>
-                    <Text style={styles.logoutText}>Sign out</Text>
-                </TouchableOpacity>
             </View>
 
             {loading ? (
@@ -133,15 +130,6 @@ const styles = StyleSheet.create({
     },
     greeting: { fontSize: 20, fontWeight: '800', color: COLORS.text },
     role: { fontSize: 13, color: COLORS.textMuted, marginTop: 2 },
-    logoutBtn: {
-        backgroundColor: COLORS.surface2,
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: COLORS.border,
-    },
-    logoutText: { color: COLORS.textMuted, fontSize: 13, fontWeight: '600' },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
     hint: {
         textAlign: 'center',

@@ -21,14 +21,25 @@ export interface OrderTable {
     status?: string;
 }
 
+export interface OrderCustomer {
+    name: string;
+    phone: string;
+}
+
 export interface Order {
     id: string;
     tableId: string;
     table?: OrderTable | null;
+    customerId?: string;
+    customer?: OrderCustomer | null;
     status: OrderStatus;
     items: OrderItem[];
     notes?: string;
     total: number;
+    payment?: {
+        status: string;
+        method: string;
+    };
     createdAt: string;
 }
 
@@ -52,4 +63,7 @@ export const ordersApi = {
 
     updateStatus: (id: string, status: string) =>
         api.patch<Order>(`/orders/${id}/status`, { status }).then(r => r.data),
+
+    markAsPaid: (id: string) =>
+        api.patch<Order>(`/orders/${id}/pay`).then(r => r.data),
 };

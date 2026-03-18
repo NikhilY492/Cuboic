@@ -28,3 +28,6 @@ export const login = (payload: LoginPayload) =>
         user.restaurant_id = user.restaurantId ?? user.restaurant_id;
         return r.data;
     });
+
+export const changePassword = (payload: any) =>
+    api.patch('/auth/change-password', payload).then(r => r.data);

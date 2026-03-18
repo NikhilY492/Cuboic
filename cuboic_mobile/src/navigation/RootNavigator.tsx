@@ -12,6 +12,9 @@ import { MenuScreen } from '../screens/shared/MenuScreen';
 import { DeliveriesScreen } from '../screens/shared/DeliveriesScreen';
 import { RobotsScreen } from '../screens/shared/RobotsScreen';
 import { PaymentsScreen } from '../screens/shared/PaymentsScreen';
+import { ProfileScreen } from '../screens/shared/ProfileScreen';
+import { StaffScreen } from '../screens/owner/StaffScreen';
+import { TablesScreen } from '../screens/owner/TablesScreen';
 import { COLORS } from '../theme';
 
 export type RootStackParamList = {
@@ -28,6 +31,9 @@ type MainTabParamList = {
     Deliveries: undefined;
     Robots: undefined;
     Payments: undefined;
+    Staff: undefined;
+    Tables: undefined;
+    Profile: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -63,6 +69,9 @@ function MainTabs() {
                     else if (route.name === 'Deliveries') iconName = 'box';
                     else if (route.name === 'Robots') iconName = 'cpu';
                     else if (route.name === 'Payments') iconName = 'credit-card';
+                    else if (route.name === 'Staff') iconName = 'users';
+                    else if (route.name === 'Tables') iconName = 'grid';
+                    else if (route.name === 'Profile') iconName = 'user';
 
                     return <Feather name={iconName} size={size} color={color} />;
                 },
@@ -71,11 +80,17 @@ function MainTabs() {
             <Tab.Screen name="Dashboard" component={DashboardScreen} />
             <Tab.Screen name="Orders" component={OrdersScreen} />
             <Tab.Screen name="Menu" component={MenuScreen} />
-            <Tab.Screen name="Deliveries" component={DeliveriesScreen} />
-            <Tab.Screen name="Robots" component={RobotsScreen} />
+            {/* Temporarily hidden: Deliveries and Robots tabs */}
+            {/* <Tab.Screen name="Deliveries" component={DeliveriesScreen} /> */}
+            {/* <Tab.Screen name="Robots" component={RobotsScreen} /> */}
             {isOwner && (
-                <Tab.Screen name="Payments" component={PaymentsScreen} />
+                <>
+                    <Tab.Screen name="Payments" component={PaymentsScreen} />
+                    <Tab.Screen name="Staff" component={StaffScreen} />
+                    <Tab.Screen name="Tables" component={TablesScreen} />
+                </>
             )}
+            <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
     );
 }

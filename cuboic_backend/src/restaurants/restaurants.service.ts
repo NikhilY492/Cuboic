@@ -9,11 +9,25 @@ export class RestaurantsService {
         return this.prisma.restaurant.findUnique({ where: { id }, include: { tables: true } });
     }
 
-    findTables(restaurantId: string) {
-        return this.prisma.table.findMany({
-            where: { restaurantId, is_active: true },
-            orderBy: { table_number: 'asc' },
+    async findTables(restaurantId: string) {
+        let tables = await this.prisma.table.findMany({
+            where: { restaurantId },
         });
+
+        // Ensure a Takeaway table exists for easy checkout routing
+        const hasTakeaway = tables.some(t => t.table_number.toLowerCase() === 'takeaway');
+        if (!hasTakeaway) {
+            const takeawayTable = await this.prisma.table.create({
+                data: {
+                    restaurantId,
+                    table_number: 'Takeaway',
+                    is_active: true
+                }
+            });
+            tables.push(takeawayTable);
+        }
+
+        return tables;
     }
 
     findAll() {

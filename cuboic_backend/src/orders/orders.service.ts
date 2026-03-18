@@ -41,6 +41,7 @@ export class OrdersService {
             data: {
                 restaurantId: dto.restaurantId,
                 tableId: dto.tableId,
+                customerId: dto.customerId,
                 customer_session_id: dto.customerSessionId,
                 notes: dto.notes,
                 items: orderItems,
@@ -50,13 +51,13 @@ export class OrdersService {
                 payment: {
                     create: {
                         amount: total,
-                        method: 'Gateway',
-                        status: 'Paid',
+                        method: 'Counter',
+                        status: 'Pending',
                         transaction_id: `txn_${Date.now()}`
                     }
                 }
             },
-            include: { payment: true }
+            include: { payment: true, customer: true, table: true }
         });
 
         this.eventsGateway.emitToRestaurant(dto.restaurantId, 'order:new', order);
@@ -66,7 +67,7 @@ export class OrdersService {
     findOne(id: string) {
         return this.prisma.order.findUnique({
             where: { id },
-            include: { table: true },
+            include: { table: true, payment: true, customer: true },
         });
     }
 
@@ -76,7 +77,7 @@ export class OrdersService {
                 restaurantId,
                 ...(status ? { status: status as OrderStatus } : {}),
             },
-            include: { table: true },
+            include: { table: true, payment: true, customer: true },
             orderBy: { createdAt: 'desc' },
         });
     }
@@ -152,6 +153,21 @@ export class OrdersService {
             data: { status: 'Delivered' },
         });
         if (!order) throw new NotFoundException('Order not found');
+        return order;
+    }
+
+    async markAsPaid(id: string) {
+        const order = await this.prisma.order.update({
+            where: { id },
+            data: {
+                payment: {
+                    update: { status: 'Paid' }
+                }
+            },
+            include: { payment: true, table: true }
+        });
+        if (!order) throw new NotFoundException('Order not found');
+        this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
     }
 
