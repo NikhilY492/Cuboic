@@ -93,7 +93,7 @@ export function OrderTrackerPage() {
     // `tableLabel` manages the resolved state
 
     const isCancelled = order.status === 'Cancelled';
-    const canCancel = ['Pending', 'Confirmed', 'Preparing'].includes(order.status);
+    const canCancel = order.status === 'Pending';
 
     const handleCancel = async () => {
         if (!orderId) return;
