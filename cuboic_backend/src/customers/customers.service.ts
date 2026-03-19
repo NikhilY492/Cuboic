@@ -1,7 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConfigService } from '@nestjs/config';
 import { Twilio } from 'twilio';
+import * as dotenv from 'dotenv';
+
+// Force load existing or hot-reloaded .env file changes into the process
+dotenv.config();
 
 @Injectable()
 export class CustomersService {
@@ -11,20 +14,19 @@ export class CustomersService {
     // In-memory OTP store: phone -> { otp, expiresAt }
     private otps = new Map<string, { otp: string, expiresAt: number }>();
 
-    constructor(
-        private prisma: PrismaService,
-        private configService: ConfigService
-    ) {
-        // Use ConfigService to auto-strip any accidental quotes from the .env file
-        const sid = this.configService.get<string>('TWILIO_ACCOUNT_SID')?.replace(/"/g, '');
-        const auth = this.configService.get<string>('TWILIO_AUTH_TOKEN')?.replace(/"/g, '');
-        this.twilioPhone = this.configService.get<string>('TWILIO_PHONE_NUMBER')?.replace(/"/g, '') || '';
+    constructor(private prisma: PrismaService) {
+        // Read directly from process.env and sanitize physical double-quotes
+        const sid = process.env.TWILIO_ACCOUNT_SID?.replace(/"/g, '');
+        const auth = process.env.TWILIO_AUTH_TOKEN?.replace(/"/g, '');
+        this.twilioPhone = process.env.TWILIO_PHONE_NUMBER?.replace(/"/g, '') || '';
         
-        if (sid && auth) {
+        console.log(`[Twilio Auth Check] Keys found: ${!!sid && !!auth}, Phone found: ${!!this.twilioPhone}`);
+        
+        if (sid && auth && this.twilioPhone) {
             this.twilioClient = new Twilio(sid, auth);
             console.log("Twilio initialized successfully on backend!");
         } else {
-            console.log("Twilio keys not found or invalid.");
+            console.log("Twilio initialization bypassed: Keys missing.");
         }
     }
 
