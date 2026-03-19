@@ -20,8 +20,8 @@ export class AuthService {
 
     login(user: any) {
         const payload = {
-            sub: user.id,          // changed from id to id (Prisma uses .id)
-            userId: user.userId,
+            sub: user.id,
+            userId: user.user_id,
             role: user.role,
             restaurantId: user.restaurantId,
         };
@@ -30,7 +30,7 @@ export class AuthService {
             user: {
                 id: user.id,
                 name: user.name,
-                userId: user.userId,
+                userId: user.user_id,
                 role: user.role,
                 restaurantId: user.restaurantId,
             },

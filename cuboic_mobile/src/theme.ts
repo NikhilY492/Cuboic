@@ -3,8 +3,8 @@ export const COLORS = {
     surface: '#18181f',
     surface2: '#222230',
     border: '#2e2e3d',
-    accent: '#f5a623',
-    accentDark: '#c4831a',
+    accent: '#65a30d',
+    accentDark: '#4d7c0f',
     text: '#f0eff5',
     textMuted: '#8b8aa0',
     textDim: '#5a5974',
@@ -26,6 +26,9 @@ export const S = {
     screen: {
         flex: 1 as const,
         backgroundColor: COLORS.bg,
+        width: '100%' as const,
+        maxWidth: 800,
+        alignSelf: 'center' as const,
     },
     card: {
         backgroundColor: COLORS.surface,

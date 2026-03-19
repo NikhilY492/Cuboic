@@ -29,8 +29,7 @@ export function CartDrawer({
 }: CartDrawerProps) {
     if (!open) return null;
 
-    const taxAmount = total * 0.05;
-    const grandTotal = total + taxAmount;
+    const grandTotal = total;
 
     const handleCheckoutClick = () => {
         if (items.length === 0) return;
@@ -89,9 +88,7 @@ export function CartDrawer({
                             <div className="cart-line">
                                 <span>Subtotal</span><span>₹{total.toFixed(2)}</span>
                             </div>
-                            <div className="cart-line">
-                                <span>GST (5%)</span><span>₹{taxAmount.toFixed(2)}</span>
-                            </div>
+
                             <div className="cart-line cart-line--grand">
                                 <span>Total</span><span>₹{grandTotal.toFixed(2)}</span>
                             </div>

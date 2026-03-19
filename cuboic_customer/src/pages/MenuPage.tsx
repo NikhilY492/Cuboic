@@ -37,7 +37,7 @@ export function MenuPage() {
     const [tableLabel, setTableLabel] = useState<string>('');
     const [availableTables, setAvailableTables] = useState<any[]>([]);
     const [activeOrders, setActiveOrders] = useState<ActiveOrderSession[]>([]);
-    
+
     const [authOpen, setAuthOpen] = useState(false);
     const [orderTypeOpen, setOrderTypeOpen] = useState(false);
 
@@ -47,7 +47,24 @@ export function MenuPage() {
     useEffect(() => {
         try {
             const o = localStorage.getItem('cuboic_active_orders');
-            if (o) setActiveOrders(JSON.parse(o));
+            if (o) {
+                const parsed = JSON.parse(o);
+                const TWO_HOURS = 2 * 60 * 60 * 1000;
+                const now = Date.now();
+                const validOrders = parsed.filter((order: any) => {
+                    return (now - (order.time || 0)) < TWO_HOURS;
+                });
+
+                setActiveOrders(validOrders);
+
+                if (validOrders.length !== parsed.length) {
+                    if (validOrders.length === 0) {
+                        localStorage.removeItem('cuboic_active_orders');
+                    } else {
+                        localStorage.setItem('cuboic_active_orders', JSON.stringify(validOrders));
+                    }
+                }
+            }
         } catch (e) {
             console.error('Failed to parse active orders', e);
         }
@@ -118,12 +135,12 @@ export function MenuPage() {
 
     const goToCheckout = (tId: string, tLabel: string, customer: Customer) => {
         navigate('/checkout', {
-            state: { 
-                items: cart.items, 
-                total: cart.total, 
-                restaurantId, 
-                tableId: tId, 
-                tableLabel: tLabel, 
+            state: {
+                items: cart.items,
+                total: cart.total,
+                restaurantId,
+                tableId: tId,
+                tableLabel: tLabel,
                 sessionId: SESSION_ID,
                 customerId: customer.id
             },
@@ -266,10 +283,10 @@ export function MenuPage() {
                 <div className="menu-header__inner">
                     {/* Brand */}
                     <div className="menu-header__brand">
-                        <img src="/logo1.png" className="menu-header__logo" alt="Cuboic" />
+                        <img src="/pic1.png" className="menu-header__logo" alt="Thambi" />
                         <div>
                             <div className="menu-header__name">{restaurantName}</div>
-                            <div className="menu-header__sub">Cuboic</div>
+                            <div className="menu-header__sub">Thambi</div>
                         </div>
                     </div>
 
@@ -430,20 +447,20 @@ export function MenuPage() {
             <footer className="menu-footer">
                 <div className="menu-footer__inner">
                     <div className="menu-footer__brand">
-                        <img src="/logo1.png" className="menu-footer__logo" alt="Cuboic Logo" />
-                        <span className="menu-footer__wordmark">Cuboic</span>
+                        <img src="/pic1.png" className="menu-footer__logo" alt="Thambi Logo" />
+                        <span className="menu-footer__wordmark">Thambi</span>
                     </div>
                     <p className="menu-footer__tagline">
                         Autonomous restaurant delivery, powered by robots.
                     </p>
                     <div className="menu-footer__links">
-                        <a href="mailto:hello@cuboic.com">placeholder@cuboic.com</a>
+                        <a href="mailto:hello@thambi.com">placeholder@thambi.com</a>
                         <span className="menu-footer__dot">·</span>
-                        <a href="https://cuboic.com" target="_blank" rel="noopener noreferrer">cuboic.com</a>
+                        <a href="https://thambi.com" target="_blank" rel="noopener noreferrer">thambi.com</a>
                         <span className="menu-footer__dot">·</span>
-                        <span>Bengaluru, India</span>
+                        <span>Kerala, India</span>
                     </div>
-                    <p className="menu-footer__copy">© {new Date().getFullYear()} Cuboic Technologies Pvt. Ltd. All rights reserved.</p>
+                    <p className="menu-footer__copy">© {new Date().getFullYear()} Thambi Networks Pvt. Ltd. All rights reserved.</p>
                 </div>
             </footer>
 
@@ -471,7 +488,7 @@ export function MenuPage() {
                             <span className="cart-float__label">View Order</span>
                         </div>
                         <div className="cart-float__total">
-                            ₹{(cart.total * 1.05).toFixed(2)}
+                            ₹{cart.total.toFixed(2)}
                             <span className="cart-float__arrow">→</span>
                         </div>
                     </button>

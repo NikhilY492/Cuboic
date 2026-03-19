@@ -43,7 +43,7 @@ export function LoginScreen() {
                     {/* Logo area */}
                     <View style={styles.logoArea}>
                         <Image
-                            source={require('../../../assets/images/cuboic_logo.png')}
+                            source={require('../../../assets/bg.png')}
                             style={styles.logoImage}
                         />
                         <Text style={styles.logoSub}>Restaurant Admin</Text>
@@ -99,7 +99,7 @@ export function LoginScreen() {
 
 const styles = StyleSheet.create({
     screen: { flex: 1 },
-    inner: { flexGrow: 1, justifyContent: 'flex-start', padding: 28, paddingTop: 60 },
+    inner: { flexGrow: 1, justifyContent: 'flex-start', padding: 28, paddingTop: 60, width: '100%', maxWidth: 480, alignSelf: 'center' },
     logoArea: { alignItems: 'center', marginBottom: 38 },
     logoImage: { width: 200, height: 200, marginBottom: -30, borderRadius: 30 },
     logoTitle: { fontSize: 36, fontWeight: '800', color: '#e76837ff', letterSpacing: 1, textShadowColor: 'rgba(0,0,0,0.1)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 2 },

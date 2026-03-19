@@ -116,7 +116,7 @@ export function OrderTrackerPage() {
             <header className="tracker-header">
                 <div className="container">
                     <Link to={`/?r=${order.restaurantId}&t=${typeof order.tableId === 'string' ? order.tableId : order.tableId.id}`} className="tracker-back">← Menu</Link>
-                    <p className="tracker-brand">Cuboic</p>
+                    <p className="tracker-brand">Thambi</p>
                     {lastUpdated && (
                         <span className="tracker-updated">
                             Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
@@ -160,8 +160,6 @@ export function OrderTrackerPage() {
                     </div>
                     <hr className="divider" />
                     <div className="order-totals">
-                        <div className="order-total-row"><span>Subtotal</span><span>₹{order.subtotal.toFixed(2)}</span></div>
-                        <div className="order-total-row"><span>Tax (5%)</span><span>₹{order.tax.toFixed(2)}</span></div>
                         <div className="order-total-row order-total-row--grand">
                             <span>Total</span><span>₹{order.total.toFixed(2)}</span>
                         </div>

@@ -6,7 +6,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '@prisma/client';
 
-const TAX_RATE = 0.05;
+const PLATFORM_FEE = 5.00;
 
 @Injectable()
 export class OrdersService {
@@ -34,7 +34,7 @@ export class OrdersService {
         });
 
         const subtotal = orderItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-        const tax = parseFloat((subtotal * TAX_RATE).toFixed(2));
+        const tax = 0;
         const total = parseFloat((subtotal + tax).toFixed(2));
 
         const order = await this.prisma.order.create({

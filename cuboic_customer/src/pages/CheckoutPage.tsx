@@ -41,8 +41,7 @@ export function CheckoutPage() {
     }
 
     const { items, total, restaurantId, tableId, tableLabel, sessionId, customerId } = state;
-    const taxAmount = total * 0.05;
-    const grandTotal = total + taxAmount;
+    const grandTotal = total;
 
     const handlePay = async () => {
         setError('');
@@ -93,7 +92,7 @@ export function CheckoutPage() {
                         <Link to={`/?r=${restaurantId}&t=${tableId}`} className="checkout-back">← Menu</Link>
                         {tableLabel && <div className="table-tag" style={{ margin: 0, padding: '4px 8px', fontSize: '0.75rem', borderRadius: '4px', background: 'var(--surface2)', color: 'var(--text-muted)', fontWeight: 600 }}>{tableLabel}</div>}
                     </div>
-                    <p className="checkout-brand">Cuboic</p>
+                    <p className="checkout-brand">Thambi</p>
                 </div>
             </header>
 
@@ -120,7 +119,7 @@ export function CheckoutPage() {
                 {/* ── Totals Tile ── */}
                 <section className="bento-tile bento-totals fade-up" style={{ animationDelay: '0.1s' }}>
                     <div className="co-total-row"><span>Subtotal</span><span>₹{total.toFixed(2)}</span></div>
-                    <div className="co-total-row"><span>Tax (5%)</span><span>₹{taxAmount.toFixed(2)}</span></div>
+
                     <hr className="divider" style={{ margin: '12px 0' }} />
                     <div className="co-total-row co-total-grand"><span>Total</span><span>₹{grandTotal.toFixed(2)}</span></div>
                 </section>

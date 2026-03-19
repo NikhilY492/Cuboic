@@ -70,7 +70,7 @@ export function CustomerAuthModal({ open, onClose, onSuccess }: Props) {
         <div className="modal-overlay" onClick={onClose} style={{ zIndex: 100000 }}>
             <div className="modal-content fade-up" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>Welcome to Cuboic</h2>
+                    <h2>Welcome to Thambi</h2>
                     <button className="modal-close" onClick={onClose}>✕</button>
                 </div>
                 
@@ -111,6 +111,9 @@ export function CustomerAuthModal({ open, onClose, onSuccess }: Props) {
                             />
                             <button type="submit" className="btn btn-primary" style={{width: '100%', marginTop: 16}} disabled={loading}>
                                 {loading ? 'Verifying...' : 'Verify OTP'}
+                            </button>
+                            <button type="button" className="btn btn-ghost" style={{width: '100%', marginTop: 8}} onClick={handleSendOtp} disabled={loading}>
+                                Resend OTP
                             </button>
                         </form>
                     )}

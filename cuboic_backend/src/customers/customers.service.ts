@@ -30,7 +30,7 @@ export class CustomersService {
         if (this.twilioClient && this.twilioPhone) {
             try {
                 await this.twilioClient.messages.create({
-                    body: `Your Cuboic verification code is: ${otp}`,
+                    body: `Your Thambi verification code is: ${otp}`,
                     from: this.twilioPhone,
                     to: phone
                 });

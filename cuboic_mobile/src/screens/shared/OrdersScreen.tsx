@@ -186,7 +186,7 @@ function OrderCard({
                             onPress={() => onMarkPaid(item)}
                             activeOpacity={0.8}
                         >
-                            <Text style={[styles.btnAdvanceText, { color: 'white' }]}>Mark Paid</Text>
+                            <Text style={[styles.btnAdvanceText, { color: 'white' }]}>Paid</Text>
                         </TouchableOpacity>
                     )}
                     {NEXT_STATUS[item.status] && (
@@ -195,16 +195,16 @@ function OrderCard({
                             onPress={() => onAdvance(item)}
                             activeOpacity={0.8}
                         >
-                            <Text style={styles.btnAdvanceText}>→ {NEXT_STATUS[item.status]}</Text>
+                            <Text style={styles.btnAdvanceText}>{NEXT_STATUS[item.status]}</Text>
                         </TouchableOpacity>
                     )}
                     {!['Delivered', 'Cancelled', 'Assigned'].includes(item.status) && (
                         <TouchableOpacity
-                            style={styles.btnCancel}
+                            style={[styles.btnCancel, { paddingHorizontal: 10, justifyContent: 'center' }]}
                             onPress={() => onCancel(item)}
                             activeOpacity={0.8}
                         >
-                            <Text style={styles.btnCancelText}>Cancel</Text>
+                            <Feather name="x" size={16} color="#ef4444" />
                         </TouchableOpacity>
                     )}
                 </View>
@@ -540,9 +540,9 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     notesText: { fontSize: 13, color: '#ef4444', flex: 1 },
-    cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 },
     total: { fontSize: 16, fontWeight: '700', color: COLORS.text },
-    actions: { flexDirection: 'row', gap: 8 },
+    actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end', flex: 1 },
     btnAdvance: {
         backgroundColor: COLORS.accent,
         paddingHorizontal: 12,

@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { DashboardScreen } from '../screens/shared/DashboardScreen';
 import { OrdersScreen } from '../screens/shared/OrdersScreen';
+import { KanbanOrdersScreen } from '../screens/staff/KanbanOrdersScreen';
 import { MenuScreen } from '../screens/shared/MenuScreen';
 import { DeliveriesScreen } from '../screens/shared/DeliveriesScreen';
 import { RobotsScreen } from '../screens/shared/RobotsScreen';
@@ -41,6 +42,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 function MainTabs() {
     const { user } = useAuth();
     const isOwner = user?.role === 'Owner';
+    const isStaff = user?.role === 'Staff';
 
     return (
         <Tab.Navigator
@@ -78,7 +80,7 @@ function MainTabs() {
             })}
         >
             <Tab.Screen name="Dashboard" component={DashboardScreen} />
-            <Tab.Screen name="Orders" component={OrdersScreen} />
+            <Tab.Screen name="Orders" component={isStaff ? KanbanOrdersScreen : OrdersScreen} />
             <Tab.Screen name="Menu" component={MenuScreen} />
             {/* Temporarily hidden: Deliveries and Robots tabs */}
             {/* <Tab.Screen name="Deliveries" component={DeliveriesScreen} /> */}

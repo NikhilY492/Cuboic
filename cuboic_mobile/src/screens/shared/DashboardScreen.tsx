@@ -71,7 +71,7 @@ export function DashboardScreen() {
     const kpis = [
         ...(user?.role === 'Owner' ? [
             { icon: <Feather name="hash" size={24} color={COLORS.blue} />, value: summary.order_count, label: "Today's Orders", sub: 'paid today', color: COLORS.blue },
-            { icon: <Feather name="dollar-sign" size={24} color={COLORS.green} />, value: `₹${summary.total_revenue.toFixed(0)}`, label: "Today's Revenue", sub: 'before tax', color: COLORS.green },
+            { icon: <Feather name="dollar-sign" size={24} color={COLORS.green} />, value: `₹${summary.total_revenue.toFixed(0)}`, label: "Today's Revenue", sub: 'before fees', color: COLORS.green },
         ] : []),
         { icon: <Feather name="clock" size={24} color={COLORS.amber} />, value: orderSummary.pending, label: 'Pending Orders', sub: 'action needed', color: COLORS.amber },
         { icon: <Feather name="coffee" size={24} color={COLORS.blue} />, value: orderSummary.preparing, label: 'Preparing', sub: 'in kitchen', color: COLORS.blue },
