@@ -24,7 +24,7 @@ exports.AuthModule = AuthModule = __decorate([
             users_module_1.UsersModule,
             passport_1.PassportModule,
             jwt_1.JwtModule.register({
-                secret: process.env.JWT_SECRET ?? 'cuboic-super-secret-key-change-in-prod',
+                secret: process.env.JWT_SECRET ?? 'thambi-super-secret-key-change-in-prod',
                 signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') },
             }),
         ],

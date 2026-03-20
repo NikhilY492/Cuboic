@@ -15,7 +15,7 @@ const common_1 = require("@nestjs/common");
 const schedule_1 = require("@nestjs/schedule");
 const prisma_service_1 = require("../prisma/prisma.service");
 const events_gateway_1 = require("../events/events.gateway");
-const TAX_RATE = 0.05;
+const PLATFORM_FEE = 5.00;
 let OrdersService = OrdersService_1 = class OrdersService {
     prisma;
     eventsGateway;
@@ -38,12 +38,13 @@ let OrdersService = OrdersService_1 = class OrdersService {
             return { itemId: doc.id, name: doc.name, unitPrice: doc.price, quantity: i.quantity };
         });
         const subtotal = orderItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-        const tax = parseFloat((subtotal * TAX_RATE).toFixed(2));
+        const tax = 0;
         const total = parseFloat((subtotal + tax).toFixed(2));
         const order = await this.prisma.order.create({
             data: {
                 restaurantId: dto.restaurantId,
                 tableId: dto.tableId,
+                customerId: dto.customerId,
                 customer_session_id: dto.customerSessionId,
                 notes: dto.notes,
                 items: orderItems,
@@ -53,13 +54,13 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 payment: {
                     create: {
                         amount: total,
-                        method: 'Gateway',
-                        status: 'Paid',
+                        method: 'Counter',
+                        status: 'Pending',
                         transaction_id: `txn_${Date.now()}`
                     }
                 }
             },
-            include: { payment: true }
+            include: { payment: true, customer: true, table: true }
         });
         this.eventsGateway.emitToRestaurant(dto.restaurantId, 'order:new', order);
         return order;
@@ -67,7 +68,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
     findOne(id) {
         return this.prisma.order.findUnique({
             where: { id },
-            include: { table: true },
+            include: { table: true, payment: true, customer: true },
         });
     }
     findAll(restaurantId, status) {
@@ -76,7 +77,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 restaurantId,
                 ...(status ? { status: status } : {}),
             },
-            include: { table: true },
+            include: { table: true, payment: true, customer: true },
             orderBy: { createdAt: 'desc' },
         });
     }
@@ -147,6 +148,21 @@ let OrdersService = OrdersService_1 = class OrdersService {
             throw new common_1.NotFoundException('Order not found');
         return order;
     }
+    async markAsPaid(id) {
+        const order = await this.prisma.order.update({
+            where: { id },
+            data: {
+                payment: {
+                    update: { status: 'Paid' }
+                }
+            },
+            include: { payment: true, table: true }
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
+        return order;
+    }
     async cleanupStaleOrders() {
         this.logger.log('Running stale orders cleanup...');
         const cutoff = new Date(Date.now() - 8 * 60 * 60 * 1000);
@@ -178,7 +194,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
 };
 exports.OrdersService = OrdersService;
 __decorate([
-    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_10_SECONDS),
+    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_HOUR),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

@@ -42,72 +42,65 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UsersService = void 0;
+exports.CustomersService = void 0;
 const common_1 = require("@nestjs/common");
-const bcrypt = __importStar(require("bcryptjs"));
 const prisma_service_1 = require("../prisma/prisma.service");
-let UsersService = class UsersService {
+const admin = __importStar(require("firebase-admin"));
+const dotenv = __importStar(require("dotenv"));
+dotenv.config();
+let CustomersService = class CustomersService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async create(dto) {
-        const existing = await this.prisma.user.findUnique({ where: { user_id: dto.userId } });
-        if (existing)
-            throw new common_1.ConflictException('User ID already taken');
-        const passwordHash = await bcrypt.hash(dto.password, 10);
-        const { password_hash: _, ...user } = await this.prisma.user.create({
-            data: {
-                name: dto.name,
-                user_id: dto.userId,
-                password_hash: passwordHash,
-                role: dto.role ?? 'Staff',
-                restaurantId: dto.restaurantId ?? null,
-            },
-        });
-        return user;
-    }
-    findAll(restaurantId) {
-        return this.prisma.user.findMany({
-            where: { restaurantId },
-            select: {
-                id: true, name: true, user_id: true, role: true,
-                is_active: true, restaurantId: true, createdAt: true,
-            },
-        });
-    }
-    async findByUserId(userId) {
-        return this.prisma.user.findUnique({ where: { user_id: userId } });
-    }
-    async updatePassword(id, hash) {
-        return this.prisma.user.update({
-            where: { id },
-            data: { password_hash: hash },
-            select: { id: true, name: true, user_id: true, role: true }
-        });
-    }
-    async update(id, dto) {
-        const data = { ...dto };
-        if (dto.password) {
-            data.password_hash = await bcrypt.hash(dto.password, 10);
+    onModuleInit() {
+        if (!admin.apps.length) {
+            admin.initializeApp({
+                credential: admin.credential.cert({
+                    projectId: process.env.FIREBASE_PROJECT_ID,
+                    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+                }),
+            });
+            console.log('[Firebase Admin] Initialized successfully.');
         }
-        delete data.password;
-        return this.prisma.user.update({
-            where: { id },
-            data,
-            select: { id: true, name: true, user_id: true, role: true, is_active: true }
-        });
     }
-    async remove(id) {
-        return this.prisma.user.update({
-            where: { id },
-            data: { is_active: false },
+    async verifyFirebaseToken(idToken) {
+        let decodedToken;
+        try {
+            decodedToken = await admin.auth().verifyIdToken(idToken);
+        }
+        catch (err) {
+            throw new common_1.BadRequestException('Invalid or expired Firebase token.');
+        }
+        const phone = decodedToken.phone_number;
+        if (!phone) {
+            throw new common_1.BadRequestException('No phone number associated with this token.');
+        }
+        console.log(`[Firebase Admin] Token verified for ${phone}`);
+        const localPhone = phone.replace(/^\+91/, '');
+        const customer = await this.prisma.customer.findUnique({
+            where: { phone: localPhone },
         });
+        return {
+            verified: true,
+            customer: customer || null,
+            phone: localPhone,
+        };
+    }
+    async register(phone, name) {
+        let customer = await this.prisma.customer.findUnique({ where: { phone } });
+        if (!customer) {
+            customer = await this.prisma.customer.create({
+                data: { phone, name },
+            });
+        }
+        return customer;
     }
 };
-exports.UsersService = UsersService;
-exports.UsersService = UsersService = __decorate([
+exports.CustomersService = CustomersService;
+exports.CustomersService = CustomersService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
-], UsersService);
-//# sourceMappingURL=users.service.js.map
+], CustomersService);
+//# sourceMappingURL=customers.service.js.map

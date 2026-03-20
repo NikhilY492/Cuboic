@@ -25,4 +25,10 @@ export declare class AuthService {
             restaurantId: any;
         };
     };
+    changePassword(userId: string, oldPass: string, newPass: string): Promise<{
+        name: string;
+        id: string;
+        role: import("@prisma/client").$Enums.UserRole;
+        user_id: string;
+    }>;
 }

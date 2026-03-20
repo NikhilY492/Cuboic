@@ -18,7 +18,7 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: process.env.JWT_SECRET ?? 'cuboic-super-secret-key-change-in-prod',
+            secretOrKey: process.env.JWT_SECRET ?? 'thambi-super-secret-key-change-in-prod',
         });
     }
     validate(payload) {

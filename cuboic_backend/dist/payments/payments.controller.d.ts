@@ -9,6 +9,7 @@ export declare class PaymentsController {
             createdAt: Date;
             updatedAt: Date;
             tableId: string;
+            customerId: string | null;
             notes: string | null;
             items: import("@prisma/client/runtime/library").JsonValue;
             status: import("@prisma/client").$Enums.OrderStatus;

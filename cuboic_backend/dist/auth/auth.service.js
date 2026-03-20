@@ -66,7 +66,7 @@ let AuthService = class AuthService {
     login(user) {
         const payload = {
             sub: user.id,
-            userId: user.userId,
+            userId: user.user_id,
             role: user.role,
             restaurantId: user.restaurantId,
         };
@@ -75,11 +75,18 @@ let AuthService = class AuthService {
             user: {
                 id: user.id,
                 name: user.name,
-                userId: user.userId,
+                userId: user.user_id,
                 role: user.role,
                 restaurantId: user.restaurantId,
             },
         };
+    }
+    async changePassword(userId, oldPass, newPass) {
+        const valid = await this.validateUser(userId, oldPass);
+        if (!valid)
+            throw new common_1.UnauthorizedException('Invalid old password');
+        const hash = await bcrypt.hash(newPass, 10);
+        return this.usersService.updatePassword(valid.id, hash);
     }
 };
 exports.AuthService = AuthService;

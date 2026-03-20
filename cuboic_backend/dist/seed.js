@@ -92,7 +92,7 @@ async function seed() {
     console.log('🗑️  Cleared existing data');
     const restaurant = await prisma.restaurant.create({
         data: {
-            name: 'Cuboic Kitchen',
+            name: 'Thambi Kitchen',
             description: 'Robot-delivered dining experience',
             logo_url: '',
             is_active: true,

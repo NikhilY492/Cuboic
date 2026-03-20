@@ -13,4 +13,10 @@ export declare class AuthController {
         };
     };
     me(req: any): any;
+    changePassword(req: any, body: any): Promise<{
+        name: string;
+        id: string;
+        role: import("@prisma/client").$Enums.UserRole;
+        user_id: string;
+    }>;
 }

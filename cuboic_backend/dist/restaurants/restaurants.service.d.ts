@@ -20,7 +20,7 @@ export declare class RestaurantsService {
         updatedAt: Date;
         logo_url: string | null;
     }) | null, null, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
-    findTables(restaurantId: string): import("@prisma/client").Prisma.PrismaPromise<{
+    findTables(restaurantId: string): Promise<{
         restaurantId: string;
         id: string;
         table_number: string;

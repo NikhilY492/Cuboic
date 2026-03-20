@@ -49,6 +49,9 @@ let OrdersController = class OrdersController {
     confirmDelivery(id) {
         return this.ordersService.confirmDelivery(id);
     }
+    markAsPaid(id) {
+        return this.ordersService.markAsPaid(id);
+    }
 };
 exports.OrdersController = OrdersController;
 __decorate([
@@ -116,6 +119,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "confirmDelivery", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner'),
+    (0, common_1.Patch)(':id/pay'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "markAsPaid", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])

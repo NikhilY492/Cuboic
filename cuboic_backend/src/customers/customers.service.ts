@@ -12,12 +12,18 @@ export class CustomersService implements OnModuleInit {
 
     onModuleInit() {
         if (!admin.apps.length) {
+            const config = {
+                project_id: process.env.FIREBASE_PROJECT_ID,
+                client_email: process.env.FIREBASE_CLIENT_EMAIL,
+                private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            };
+
+            if (!config.project_id || !config.client_email || !config.private_key) {
+                console.warn('[Firebase Admin] Warning: Missing one or more Firebase environment variables!');
+            }
+
             admin.initializeApp({
-                credential: admin.credential.cert({
-                    projectId: process.env.FIREBASE_PROJECT_ID,
-                    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-                }),
+                credential: admin.credential.cert(config as any),
             });
             console.log('[Firebase Admin] Initialized successfully.');
         }

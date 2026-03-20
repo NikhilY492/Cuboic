@@ -9,44 +9,29 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RestaurantsService = void 0;
+exports.TablesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
-let RestaurantsService = class RestaurantsService {
+let TablesService = class TablesService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
-    findById(id) {
-        return this.prisma.restaurant.findUnique({ where: { id }, include: { tables: true } });
-    }
-    async findTables(restaurantId) {
-        let tables = await this.prisma.table.findMany({
-            where: { restaurantId },
+    create(restaurantId, table_number) {
+        return this.prisma.table.create({
+            data: { restaurantId, table_number, is_active: true }
         });
-        const hasTakeaway = tables.some(t => t.table_number.toLowerCase() === 'takeaway');
-        if (!hasTakeaway) {
-            const takeawayTable = await this.prisma.table.create({
-                data: {
-                    restaurantId,
-                    table_number: 'Takeaway',
-                    is_active: true
-                }
-            });
-            tables.push(takeawayTable);
-        }
-        return tables;
     }
-    findAll() {
-        return this.prisma.restaurant.findMany();
-    }
-    create(data) {
-        return this.prisma.restaurant.create({ data });
+    updateStatus(id, is_active) {
+        return this.prisma.table.update({
+            where: { id },
+            data: { is_active }
+        });
     }
 };
-exports.RestaurantsService = RestaurantsService;
-exports.RestaurantsService = RestaurantsService = __decorate([
+exports.TablesService = TablesService;
+exports.TablesService = TablesService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
-], RestaurantsService);
-//# sourceMappingURL=restaurants.service.js.map
+], TablesService);
+//# sourceMappingURL=tables.service.js.map
