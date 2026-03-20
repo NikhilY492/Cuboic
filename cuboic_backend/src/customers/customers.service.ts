@@ -12,20 +12,33 @@ export class CustomersService implements OnModuleInit {
 
     onModuleInit() {
         if (!admin.apps.length) {
+            // Robust cleaning for private key from environment variables
+            const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
+            const cleanedKey = rawKey
+                .replace(/"/g, '') // Remove literal quotes
+                .replace(/\\n/g, '\n'); // Convert literal \n to real newlines
+
             const config = {
-                project_id: process.env.FIREBASE_PROJECT_ID,
-                client_email: process.env.FIREBASE_CLIENT_EMAIL,
-                private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+                project_id: process.env.FIREBASE_PROJECT_ID?.replace(/"/g, ''),
+                client_email: process.env.FIREBASE_CLIENT_EMAIL?.replace(/"/g, ''),
+                private_key: cleanedKey,
             };
 
             if (!config.project_id || !config.client_email || !config.private_key) {
                 console.warn('[Firebase Admin] Warning: Missing one or more Firebase environment variables!');
             }
 
-            admin.initializeApp({
-                credential: admin.credential.cert(config as any),
-            });
-            console.log('[Firebase Admin] Initialized successfully.');
+            try {
+                admin.initializeApp({
+                    credential: admin.credential.cert(config as any),
+                });
+                console.log('[Firebase Admin] Initialized successfully.');
+            } catch (err: any) {
+                console.error('[Firebase Admin] Initialization failed:', err.message);
+                // Don't throw here to avoid crashing the whole backend during startup if possible,
+                // but usually NestJS onModuleInit errors are fatal.
+                throw err;
+            }
         }
     }
 
