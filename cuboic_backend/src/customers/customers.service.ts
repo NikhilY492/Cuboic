@@ -1,63 +1,89 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Twilio } from 'twilio';
+import * as https from 'https';
 import * as dotenv from 'dotenv';
 
-// Force load existing or hot-reloaded .env file changes into the process
+// Force load .env on every hot-reload
 dotenv.config();
 
 @Injectable()
 export class CustomersService {
-    private twilioClient: Twilio | null = null;
-    private twilioPhone: string;
-    
+    private msg91AuthKey: string;
+
     // In-memory OTP store: phone -> { otp, expiresAt }
     private otps = new Map<string, { otp: string, expiresAt: number }>();
 
     constructor(private prisma: PrismaService) {
-        // Read directly from process.env and sanitize physical double-quotes
-        const sid = process.env.TWILIO_ACCOUNT_SID?.replace(/"/g, '');
-        const auth = process.env.TWILIO_AUTH_TOKEN?.replace(/"/g, '');
-        this.twilioPhone = process.env.TWILIO_PHONE_NUMBER?.replace(/"/g, '') || '';
-        
-        console.log(`[Twilio Auth Check] Keys found: ${!!sid && !!auth}, Phone found: ${!!this.twilioPhone}`);
-        
-        if (sid && auth && this.twilioPhone) {
-            this.twilioClient = new Twilio(sid, auth);
-            console.log("Twilio initialized successfully on backend!");
+        this.msg91AuthKey = process.env.MSG91_AUTH_KEY?.replace(/"/g, '') || '';
+
+        if (this.msg91AuthKey) {
+            console.log('MSG91 initialized successfully on backend!');
         } else {
-            console.log("Twilio initialization bypassed: Keys missing.");
+            console.log('[MSG91] Auth key not found — falling back to console OTP.');
         }
     }
 
     async sendOtp(phone: string) {
         // Generate a 4-digit OTP
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
-        
-        // Store it for 5 minutes
+
+        // Store it in memory for 5 minutes
         this.otps.set(phone, { otp, expiresAt: Date.now() + 5 * 60 * 1000 });
 
-        if (this.twilioClient && this.twilioPhone) {
-            try {
-                // Twilio strictly requires E.164 format (e.g. +91 for India)
-                let formattedPhone = phone.trim();
-                if (formattedPhone.length === 10 && !formattedPhone.startsWith('+')) {
-                    formattedPhone = '+91' + formattedPhone;
-                }
-
-                await this.twilioClient.messages.create({
-                    body: `Your Thambi verification code is: ${otp}`,
-                    from: this.twilioPhone,
-                    to: formattedPhone
-                });
-            } catch (err: any) {
-                console.error("Twilio error:", err?.message || err);
-                console.log(`[DEVELOPMENT] OTP for ${phone} is ${otp}`);
+        if (this.msg91AuthKey) {
+            // MSG91 needs the number in full format: 91XXXXXXXXXX
+            let formattedPhone = phone.trim().replace(/\D/g, '');
+            if (formattedPhone.length === 10) {
+                formattedPhone = '91' + formattedPhone;
             }
+
+            const payload = JSON.stringify({
+                mobile: formattedPhone,
+                authkey: this.msg91AuthKey,
+                otp,
+            });
+
+            const options = {
+                hostname: 'control.msg91.com',
+                path: '/api/v5/otp',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/JSON',
+                    'authkey': this.msg91AuthKey,
+                    'Content-Length': Buffer.byteLength(payload),
+                },
+            };
+
+            await new Promise<void>((resolve, reject) => {
+                const req = https.request(options, (res) => {
+                    let data = '';
+                    res.on('data', chunk => data += chunk);
+                    res.on('end', () => {
+                        const parsed = JSON.parse(data);
+                        if (parsed.type === 'success') {
+                            console.log(`[MSG91] OTP sent to ${phone}`);
+                            resolve();
+                        } else {
+                            console.error('[MSG91] Error:', data);
+                            reject(new Error(data));
+                        }
+                    });
+                });
+                req.on('error', (err) => {
+                    console.error('[MSG91] Request error:', err.message);
+                    reject(err);
+                });
+                req.write(payload);
+                req.end();
+            }).catch(err => {
+                // Non-fatal: log and fall back to console so sign-in still works during debugging
+                console.error('[MSG91] Failed to send SMS, OTP logged to console:', err?.message);
+                console.log(`[DEVELOPMENT] OTP for ${phone} is ${otp}`);
+            });
         } else {
-            console.log(`[DEVELOPMENT] Twilio not configured. OTP for ${phone} is ${otp}`);
+            console.log(`[DEVELOPMENT] MSG91 not configured. OTP for ${phone} is ${otp}`);
         }
-        
+
         return { success: true, message: 'OTP sent successfully' };
     }
 
@@ -73,15 +99,15 @@ export class CustomersService {
         if (record.otp !== otp) {
             throw new BadRequestException('Invalid OTP');
         }
-        
+
         // Clear OTP
         this.otps.delete(phone);
-        
+
         // Check if customer exists
         const customer = await this.prisma.customer.findUnique({
             where: { phone }
         });
-        
+
         return {
             verified: true,
             customer: customer || null,
@@ -99,3 +125,4 @@ export class CustomersService {
         return customer;
     }
 }
+
