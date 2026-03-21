@@ -207,11 +207,15 @@ export function MenuPage() {
                 setAvailableTables(sortedTables);
             }
 
-            if (tableId && rest.tables) {
-                const tbl = rest.tables.find(t => t.id === tableId);
-                setTableLabel(tbl ? `Table ${tbl.table_number}` : `Table ${tableId.slice(-4).toUpperCase()}`);
-            } else if (tableId) {
-                setTableLabel(`Table ${tableId.slice(-4).toUpperCase()}`);
+            if (tableId) {
+                const tbl = rest.tables ? rest.tables.find(t => t.id === tableId) : undefined;
+                if (tableId === 'takeaway_virtual' || tbl?.table_number.toLowerCase() === 'takeaway') {
+                    setTableLabel('Takeaway');
+                } else if (tbl) {
+                    setTableLabel(`Table ${tbl.table_number}`);
+                } else {
+                    setTableLabel(`Table ${tableId.slice(-4).toUpperCase()}`);
+                }
             }
         });
     }, [restaurantId, tableId]);
@@ -288,6 +292,67 @@ export function MenuPage() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                     Ask your server for the QR code to view the menu.
                 </p>
+            </div>
+        );
+    }
+
+    if (!tableId && !loading && restaurantName) {
+        return (
+            <div className="menu-page" style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg)' }}>
+                <header className="menu-header">
+                    <div className="menu-header__inner">
+                        <div className="menu-header__brand">
+                            <img src="/pic1.png" className="menu-header__logo" alt="Thambi" />
+                            <div>
+                                <div className="menu-header__name">{restaurantName}</div>
+                                <div className="menu-header__sub">Thambi</div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
+                    <div className="fade-up" style={{ width: '100%', maxWidth: '340px', backgroundColor: 'var(--surface)', padding: '32px 24px', borderRadius: '24px', boxShadow: '0 8px 30px rgba(0,0,0,0.04)', border: '1px solid var(--border)' }}>
+                        <div style={{ width: '64px', height: '64px', backgroundColor: 'var(--surface2)', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                            <span style={{ fontSize: '28px' }}>👋</span>
+                        </div>
+                        <h1 style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: '8px', color: 'var(--text)' }}>Welcome!</h1>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '32px', lineHeight: 1.5 }}>
+                            Are you dining in with us or taking your order to go?
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <button 
+                                className="btn btn-primary" 
+                                onClick={() => {
+                                    const takeawayTbl = availableTables.find(t => String(t.table_number).toLowerCase() === 'takeaway');
+                                    const tId = takeawayTbl ? takeawayTbl.id : 'takeaway_virtual';
+                                    setParams(prev => {
+                                        const next = new URLSearchParams(prev);
+                                        next.set('t', tId);
+                                        return next;
+                                    });
+                                }} 
+                                style={{ padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px' }}
+                            >
+                                🥡 Order Takeaway
+                            </button>
+                            <button 
+                                className="btn btn-secondary" 
+                                onClick={() => setTablesOpen(true)} 
+                                style={{ padding: '16px', fontSize: '1.05rem', fontWeight: 600, backgroundColor: 'var(--surface2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '14px' }}
+                            >
+                                🍽 Dine-in (Select Table)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <TableSelectorModal
+                    open={tablesOpen}
+                    onClose={() => setTablesOpen(false)}
+                    tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway')}
+                    currentTableId={tableId}
+                    onSelect={handleTableSelect}
+                />
             </div>
         );
     }
@@ -554,7 +619,7 @@ export function MenuPage() {
             <TableSelectorModal
                 open={tablesOpen}
                 onClose={() => setTablesOpen(false)}
-                tables={availableTables}
+                tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway')}
                 currentTableId={tableId}
                 onSelect={handleTableSelect}
             />

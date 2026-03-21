@@ -25,14 +25,20 @@ const NEXT_STATUS: Record<string, string> = {
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function getTableNum(order: Order): string {
-    let num = '';
     if (order.table?.table_number !== undefined) {
-        num = String(order.table.table_number);
-    } else {
-        // fallback: should rarely happen
-        num = order.tableId.slice(-4);
+        const str = String(order.table.table_number);
+        if (str.toLowerCase() === 'takeaway') return 'Takeaway';
+        return str.startsWith('T') ? str.substring(1) : str;
     }
-    return num.startsWith('T') ? num.substring(1) : num;
+    
+    if (typeof order.tableId === 'string') {
+        const idLower = order.tableId.toLowerCase();
+        if (idLower === 'takeaway' || idLower === 'takeaway_virtual') return 'Takeaway';
+        const str = order.tableId.slice(-4);
+        return str.startsWith('T') ? str.substring(1) : str;
+    }
+    
+    return 'TAKE';
 }
 
 interface TableSummary {
@@ -72,6 +78,8 @@ function buildTableSummaries(orders: Order[], allTables: RestaurantTable[]): Tab
 
     // sort by table number numerically
     summaries.sort((a, b) => {
+        if (a.tableNum.toLowerCase() === 'takeaway') return -1;
+        if (b.tableNum.toLowerCase() === 'takeaway') return 1;
         const na = parseInt(a.tableNum, 10);
         const nb = parseInt(b.tableNum, 10);
         if (!isNaN(na) && !isNaN(nb)) return na - nb;
@@ -128,7 +136,7 @@ function OrderCard({
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <Text style={styles.cardTitle}>Order #{item.id.slice(-5).toUpperCase()}</Text>
                         
-                        {item.table?.table_number?.toLowerCase() === 'takeaway' && (
+                        {(item.table?.table_number?.toLowerCase() === 'takeaway' || item.tableId?.toLowerCase() === 'takeaway' || item.tableId?.toLowerCase() === 'takeaway_virtual') && (
                             <View style={{ backgroundColor: '#fdf4ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#e879f9' }}>
                                 <Text style={{ fontSize: 10, color: '#c026d3', fontWeight: 'bold' }}>TAKEAWAY</Text>
                             </View>

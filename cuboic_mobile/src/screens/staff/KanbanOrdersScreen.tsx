@@ -15,13 +15,20 @@ function getHeaderTextColor(status: string) {
 }
 
 function getTableNum(order: Order): string {
-    let num = '';
     if (order.table?.table_number !== undefined) {
-        num = String(order.table.table_number);
-    } else {
-        num = typeof order.tableId === 'string' ? order.tableId.slice(-4) : 'TAKE';
+        const str = String(order.table.table_number);
+        if (str.toLowerCase() === 'takeaway') return 'Takeaway';
+        return str.startsWith('T') ? str.substring(1) : str;
     }
-    return num.startsWith('T') ? num.substring(1) : num;
+    
+    if (typeof order.tableId === 'string') {
+        const idLower = order.tableId.toLowerCase();
+        if (idLower === 'takeaway' || idLower === 'takeaway_virtual') return 'Takeaway';
+        const str = order.tableId.slice(-4);
+        return str.startsWith('T') ? str.substring(1) : str;
+    }
+    
+    return 'TAKE';
 }
 
 const NEXT_STATUS: Record<string, string> = {
@@ -76,7 +83,9 @@ function KanbanCard({ item, onAdvance }: { item: Order, onAdvance: (o: Order) =>
                             {item.status === 'Pending' ? 'Open' : item.status}
                         </Text>
                     </View>
-                    <Text style={styles.tableText}>Table - {tableNum}</Text>
+                    <Text style={styles.tableText}>
+                        {tableNum.toLowerCase() === 'takeaway' ? 'Takeaway' : `Table - ${tableNum}`}
+                    </Text>
                 </View>
                 
                 {/* Items List */}
