@@ -51,11 +51,13 @@ async function seed() {
     console.log('🔗 Connecting to PostgreSQL...');
 
     // ── Clear existing data ──────────────────────────────────────────
+    await prisma.platformFee.deleteMany({});
     await prisma.robotTelemetry.deleteMany({});
     await prisma.delivery.deleteMany({});
     await prisma.payment.deleteMany({});
     await prisma.order.deleteMany({});
     await prisma.robot.deleteMany({});
+    await prisma.customer.deleteMany({});
     await prisma.menuItem.deleteMany({});
     await prisma.category.deleteMany({});
     await prisma.table.deleteMany({});
