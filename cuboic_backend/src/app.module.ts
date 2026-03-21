@@ -17,6 +17,7 @@ import { HealthModule } from './health/health.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TablesModule } from './tables/tables.module';
 import { CustomersModule } from './customers/customers.module';
+import { PlatformFeesModule } from './platform-fees/platform-fees.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { CustomersModule } from './customers/customers.module';
     ScheduleModule.forRoot(),
     TablesModule,
     CustomersModule,
+    PlatformFeesModule,
   ],
 })
 export class AppModule { }

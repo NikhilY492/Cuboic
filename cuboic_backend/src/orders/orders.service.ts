@@ -5,8 +5,7 @@ import { EventsGateway } from '../events/events.gateway';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '@prisma/client';
-
-const PLATFORM_FEE = 5.00;
+import { PlatformFeesService } from '../platform-fees/platform-fees.service';
 
 @Injectable()
 export class OrdersService {
@@ -15,6 +14,7 @@ export class OrdersService {
     constructor(
         private prisma: PrismaService,
         private readonly eventsGateway: EventsGateway,
+        private readonly platformFeesService: PlatformFeesService,
     ) { }
 
     async create(dto: CreateOrderDto) {
@@ -61,6 +61,10 @@ export class OrdersService {
         });
 
         this.eventsGateway.emitToRestaurant(dto.restaurantId, 'order:new', order);
+
+        // Auto-create platform fee if order total > ₹100
+        await this.platformFeesService.createIfEligible(dto.restaurantId, order.id, total);
+
         return order;
     }
 

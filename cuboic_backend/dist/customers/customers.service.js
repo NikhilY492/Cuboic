@@ -55,14 +55,21 @@ let CustomersService = class CustomersService {
     }
     onModuleInit() {
         if (!admin.apps.length) {
-            admin.initializeApp({
-                credential: admin.credential.cert({
-                    projectId: process.env.FIREBASE_PROJECT_ID,
-                    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-                }),
-            });
-            console.log('[Firebase Admin] Initialized successfully.');
+            try {
+                if (!process.env.FIREBASE_CONFIG) {
+                    throw new Error('FIREBASE_CONFIG is missing in environment variables');
+                }
+                const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+                serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+                admin.initializeApp({
+                    credential: admin.credential.cert(serviceAccount),
+                });
+                console.log('[Firebase Admin] Initialized successfully.');
+            }
+            catch (err) {
+                console.error('[Firebase Admin] Initialization failed:', err.message);
+                throw err;
+            }
         }
     }
     async verifyFirebaseToken(idToken) {
@@ -89,7 +96,9 @@ let CustomersService = class CustomersService {
         };
     }
     async register(phone, name) {
-        let customer = await this.prisma.customer.findUnique({ where: { phone } });
+        let customer = await this.prisma.customer.findUnique({
+            where: { phone },
+        });
         if (!customer) {
             customer = await this.prisma.customer.create({
                 data: { phone, name },
