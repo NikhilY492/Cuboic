@@ -12,18 +12,18 @@ function replaceInDir(dir) {
         } else {
             if (fullPath.match(/\.(tsx|ts|jsx|js|css|html|json)$/)) {
                 let content = fs.readFileSync(fullPath, 'utf8');
-                
+
                 // Keep onrender.com backend URL working if they haven't migrated it
-                const preserveRenderUrl = content.includes('cuboic.onrender.com');
-                
+                const preserveRenderUrl = content.includes('cuboic-884m.onrender.com');
+
                 let newContent = content
                     .replace(/Cuboic/g, 'Thambi')
                     .replace(/cuboic(?!_)/g, 'thambi') // avoid changing cuboic_backend folder references if any
                     .replace(/logo1\.png/g, 'pic1.png')
                     .replace(/logo\.png/g, 'pic1.png');
-                    
+
                 if (preserveRenderUrl) {
-                    newContent = newContent.replace(/thambi\.onrender\.com/g, 'cuboic.onrender.com');
+                    newContent = newContent.replace(/thambi\.onrender\.com/g, 'cuboic-884m.onrender.com');
                 }
 
                 if (content !== newContent) {

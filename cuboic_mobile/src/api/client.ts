@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const BASE_URL = 'https://cuboic.onrender.com';
+const BASE_URL = 'https://cuboic-884m.onrender.com';
 
 const api = axios.create({
     baseURL: BASE_URL,
