@@ -6,33 +6,33 @@ export declare class UsersService {
     constructor(prisma: PrismaService);
     create(dto: CreateUserDto): Promise<{
         id: string;
-        name: string;
+        restaurantId: string | null;
         is_active: boolean;
         createdAt: Date;
         updatedAt: Date;
-        restaurantId: string | null;
-        user_id: string;
+        name: string;
         outletId: string | null;
+        user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
     }>;
     findAll(restaurantId: string): import("@prisma/client").Prisma.PrismaPromise<{
         id: string;
-        name: string;
+        restaurantId: string | null;
         is_active: boolean;
         createdAt: Date;
-        restaurantId: string | null;
+        name: string;
         user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
     }[]>;
     findByUserId(userId: string): Promise<{
         id: string;
-        name: string;
+        restaurantId: string | null;
         is_active: boolean;
         createdAt: Date;
         updatedAt: Date;
-        restaurantId: string | null;
-        user_id: string;
+        name: string;
         outletId: string | null;
+        user_id: string;
         password_hash: string;
         role: import("@prisma/client").$Enums.UserRole;
     } | null>;
@@ -44,20 +44,20 @@ export declare class UsersService {
     }>;
     update(id: string, dto: UpdateUserDto): Promise<{
         id: string;
-        name: string;
         is_active: boolean;
+        name: string;
         user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
     }>;
     remove(id: string): Promise<{
         id: string;
-        name: string;
+        restaurantId: string | null;
         is_active: boolean;
         createdAt: Date;
         updatedAt: Date;
-        restaurantId: string | null;
-        user_id: string;
+        name: string;
         outletId: string | null;
+        user_id: string;
         password_hash: string;
         role: import("@prisma/client").$Enums.UserRole;
     }>;

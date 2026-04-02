@@ -4,11 +4,11 @@ export declare class CategoriesController {
     constructor(categoriesService: CategoriesService);
     findAll(restaurantId: string): import("@prisma/client").Prisma.PrismaPromise<{
         id: string;
-        name: string;
+        restaurantId: string;
         is_active: boolean;
         createdAt: Date;
         updatedAt: Date;
-        restaurantId: string;
+        name: string;
         display_order: number;
     }[]>;
 }

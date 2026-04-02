@@ -8,13 +8,13 @@ export declare class LocalStrategy extends LocalStrategy_base {
     constructor(authService: AuthService);
     validate(userId: string, password: string): Promise<{
         id: string;
-        name: string;
+        restaurantId: string | null;
         is_active: boolean;
         createdAt: Date;
         updatedAt: Date;
-        restaurantId: string | null;
-        user_id: string;
+        name: string;
         outletId: string | null;
+        user_id: string;
         password_hash: string;
         role: import("@prisma/client").$Enums.UserRole;
     }>;

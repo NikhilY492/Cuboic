@@ -80,13 +80,13 @@ export default function ProvisionPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">Admin Phone</label>
+            <label className="block text-sm font-medium text-zinc-400 mb-1">Username / Staff ID</label>
             <input 
-              type="tel" 
+              type="text" 
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full bg-zinc-950 border border-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg px-4 py-2.5 text-white outline-none transition-all placeholder:text-zinc-600"
-              placeholder="+91..."
+              placeholder="e.g. dakshin_owner"
               required
             />
           </div>
