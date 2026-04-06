@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, TextInput, Switch } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, TextInput, Switch, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -17,6 +17,7 @@ export function TablesScreen() {
 
     const [isCreating, setIsCreating] = useState(false);
     const [tableNum, setTableNum] = useState('');
+    const [filter, setFilter] = useState<'all' | 'active' | 'maintenance'>('all');
 
     const load = useCallback(async () => {
         if (!user?.restaurantId) return;
@@ -98,8 +99,27 @@ export function TablesScreen() {
                 </View>
             )}
 
+            <View style={styles.chipScrollContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+                    {(['all', 'active', 'maintenance'] as const).map(f => {
+                        const isActive = filter === f;
+                        return (
+                            <TouchableOpacity
+                                key={f}
+                                style={[styles.chip, { backgroundColor: isActive ? colors.accent : colors.surface, borderColor: colors.border }]}
+                                onPress={() => setFilter(f)}
+                            >
+                                <Text style={[styles.chipText, { color: isActive ? '#000' : colors.text }]}>
+                                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </ScrollView>
+            </View>
+
             <FlatList
-                data={tables}
+                data={tables.filter(t => filter === 'all' ? true : filter === 'active' ? t.is_active : !t.is_active)}
                 keyExtractor={item => item.id}
                 contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}
                 refreshing={refreshing}
@@ -143,6 +163,10 @@ const styles = StyleSheet.create({
     label: { fontSize: 12, fontWeight: '600', marginBottom: 8 },
     input: {
         ...S.shadow, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, fontSize: 16 },
+    chipScrollContainer: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
+    chipRow: { gap: 8, paddingHorizontal: 16 },
+    chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
+    chipText: { fontSize: 13, fontWeight: '600' },
     card: {
         ...S.shadow, borderRadius: 12, padding: 16, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     tableName: {

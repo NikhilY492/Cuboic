@@ -64,6 +64,7 @@ export default function OrdersPage() {
   const [tables, setTables]           = useState<Table[]>([])
   const [orders, setOrders]           = useState<Order[]>([])
   const [selectedTable, setSelectedTable] = useState<Table | null>(null)
+  const [filter, setFilter]           = useState<'all' | 'free' | 'occupied'>('all')
   const [loading, setLoading]         = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [lastRefresh, setLastRefresh] = useState(new Date())
@@ -199,6 +200,21 @@ export default function OrdersPage() {
                 {readyCount} Ready
               </div>
             </div>
+            
+            <div className="flex items-center bg-zinc-800 rounded-lg p-1">
+              {(['all', 'free', 'occupied'] as const).map(f => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    filter === f ? 'bg-zinc-600 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
+            </div>
+
             <button onClick={load} className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors text-zinc-400 hover:text-white">
               <RefreshCw size={16} />
             </button>
@@ -223,7 +239,15 @@ export default function OrdersPage() {
             </div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {tables.map(table => {
+              {tables
+                .filter(table => {
+                  const activeOrder = activeOrderByTableId.get(table.id)
+                  const isOccupied = !!activeOrder
+                  if (filter === 'free') return !isOccupied
+                  if (filter === 'occupied') return isOccupied
+                  return true
+                })
+                .map(table => {
                 const activeOrder = activeOrderByTableId.get(table.id)
                 const isSelected  = selectedTable?.id === table.id
                 const isReady     = activeOrder?.status === 'Ready'
