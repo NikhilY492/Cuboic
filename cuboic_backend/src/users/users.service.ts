@@ -21,6 +21,7 @@ export class UsersService {
                 password_hash: passwordHash,
                 role: (dto.role as UserRole) ?? 'Staff',
                 restaurantId: dto.restaurantId ?? null,
+                dashboard_config: dto.dashboard_config ?? ["Pending", "Preparing", "Completed", "Robots"],
             },
         });
         return user;
@@ -32,6 +33,7 @@ export class UsersService {
             select: {
                 id: true, name: true, user_id: true, role: true,
                 is_active: true, restaurantId: true, createdAt: true,
+                dashboard_config: true, email: true, phone: true,
             },
         });
     }
@@ -44,7 +46,15 @@ export class UsersService {
         return this.prisma.user.update({
             where: { id },
             data: { password_hash: hash },
-            select: { id: true, name: true, user_id: true, role: true }
+            select: { id: true, name: true, user_id: true, role: true, dashboard_config: true, email: true, phone: true }
+        });
+    }
+
+    async updateProfile(id: string, dto: { email?: string; phone?: string }) {
+        return this.prisma.user.update({
+            where: { id },
+            data: { email: dto.email, phone: dto.phone },
+            select: { id: true, name: true, user_id: true, role: true, restaurantId: true, email: true, phone: true, dashboard_config: true },
         });
     }
 
@@ -58,7 +68,7 @@ export class UsersService {
         return this.prisma.user.update({
             where: { id },
             data,
-            select: { id: true, name: true, user_id: true, role: true, is_active: true }
+            select: { id: true, name: true, user_id: true, role: true, is_active: true, dashboard_config: true }
         });
     }
 

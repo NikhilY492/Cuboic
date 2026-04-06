@@ -33,6 +33,8 @@ export class AuthService {
                 userId: user.user_id,
                 role: user.role,
                 restaurantId: user.restaurantId,
+                email: user.email ?? null,
+                phone: user.phone ?? null,
             },
         };
     }

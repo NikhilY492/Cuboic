@@ -9,8 +9,11 @@ export interface AuthUser {
     id: string;
     name: string;
     userid: string;
-    role: 'Owner' | 'Staff' | 'Admin';
+    role: string;
     restaurantId: string;
+    email?: string | null;
+    phone?: string | null;
+    dashboard_config?: string[];
     // legacy alias used in some screens
     restaurant_id: string;
 }
@@ -31,3 +34,6 @@ export const login = (payload: LoginPayload) =>
 
 export const changePassword = (payload: any) =>
     api.patch('/auth/change-password', payload).then(r => r.data);
+
+export const updateProfile = (payload: { email?: string; phone?: string }) =>
+    api.patch('/auth/profile', payload).then(r => r.data);

@@ -21,7 +21,11 @@ export function StaffScreen() {
     const [name, setName] = useState('');
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState<'Owner' | 'Staff'>('Staff');
+    const [role, setRole] = useState<'Owner' | 'Manager' | 'Cashier' | 'Waiter' | 'Kitchen' | 'Staff'>('Staff');
+    const [dashboardConfig, setDashboardConfig] = useState<string[]>(['Pending', 'Preparing', 'Completed', 'Robots']);
+
+    const ALL_ROLES = ['Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff'];
+    const DASHBOARD_WIDGETS = ['Revenue', 'Orders', 'Pending', 'Preparing', 'Completed', 'Robots'];
 
     const load = useCallback(async () => {
         if (!user?.restaurantId) return;
@@ -45,6 +49,7 @@ export function StaffScreen() {
         setUserId('');
         setPassword('');
         setRole('Staff');
+        setDashboardConfig(['Pending', 'Preparing', 'Completed', 'Robots']);
         setIsEditing(true);
     };
 
@@ -53,7 +58,8 @@ export function StaffScreen() {
         setName(u.name);
         setUserId(u.user_id);
         setPassword('');
-        setRole(u.role as 'Owner' | 'Staff');
+        setRole(u.role as any);
+        setDashboardConfig(u.dashboard_config || ['Pending', 'Preparing', 'Completed', 'Robots']);
         setIsEditing(true);
     };
 
@@ -68,6 +74,7 @@ export function StaffScreen() {
                 await usersApi.update(selectedUser.id, {
                     name,
                     role,
+                    dashboard_config: dashboardConfig,
                     ...(password ? { password } : {})
                 });
                 Alert.alert('Success', 'Staff updated');
@@ -81,6 +88,7 @@ export function StaffScreen() {
                     userId,
                     password,
                     role,
+                    dashboard_config: dashboardConfig,
                     restaurantId: user?.restaurantId
                 });
                 Alert.alert('Success', 'Staff created');
@@ -142,8 +150,8 @@ export function StaffScreen() {
                     <TextInput style={[styles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.text }]} value={password} onChangeText={setPassword} secureTextEntry placeholder="***" placeholderTextColor={colors.textDim} />
 
                     <Text style={[styles.label, { color: colors.textMuted }]}>Role</Text>
-                    <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12, marginTop: 4 }}>
-                        {['Staff', 'Owner'].map(r => (
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12, marginTop: 4 }}>
+                        {ALL_ROLES.map(r => (
                             <TouchableOpacity 
                                 key={r} 
                                 style={[styles.roleBtn, { backgroundColor: colors.surface2, borderColor: colors.border }, role === r && { backgroundColor: colors.accent, borderColor: colors.accent }]}
@@ -152,6 +160,26 @@ export function StaffScreen() {
                                 <Text style={[styles.roleBtnText, { color: colors.textMuted }, role === r && { color: '#000' }]}>{r}</Text>
                             </TouchableOpacity>
                         ))}
+                    </View>
+
+                    <Text style={[styles.label, { color: colors.textMuted }]}>Dashboard Visibility Widgets</Text>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16, marginTop: 4 }}>
+                        {DASHBOARD_WIDGETS.map(w => {
+                            const selected = dashboardConfig.includes(w);
+                            return (
+                                <TouchableOpacity 
+                                    key={w} 
+                                    style={[styles.roleBtn, { backgroundColor: colors.surface2, borderColor: colors.border }, selected && { backgroundColor: colors.green + '15', borderColor: colors.green + '55' }]}
+                                    onPress={() => {
+                                        if (selected) setDashboardConfig(p => p.filter(x => x !== w));
+                                        else setDashboardConfig(p => [...p, w]);
+                                    }}
+                                >
+                                    <Feather name={selected ? "check-square" : "square"} size={14} color={selected ? colors.green : colors.textMuted} style={{ marginRight: 6 }} />
+                                    <Text style={[styles.roleBtnText, { color: colors.textMuted }, selected && { color: colors.text }]}>{w}</Text>
+                                </TouchableOpacity>
+                            )
+                        })}
                     </View>
 
                     <TouchableOpacity style={[S.btnPrimary, { marginTop: 16, backgroundColor: colors.accent }]} onPress={handleSave}>
@@ -235,8 +263,8 @@ const styles = StyleSheet.create({
     },
     roleBtn: {
         ...S.shadow,
-        flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 8,
-        borderWidth: 1,
+        paddingHorizontal: 12, paddingVertical: 10, alignItems: 'center', borderRadius: 8,
+        borderWidth: 1, flexDirection: 'row', justifyContent: 'center'
     },
     roleBtnText: { fontWeight: '600' },
     deactivateBtn: {

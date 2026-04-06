@@ -102,7 +102,7 @@ export default function InventoryPage() {
   }
 
   return (
-    <div className="flex h-full bg-zinc-950 text-white relative">
+    <div className="flex h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white relative transition-colors duration-300">
       
       {/* LEFT PANE: Inventory List */}
       <div className="flex-1 flex flex-col pt-6 px-8 h-full overflow-hidden">
@@ -114,9 +114,9 @@ export default function InventoryPage() {
             <p className="text-zinc-400 text-sm mt-1">Real-time stock levels & procurement tracking</p>
           </div>
           <div className="flex gap-4">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-3">
-              <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider block">Total Capital Value</span>
-              <span className="text-xl font-bold text-white">₹{totalValue.toLocaleString()}</span>
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-3 transition-colors duration-300">
+              <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block">Total Capital Value</span>
+              <span className="text-xl font-bold text-zinc-900 dark:text-white">₹{totalValue.toLocaleString()}</span>
             </div>
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-5 py-3 text-red-500">
               <span className="text-red-500/80 text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
@@ -139,21 +139,21 @@ export default function InventoryPage() {
                   className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer ${
                     isSelected 
                       ? 'border-accent bg-accent/5 shadow-[0_0_20px_rgba(101,163,13,0.1)]' 
-                      : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-800/80'
+                      : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/80'
                   }`}
                 >
                   <div className="flex items-center gap-4 w-1/3">
                     <div className={`w-3 h-3 rounded-full ${isLowStock ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : 'bg-emerald-500'}`} />
                     <div>
-                      <h3 className="font-semibold text-zinc-100">{item.name}</h3>
+                      <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{item.name}</h3>
                       <p className="text-xs text-zinc-500">{item.category} • ₹{item.costPerUnit}/{item.unit}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-6 w-1/3 justify-end">
                     <div className="text-right">
-                      <div className="text-sm font-medium text-zinc-300">Stock Available</div>
-                      <div className={`text-xl font-bold ${isLowStock ? 'text-red-400' : 'text-white'}`}>
+                      <div className="text-sm font-medium text-zinc-600 dark:text-zinc-300">Stock Available</div>
+                      <div className={`text-xl font-bold ${isLowStock ? 'text-red-500 dark:text-red-400' : 'text-zinc-900 dark:text-white'}`}>
                         {item.currentStock} <span className="text-sm font-medium text-zinc-500">{item.unit}</span>
                       </div>
                     </div>
@@ -167,24 +167,24 @@ export default function InventoryPage() {
 
       {/* RIGHT PANE: Action Center */}
       {selectedItem && (
-        <div className="w-96 bg-zinc-900 border-l border-zinc-800 p-6 flex flex-col shadow-2xl relative z-10 animate-in slide-in-from-right duration-200">
+        <div className="w-96 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 p-6 flex flex-col shadow-2xl relative z-10 animate-in slide-in-from-right duration-200 transition-colors">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-bold text-white">Item Management</h2>
-            <button onClick={() => setSelectedItem(null)} className="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center transition-colors">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Item Management</h2>
+            <button onClick={() => setSelectedItem(null)} className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 flex items-center justify-center transition-colors">
               ✕
             </button>
           </div>
 
-          <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 mb-8">
+          <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 mb-8 transition-colors duration-300">
             <h3 className="text-lg font-bold text-accent mb-1">{selectedItem.name}</h3>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
                 <span className="text-xs text-zinc-500 block mb-1">Current Stock</span>
-                <span className="text-xl font-bold text-white">{selectedItem.currentStock}{selectedItem.unit}</span>
+                <span className="text-xl font-bold text-zinc-900 dark:text-white">{selectedItem.currentStock}{selectedItem.unit}</span>
               </div>
               <div>
                 <span className="text-xs text-zinc-500 block mb-1">Reorder Level</span>
-                <span className="text-lg font-medium text-zinc-300">{selectedItem.reorderLevel}{selectedItem.unit}</span>
+                <span className="text-lg font-medium text-zinc-600 dark:text-zinc-300">{selectedItem.reorderLevel}{selectedItem.unit}</span>
               </div>
             </div>
           </div>
@@ -200,7 +200,7 @@ export default function InventoryPage() {
             
             <button 
               onClick={() => setAdjustModalOpen(true)}
-              className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
               Manual Adjustment

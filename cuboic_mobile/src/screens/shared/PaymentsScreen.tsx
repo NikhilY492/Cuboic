@@ -309,8 +309,7 @@ const styles = StyleSheet.create({
         gap: 10,
         marginBottom: 4,
     },
-    thambiHeader: {
-        ...S.shadow, flexDirection: 'row', alignItems: 'center', gap: 8 },
+    thambiHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     thambiTitle: { fontSize: 15, fontWeight: '800' },
     thambiSubtitle: { fontSize: 12, marginTop: -4 },
     thambiKpiRow: { flexDirection: 'row', gap: 10 },
@@ -332,8 +331,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         borderWidth: 1, padding: 12,
     },
-    feeCardPaid: {
-        ...S.shadow, opacity: 0.55 },
+    feeCardPaid: { opacity: 0.55 },
     feeRow: { flexDirection: 'row', alignItems: 'center' },
     feeOrderId: { fontSize: 13, fontWeight: '700' },
     feeTime: { fontSize: 11, marginTop: 1 },

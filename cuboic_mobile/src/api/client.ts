@@ -5,7 +5,7 @@ const BASE_URL = 'https://cuboic-884m.onrender.com';
 
 const api = axios.create({
     baseURL: BASE_URL,
-    timeout: 15_000,
+    timeout: 40_000,
 });
 
 // Attach JWT token to every request

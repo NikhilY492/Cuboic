@@ -212,7 +212,7 @@ function OrderCard({
                     )}
                     {!['Delivered', 'Cancelled', 'Assigned'].includes(item.status) && (
                         <TouchableOpacity
-                            style={[styles.btnCancel, { paddingHorizontal: 10, justifyContent: 'center', backgroundColor: colors.red + '15', borderColor: colors.red }]}
+                            style={[styles.btnCancel, { paddingHorizontal: 10, justifyContent: 'center', backgroundColor: colors.red + '15', borderColor: colors.red + '55' }]}
                             onPress={() => onCancel(item)}
                             activeOpacity={0.8}
                         >
@@ -542,24 +542,20 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     tableDot: {
-        ...S.shadow,
         width: 10,
         height: 10,
         borderRadius: 5,
         marginBottom: 2,
     },
-    tableNum: {
-        ...S.shadow, fontSize: 22, fontWeight: '800' },
-    tableOrderCount: {
-        ...S.shadow, fontSize: 12, fontWeight: '600' },
-    tableIdle: {
-        ...S.shadow, fontSize: 12, fontWeight: '500' },
+    tableNum: { fontSize: 22, fontWeight: '800' },
+    tableOrderCount: { fontSize: 12, fontWeight: '600' },
+    tableIdle: { fontSize: 12, fontWeight: '500' },
 
     // filter tabs
     tabsContainer: {
         ...S.shadow, borderBottomWidth: 1, maxHeight: 80 },
     tabsContent: {
-        ...S.shadow, paddingHorizontal: 10, paddingVertical: 20, flexDirection: 'row', alignItems: 'center' },
+        paddingHorizontal: 10, paddingVertical: 20, flexDirection: 'row', alignItems: 'center' },
     tab: {
         ...S.shadow,
         paddingHorizontal: 14,
@@ -581,11 +577,9 @@ const styles = StyleSheet.create({
         padding: 14,
         gap: 10,
     },
-    cardHeader: {
-        ...S.shadow, flexDirection: 'row', alignItems: 'flex-start' },
+    cardHeader: { flexDirection: 'row', alignItems: 'flex-start' },
     cardTitle: { fontSize: 16, fontWeight: '700' },
-    cardTime: {
-        ...S.shadow, fontSize: 12, marginTop: 2 },
+    cardTime: { fontSize: 12, marginTop: 2 },
     itemsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
     chip: {
         borderRadius: 8,
@@ -602,8 +596,7 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     notesText: { fontSize: 13, flex: 1 },
-    cardFooter: {
-        ...S.shadow, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 },
+    cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 },
     total: { fontSize: 16, fontWeight: '700' },
     actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end', flex: 1 },
     btnAdvance: {

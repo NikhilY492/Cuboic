@@ -161,8 +161,8 @@ export default function OrdersPage() {
   // ── Render ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center bg-zinc-950">
-        <div className="flex flex-col items-center gap-4 text-zinc-400">
+      <div className="h-full flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
+        <div className="flex flex-col items-center gap-4 text-zinc-500 dark:text-zinc-400">
           <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
           <p className="text-sm font-medium">Loading floor plan…</p>
         </div>
@@ -171,13 +171,13 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="flex h-full bg-zinc-950 text-white overflow-hidden">
+    <div className="flex h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white overflow-hidden transition-colors duration-300">
 
       {/* ── LEFT: Table Grid ───────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* Header */}
-        <div className="px-6 py-4 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between flex-shrink-0">
+        <div className="px-6 py-4 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between flex-shrink-0 transition-colors duration-300">
           <div>
             <h1 className="text-xl font-bold tracking-tight">Live Floor Plan</h1>
             <p className="text-xs text-zinc-500 mt-0.5">
@@ -187,27 +187,27 @@ export default function OrdersPage() {
           <div className="flex items-center gap-6">
             {/* Quick-stat pills */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 bg-zinc-800 px-3 py-1.5 rounded-full text-xs font-medium">
+              <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full text-xs font-medium text-zinc-700 dark:text-zinc-300 transition-colors duration-300">
                 <span className="w-2 h-2 rounded-full bg-accent"></span>
                 {occupiedCount} Occupied
               </div>
-              <div className="flex items-center gap-1.5 bg-zinc-800 px-3 py-1.5 rounded-full text-xs font-medium text-amber-400">
+              <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full text-xs font-medium text-amber-600 dark:text-amber-400 transition-colors duration-300">
                 <Clock size={12} />
                 {pendingCount} Pending
               </div>
-              <div className="flex items-center gap-1.5 bg-zinc-800 px-3 py-1.5 rounded-full text-xs font-medium text-green-400">
+              <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full text-xs font-medium text-green-600 dark:text-green-400 transition-colors duration-300">
                 <CheckCircle size={12} />
                 {readyCount} Ready
               </div>
             </div>
             
-            <div className="flex items-center bg-zinc-800 rounded-lg p-1">
+            <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1 transition-colors duration-300">
               {(['all', 'free', 'occupied'] as const).map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    filter === f ? 'bg-zinc-600 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
+                    filter === f ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                   }`}
                 >
                   {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -215,16 +215,16 @@ export default function OrdersPage() {
               ))}
             </div>
 
-            <button onClick={load} className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors text-zinc-400 hover:text-white">
+            <button onClick={load} className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
               <RefreshCw size={16} />
             </button>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="px-6 py-2 bg-zinc-950 border-b border-zinc-800/50 flex items-center gap-6 text-xs text-zinc-500 flex-shrink-0">
+        <div className="px-6 py-2 bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800/50 flex items-center gap-6 text-xs text-zinc-500 flex-shrink-0 transition-colors duration-300">
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-accent bg-accent/10 inline-block"></span> Occupied</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-zinc-700 bg-zinc-900 inline-block"></span> Free</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 inline-block"></span> Free</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-green-500 bg-green-500/10 inline-block"></span> Order Ready</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-amber-500 bg-amber-500/10 inline-block"></span> Pending</span>
         </div>
@@ -254,10 +254,10 @@ export default function OrdersPage() {
                 const isPending   = activeOrder?.status === 'Pending'
                 const isOccupied  = !!activeOrder
 
-                let borderClass = 'border-zinc-700 hover:border-zinc-500'
-                let bgClass     = 'bg-zinc-900 hover:bg-zinc-800'
-                let dotColor    = 'bg-zinc-600'
-                let labelColor  = 'text-zinc-400'
+                let borderClass = 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500'
+                let bgClass     = 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                let dotColor    = 'bg-zinc-200 dark:bg-zinc-600'
+                let labelColor  = 'text-zinc-500 dark:text-zinc-400'
 
                 if (isOccupied) {
                   if (isReady) {
@@ -279,7 +279,7 @@ export default function OrdersPage() {
                 }
 
                 if (isSelected) {
-                  borderClass = borderClass.replace('hover:', '') + ' ring-2 ring-white/20'
+                  borderClass = borderClass.replace('hover:', '') + ' ring-2 ring-zinc-900/20 dark:ring-white/20'
                 }
 
                 return (
@@ -289,7 +289,7 @@ export default function OrdersPage() {
                     className={`relative flex flex-col items-center justify-center aspect-square rounded-2xl border-2 transition-all cursor-pointer ${borderClass} ${bgClass}`}
                   >
                     <div className={`w-2.5 h-2.5 rounded-full mb-2 ${dotColor}`} />
-                    <span className="text-lg font-bold text-white">{table.table_number}</span>
+                    <span className="text-lg font-bold text-zinc-900 dark:text-white">{table.table_number}</span>
                     {isOccupied && (
                       <>
                         <span className={`text-[10px] font-semibold ${labelColor} mt-1`}>
@@ -301,10 +301,10 @@ export default function OrdersPage() {
                       </>
                     )}
                     {!isOccupied && (
-                      <span className="text-[10px] text-zinc-600 mt-1">Free</span>
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mt-1">Free</span>
                     )}
                     {isSelected && (
-                      <div className="absolute -top-1.5 -right-1.5 bg-white text-zinc-950 rounded-full">
+                      <div className="absolute -top-1.5 -right-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 rounded-full">
                         <ChevronRight size={14} />
                       </div>
                     )}
@@ -318,9 +318,9 @@ export default function OrdersPage() {
 
       {/* ── RIGHT: Inspector Panel (ONLY RENDER IF SELECTED) ───────────────── */}
       {selectedTable && (
-        <div className="w-96 flex flex-col border-l border-zinc-800 bg-zinc-900 animate-in slide-in-from-right duration-300">
+        <div className="w-96 flex flex-col border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 animate-in slide-in-from-right duration-300 transition-colors">
           {/* Panel Header */}
-          <div className="p-5 border-b border-zinc-800 flex items-start justify-between flex-shrink-0">
+          <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-start justify-between flex-shrink-0">
             <div>
               <h2 className="text-xl font-bold">Table {selectedTable.table_number}</h2>
               <p className="text-xs text-zinc-500 mt-0.5">
@@ -329,7 +329,7 @@ export default function OrdersPage() {
             </div>
             <button
               onClick={() => setSelectedTable(null)}
-              className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 transition-colors"
+              className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 transition-colors"
             >
               <XCircle size={18} />
             </button>
@@ -367,12 +367,12 @@ export default function OrdersPage() {
                 <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-3">Items</p>
                 <div className="space-y-2">
                   {selectedOrder.items.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between bg-zinc-950 rounded-xl px-4 py-3 border border-zinc-800">
+                    <div key={i} className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-950 rounded-xl px-4 py-3 border border-zinc-200 dark:border-zinc-800">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-zinc-100 truncate">{item.name}</p>
+                        <p className="font-medium text-sm text-zinc-900 dark:text-zinc-100 truncate">{item.name}</p>
                         <p className="text-xs text-zinc-500 mt-0.5">₹{item.unit_price} × {item.quantity}</p>
                       </div>
-                      <p className="font-semibold text-sm text-white ml-4">₹{(item.unit_price * item.quantity).toFixed(0)}</p>
+                      <p className="font-semibold text-sm text-zinc-900 dark:text-white ml-4">₹{(item.unit_price * item.quantity).toFixed(0)}</p>
                     </div>
                   ))}
                 </div>
@@ -386,17 +386,17 @@ export default function OrdersPage() {
               </div>
 
               {/* Totals & Actions */}
-              <div className="p-5 border-t border-zinc-800 flex-shrink-0 space-y-4">
+              <div className="p-5 border-t border-zinc-200 dark:border-zinc-800 flex-shrink-0 space-y-4">
                 <div className="space-y-1.5">
-                  <div className="flex justify-between text-sm text-zinc-400">
+                  <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
                     <span>Subtotal</span>
                     <span>₹{selectedOrder.subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-zinc-400">
+                  <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
                     <span>Tax</span>
                     <span>₹{selectedOrder.tax.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between font-bold text-white pt-1.5 border-t border-zinc-800 border-dashed">
+                  <div className="flex justify-between font-bold text-zinc-900 dark:text-white pt-1.5 border-t border-zinc-200 dark:border-zinc-800 border-dashed">
                     <span>Total</span>
                     <span>₹{selectedOrder.total.toFixed(2)}</span>
                   </div>

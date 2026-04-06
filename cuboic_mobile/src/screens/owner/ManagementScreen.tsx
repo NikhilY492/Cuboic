@@ -54,7 +54,7 @@ export function ManagementScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     body: { padding: 16, paddingTop: 60 },
     header: {
-        ...S.shadow, marginBottom: 32, paddingHorizontal: 4 },
+        marginBottom: 32, paddingHorizontal: 4 },
     title: { fontSize: 28, fontWeight: '800' },
     subtitle: { fontSize: 15, marginTop: 4 },
     grid: { gap: 12 },
@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
 
     },
     iconContainer: {
-        ...S.shadow,
         width: 48,
         height: 48,
         borderRadius: 14,
@@ -81,8 +80,8 @@ const styles = StyleSheet.create({
         marginRight: 16,
     },
     cardInfo: {
-        ...S.shadow, flex: 1 },
+        flex: 1 },
     cardText: { fontSize: 17, fontWeight: '700' },
     cardDesc: {
-        ...S.shadow, fontSize: 13, marginTop: 2 },
+        fontSize: 13, marginTop: 2 },
 });

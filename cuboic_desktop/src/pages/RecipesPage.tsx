@@ -117,11 +117,11 @@ export default function RecipesPage() {
   }
 
   return (
-    <div className="flex h-full bg-zinc-950 text-white p-8 overflow-hidden gap-8">
+    <div className="flex h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white p-8 overflow-hidden gap-8 transition-colors duration-300">
       
       {/* Left: Menu Item Selector */}
-      <div className="w-1/3 flex flex-col bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
-        <div className="p-4 border-b border-zinc-800 bg-zinc-950/50">
+      <div className="w-1/3 flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xl transition-colors duration-300">
+        <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950/50">
           <h2 className="text-lg font-bold">Menu Items</h2>
           <p className="text-zinc-500 text-sm">Select an item to configure its recipe</p>
         </div>
@@ -134,7 +134,7 @@ export default function RecipesPage() {
               className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
                 selectedMenuId === item.id
                   ? 'bg-accent text-white shadow-md'
-                  : 'bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
+                  : 'bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700'
               }`}
             >
               {item.name}
@@ -144,11 +144,11 @@ export default function RecipesPage() {
       </div>
 
       {/* Right: Recipe Builder */}
-      <div className="w-2/3 flex flex-col bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl relative z-10">
-        <div className="p-6 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
+      <div className="w-2/3 flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xl relative z-10 transition-colors duration-300">
+        <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-900">
           <div>
             <h2 className="text-2xl font-bold text-accent">{activeMenuItem?.name} Recipe</h2>
-            <p className="text-zinc-400 text-sm mt-1">These ingredients will automatically deduct from inventory when ordered.</p>
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">These ingredients will automatically deduct from inventory when ordered.</p>
           </div>
           <button 
             onClick={handleSaveRecipe}
@@ -172,13 +172,13 @@ export default function RecipesPage() {
               {/* Ingredients Section */}
               <section>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-zinc-200">Ingredients (BOM)</h3>
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-200">Ingredients (BOM)</h3>
                   <select 
                     onChange={(e) => {
                       handleAddIngredient(e.target.value)
                       e.target.value = "" // reset
                     }}
-                    className="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-accent"
+                    className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-accent text-zinc-900 dark:text-white transition-colors duration-300"
                   >
                     <option value="">+ Add Ingredient...</option>
                     {inventoryItems.map(inv => (
@@ -187,24 +187,24 @@ export default function RecipesPage() {
                   </select>
                 </div>
 
-                <div className="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden">
+                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden transition-colors duration-300">
                   <table className="w-full text-left">
-                    <thead className="bg-zinc-900 border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
+                    <thead className="bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
                       <tr>
                         <th className="px-6 py-4 font-medium">Inventory Item</th>
                         <th className="px-6 py-4 font-medium">Quantity Deducted</th>
                         <th className="px-6 py-4 font-medium w-16"></th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-800">
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                       {ingredients.length === 0 ? (
                         <tr>
                           <td colSpan={3} className="px-6 py-8 text-center text-zinc-500">No ingredients added yet.</td>
                         </tr>
                       ) : (
                         ingredients.map(ing => (
-                          <tr key={ing.inventoryItemId} className="hover:bg-zinc-900/50 transition-colors">
-                            <td className="px-6 py-4 font-medium text-white">
+                          <tr key={ing.inventoryItemId} className="hover:bg-zinc-100 dark:hover:bg-zinc-900/50 transition-colors">
+                            <td className="px-6 py-4 font-medium text-zinc-900 dark:text-white">
                               {ing.name}
                             </td>
                             <td className="px-6 py-4">
@@ -214,7 +214,7 @@ export default function RecipesPage() {
                                   step="0.001"
                                   value={ing.quantity}
                                   onChange={(e) => handleUpdateIngredient(ing.inventoryItemId, parseFloat(e.target.value))}
-                                  className="bg-zinc-900 border border-zinc-700 rounded-md px-3 py-1.5 w-24 text-white outline-none focus:border-accent focus:ring-1 focus:ring-accent" 
+                                  className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 py-1.5 w-24 text-zinc-900 dark:text-white outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors duration-300" 
                                 />
                                 <span className="text-zinc-500 text-sm font-medium">{ing.unit}</span>
                               </div>
@@ -222,7 +222,7 @@ export default function RecipesPage() {
                             <td className="px-6 py-4 text-right">
                               <button 
                                 onClick={() => handleRemoveIngredient(ing.inventoryItemId)}
-                                className="text-zinc-500 hover:text-red-400 p-2 rounded-lg hover:bg-zinc-800 transition-colors"
+                                className="text-zinc-500 hover:text-red-500 dark:hover:text-red-400 p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
                               >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -239,9 +239,9 @@ export default function RecipesPage() {
 
               {/* Instructions Section */}
               <section>
-                <h3 className="text-lg font-bold text-zinc-200 mb-4">Preparation Instructions (Optional)</h3>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-200 mb-4">Preparation Instructions (Optional)</h3>
                 <textarea
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white placeholder:text-zinc-600 outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none h-32"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none h-32 transition-colors duration-300"
                   placeholder="e.g. Heat oil in pan. Add ingredients..."
                   value={instructions}
                   onChange={(e) => setInstructions(e.target.value)}

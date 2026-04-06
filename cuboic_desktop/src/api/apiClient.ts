@@ -24,7 +24,7 @@ apiClient.interceptors.request.use(async (config) => {
     } else {
       // Dev mode: Fetch from localStorage
       const token = localStorage.getItem('token')
-      const outletId = localStorage.getItem('outletId')
+      // const outletId = localStorage.getItem('outletId')
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
         /*

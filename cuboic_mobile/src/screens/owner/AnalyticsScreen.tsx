@@ -17,11 +17,11 @@ const screenWidth = Dimensions.get('window').width;
 type Timeframe = 'today' | '7d' | '30d' | '3m' | 'custom';
 
 const CHIPS: { label: string; value: Timeframe; subLabel: string }[] = [
-    { label: 'Today',    value: 'today',  subLabel: 'Today' },
-    { label: '7 Days',   value: '7d',     subLabel: 'Last 7 Days' },
-    { label: '30 Days',  value: '30d',    subLabel: 'Last 30 Days' },
-    { label: '3 Months', value: '3m',     subLabel: 'Last 3 Months' },
-    { label: 'Custom',   value: 'custom', subLabel: 'Custom Range' },
+    { label: 'Today', value: 'today', subLabel: 'Today' },
+    { label: '7 Days', value: '7d', subLabel: 'Last 7 Days' },
+    { label: '30 Days', value: '30d', subLabel: 'Last 30 Days' },
+    { label: '3 Months', value: '3m', subLabel: 'Last 3 Months' },
+    { label: 'Custom', value: 'custom', subLabel: 'Custom Range' },
 ];
 
 /**
@@ -37,22 +37,30 @@ function getDateRange(tf: Timeframe): { startDate: string; endDate: string } {
     const today = new Date();
     const endDate = localDate(today);
 
+    const tomorrowDate = new Date(today);
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+
+    const tomorrow = localDate(tomorrowDate);
+
     const sub = (days: number) => {
         const d = new Date(today);
         d.setDate(d.getDate() - days);
         return localDate(d);
     };
-
     switch (tf) {
-        case 'today':  return { startDate: endDate, endDate };
-        case '7d':     return { startDate: sub(7),  endDate };
-        case '30d':    return { startDate: sub(30), endDate };
+        case 'today':
+            return { startDate: endDate, endDate: tomorrow };
+        case '7d':
+            return { startDate: sub(7), endDate: tomorrow };
+        case '30d':
+            return { startDate: sub(30), endDate: tomorrow };
         case '3m': {
             const d = new Date(today);
             d.setMonth(d.getMonth() - 3);
-            return { startDate: localDate(d), endDate };
+            return { startDate: localDate(d), endDate: tomorrow };
         }
-        default:       return { startDate: sub(30), endDate };
+        default:
+            return { startDate: sub(30), endDate: tomorrow };
     }
 }
 
@@ -76,7 +84,7 @@ export function AnalyticsScreen() {
     const [customerData, setCustomerData] = useState<CustomerInsights | null>(null);
 
     // The active date range — recomputed whenever state changes
-    const activeDates: { startDate: string; endDate: string } = 
+    const activeDates: { startDate: string; endDate: string } =
         selectedTimeframe === 'custom'
             ? { startDate: appliedStart, endDate: appliedEnd }
             : getDateRange(selectedTimeframe);
@@ -109,39 +117,50 @@ export function AnalyticsScreen() {
     const activeDatesRef = useRef(activeDates);
     useEffect(() => { activeDatesRef.current = activeDates; }, [activeDates]);
 
+    // Ref to prevent rapid API calls (flooding the backend)
+    const debounceTimerRef = useRef<any>(null);
+
+    const debouncedReload = useCallback(() => {
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = setTimeout(() => {
+            const { startDate, endDate } = activeDatesRef.current;
+            if (startDate && endDate) loadData(startDate, endDate);
+        }, 1000);
+    }, [loadData]);
+
+    // Cleanup timer on unmount
+    useEffect(() => () => {
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    }, []);
+
     // Fire whenever restaurantId or the selected date range changes
     useEffect(() => {
         if (!activeDates.startDate || !activeDates.endDate) return;
         setLoading(true);
         loadData(activeDates.startDate, activeDates.endDate).finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [restaurantId, selectedTimeframe, appliedStart, appliedEnd]);
 
-    // Real-time: reload analytics silently when orders change
-    const handleRealTimeUpdate = useCallback(() => {
-        const { startDate, endDate } = activeDatesRef.current;
-        if (startDate && endDate) loadData(startDate, endDate);
-    }, [loadData]);
-
     useSocket(restaurantId, {
-        'order:new':     handleRealTimeUpdate,
-        'order:updated': handleRealTimeUpdate,
-        'order:status':  handleRealTimeUpdate,
+        'order:new': debouncedReload,
+        'order:updated': debouncedReload,
+        'order:status': debouncedReload,
     });
 
-    // Poll every 5 seconds for "live" feel as requested
+    // Poll periodically for Today only (fallback for missed socket events)
+    // 30 seconds interval is safer for analytics endpoints (Prevents 429 ERR)
     useEffect(() => {
-        if (!restaurantId || !activeDates.startDate || !activeDates.endDate) return;
-        
+        if (!restaurantId || !activeDates.startDate || !activeDates.endDate || selectedTimeframe !== 'today') return;
+
         const interval = setInterval(() => {
             const { startDate, endDate } = activeDatesRef.current;
             if (startDate && endDate) {
                 loadData(startDate, endDate);
             }
-        }, 5000);
+        }, 30000);
 
         return () => clearInterval(interval);
-    }, [restaurantId, loadData, activeDates.startDate, activeDates.endDate]);
+    }, [restaurantId, loadData, activeDates.startDate, activeDates.endDate, selectedTimeframe]);
 
     const onRefresh = async () => {
         setRefreshing(true);
@@ -200,8 +219,8 @@ export function AnalyticsScreen() {
     }));
 
     const customerPieData = [
-        { name: 'New',       count: customerData?.newCustomers ?? 0,       color: colors.green, legendFontColor: colors.text, legendFontSize: 12 },
-        { name: 'Returning', count: customerData?.returningCustomers ?? 0, color: colors.blue,  legendFontColor: colors.text, legendFontSize: 12 },
+        { name: 'New', count: customerData?.newCustomers ?? 0, color: colors.green, legendFontColor: colors.text, legendFontSize: 12 },
+        { name: 'Returning', count: customerData?.returningCustomers ?? 0, color: colors.blue, legendFontColor: colors.text, legendFontSize: 12 },
     ];
 
     const subLabel = activeSubLabel;
@@ -435,11 +454,11 @@ export function AnalyticsScreen() {
 
 const getBadgeStyle = (type: string) => {
     switch (type) {
-        case 'Star':      return { backgroundColor: 'rgba(74, 222, 128, 0.2)' };
+        case 'Star': return { backgroundColor: 'rgba(74, 222, 128, 0.2)' };
         case 'Plowhorse': return { backgroundColor: 'rgba(96, 165, 250, 0.2)' };
-        case 'Puzzle':    return { backgroundColor: 'rgba(192, 132, 252, 0.2)' };
-        case 'Dog':       return { backgroundColor: 'rgba(248, 113, 113, 0.2)' };
-        default:          return { backgroundColor: 'rgba(100,100,100,0.15)' };
+        case 'Puzzle': return { backgroundColor: 'rgba(192, 132, 252, 0.2)' };
+        case 'Dog': return { backgroundColor: 'rgba(248, 113, 113, 0.2)' };
+        default: return { backgroundColor: 'rgba(100,100,100,0.15)' };
     }
 };
 

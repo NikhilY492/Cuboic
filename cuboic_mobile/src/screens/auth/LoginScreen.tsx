@@ -23,7 +23,21 @@ export function LoginScreen() {
         try {
             await login(userId.trim(), password);
         } catch (e: any) {
-            Alert.alert('Login Failed', e?.response?.data?.message ?? 'Invalid credentials');
+            // DEBUG: log full error so we can diagnose
+            console.log('[LOGIN ERROR] code:', e?.code);
+            console.log('[LOGIN ERROR] message:', e?.message);
+            console.log('[LOGIN ERROR] response status:', e?.response?.status);
+            console.log('[LOGIN ERROR] response data:', JSON.stringify(e?.response?.data));
+
+            const isTimeout = e?.code === 'ECONNABORTED' || e?.message?.includes('timeout');
+            const isNetworkError = !e?.response;
+            const serverMsg = e?.response?.data?.message;
+
+            if (isTimeout || isNetworkError) {
+                Alert.alert('Connection Error', 'Could not reach the server. It may be starting up — please wait a moment and try again.');
+            } else {
+                Alert.alert('Login Failed', serverMsg ?? 'Invalid credentials. Please check your User ID and password.');
+            }
         } finally {
             setLoading(false);
         }

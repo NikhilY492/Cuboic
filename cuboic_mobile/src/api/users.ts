@@ -8,6 +8,7 @@ export interface User {
     is_active: boolean;
     restaurantId: string;
     createdAt: string;
+    dashboard_config?: string[];
 }
 
 export const usersApi = {

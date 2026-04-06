@@ -48,8 +48,8 @@ export default function ProvisionPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl p-8">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white transition-colors duration-300">
+      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl p-8 transition-colors duration-300">
         
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-accent rounded-xl mx-auto flex items-center justify-center mb-4">
@@ -58,7 +58,7 @@ export default function ProvisionPage() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold font-sans tracking-tight">Provision Terminal</h2>
-          <p className="text-zinc-400 mt-2 text-sm">Target a specific outlet for this POS machine.</p>
+          <p className="text-zinc-500 dark:text-zinc-400 mt-2 text-sm">Target a specific outlet for this POS machine.</p>
         </div>
 
         {error && (
@@ -69,37 +69,37 @@ export default function ProvisionPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">Outlet ID</label>
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Outlet ID</label>
             <input 
               type="text" 
               value={outletId}
               onChange={(e) => setOutletId(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-2.5 text-white outline-none transition-all placeholder:text-zinc-600"
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-2.5 text-zinc-900 dark:text-white outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
               placeholder="e.g., clyz..."
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">Username / Staff ID</label>
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Username / Staff ID</label>
             <input 
               type="text" 
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-2.5 text-white outline-none transition-all placeholder:text-zinc-600"
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-2.5 text-zinc-900 dark:text-white outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
               placeholder="e.g. dakshin_owner"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">Password</label>
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Password</label>
             <div className="relative">
               <input 
                 type={showPassword ? 'text' : 'password'} 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-2.5 text-white outline-none transition-all pr-12"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-2.5 text-zinc-900 dark:text-white outline-none transition-all pr-12"
                 required
               />
               <button

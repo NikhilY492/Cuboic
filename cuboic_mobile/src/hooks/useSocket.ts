@@ -10,7 +10,9 @@ export function useSocket(restaurantId: string | null | undefined, events?: Even
     useEffect(() => {
         if (!restaurantId) return;
 
-        const socket = io(BASE_URL);
+        const socket = io(BASE_URL, {
+            transports: ['websocket'],
+        });
         socketRef.current = socket;
 
         socket.on('connect', () => {

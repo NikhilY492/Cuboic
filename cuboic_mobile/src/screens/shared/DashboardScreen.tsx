@@ -36,10 +36,12 @@ export function DashboardScreen() {
         hint: { color: colors.textDim }
     };
 
+    const config = user?.dashboard_config || (user?.role === 'Owner' ? ['Revenue', 'Orders', 'Pending', 'Preparing', 'Completed', 'Robots'] : ['Pending', 'Preparing', 'Completed', 'Robots']);
+
     const load = useCallback(async () => {
         if (!restaurantId) return;
 
-        if (user?.role === 'Owner') {
+        if (config.includes('Revenue') || config.includes('Orders')) {
             try {
                 const s = await paymentsApi.getSummary(restaurantId);
                 setSummary(s);
@@ -56,7 +58,7 @@ export function DashboardScreen() {
             setRobotsOnline(robots.filter(r => r.isOnline).length);
             setOrderSummary(orderSum);
         } catch { /* ignore */ }
-    }, [restaurantId, user?.role]);
+    }, [restaurantId, config]);
 
     useEffect(() => {
         load().finally(() => setLoading(false));
@@ -86,26 +88,27 @@ export function DashboardScreen() {
         setRefreshing(false);
     };
 
-    const kpis = [
-        ...(user?.role === 'Owner' ? [
-            { 
-                icon: <Feather name="dollar-sign" size={24} color={colors.green} />, 
-                value: `₹${summary.total_revenue.toFixed(0)}`, 
-                label: "Today's Revenue", 
-                sub: 'Total gross revenue today', 
-                color: colors.green,
-                fullWidth: true 
-            },
-            { 
-                icon: <Feather name="hash" size={24} color={colors.blue} />, 
-                value: summary.order_count, 
-                label: "Today's Orders", 
-                sub: 'Total orders processed', 
-                color: colors.blue,
-                fullWidth: true 
-            },
-        ] : []),
+    const allKpis = [
         { 
+            id: 'Revenue',
+            icon: <Feather name="dollar-sign" size={24} color={colors.green} />, 
+            value: `₹${summary.total_revenue.toFixed(0)}`, 
+            label: "Today's Revenue", 
+            sub: 'Total gross revenue today', 
+            color: colors.green,
+            fullWidth: true 
+        },
+        { 
+            id: 'Orders',
+            icon: <Feather name="hash" size={24} color={colors.blue} />, 
+            value: summary.order_count, 
+            label: "Today's Orders", 
+            sub: 'Total orders processed', 
+            color: colors.blue,
+            fullWidth: true 
+        },
+        { 
+            id: 'Pending',
             icon: <Feather name="alert-circle" size={24} color={colors.amber} />, 
             value: orderSummary.pending, 
             label: 'Pending Orders', 
@@ -114,6 +117,7 @@ export function DashboardScreen() {
             onPress: () => handleDrillDown('Pending')
         },
         { 
+            id: 'Preparing',
             icon: <Feather name="coffee" size={24} color={colors.purple} />, 
             value: orderSummary.preparing, 
             label: 'Preparing', 
@@ -122,6 +126,7 @@ export function DashboardScreen() {
             onPress: () => handleDrillDown('Confirmed')
         },
         { 
+            id: 'Completed',
             icon: <Feather name="check-circle" size={24} color={colors.accent} />, 
             value: orderSummary.completed, 
             label: 'Completed', 
@@ -130,6 +135,7 @@ export function DashboardScreen() {
             onPress: () => handleDrillDown('Ready')
         },
         { 
+            id: 'Robots',
             icon: <Feather name="cpu" size={24} color={colors.blue} />, 
             value: robotsOnline, 
             label: 'Robots', 
@@ -137,6 +143,8 @@ export function DashboardScreen() {
             color: colors.blue 
         },
     ];
+
+    const kpis = allKpis.filter(k => config.includes(k.id));
 
     return (
         <ScrollView

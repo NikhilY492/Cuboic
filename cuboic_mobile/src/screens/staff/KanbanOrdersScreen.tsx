@@ -331,8 +331,6 @@ const styles = StyleSheet.create({
     sub: { fontSize: 13, marginTop: 2 },
     
     gridContainer: {
-    
-        ...S.shadow,
         padding: 16,
     },
     grid: {
@@ -342,7 +340,6 @@ const styles = StyleSheet.create({
         marginHorizontal: -8,
     },
     cardWrapper: {
-        ...S.shadow,
         width: '100%',
         padding: 8,
         flexBasis: 320,
@@ -362,32 +359,24 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     cardHeader: {
-        ...S.shadow,
         paddingHorizontal: 16,
         paddingVertical: 12,
         paddingBottom: 12,
     },
     headerRow: {
-        ...S.shadow,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 4,
     },
-    headerOrderId: {
-        ...S.shadow, fontSize: 14, fontWeight: '700' },
-    headerElapsed: {
-        ...S.shadow, fontSize: 12, fontWeight: '700' },
-    headerDateTime: {
-        ...S.shadow, fontSize: 12, opacity: 0.8 },
+    headerOrderId: { fontSize: 14, fontWeight: '700' },
+    headerElapsed: { fontSize: 12, fontWeight: '700' },
+    headerDateTime: { fontSize: 12, opacity: 0.8 },
     
     cardBody: {
-    
-        ...S.shadow,
         padding: 16,
     },
     subHeader: {
-        ...S.shadow,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -401,8 +390,6 @@ const styles = StyleSheet.create({
     tableText: { fontSize: 13, fontWeight: '600' },
 
     itemsContainer: {
-
-        ...S.shadow,
         marginBottom: 20,
     },
     itemRowBlock: {

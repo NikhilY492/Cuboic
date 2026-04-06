@@ -13,10 +13,13 @@ export class CreateUserDto {
     @IsNotEmpty()
     password: string;
 
-    @IsIn(['Admin', 'Owner', 'Staff'])
+    @IsIn(['Admin', 'Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff'])
     role: string;
 
     @IsOptional()
     @IsString()
     restaurantId?: string;
+
+    @IsOptional()
+    dashboard_config?: any;
 }

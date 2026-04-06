@@ -105,14 +105,14 @@ export default function POSPage() {
   }
 
   return (
-    <div className="flex h-full bg-zinc-950 text-white overflow-hidden">
+    <div className="flex h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white overflow-hidden transition-colors duration-300">
       
       {/* LEFT PANE: Menu & Categories */}
-      <div className="flex-1 flex flex-col border-r border-zinc-900">
+      <div className="flex-1 flex flex-col border-r border-zinc-200 dark:border-zinc-900">
         
         {/* Header: Order Type & Meta */}
-        <div className="p-4 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between shadow-sm z-10">
-          <div className="flex bg-zinc-950 rounded-lg p-1 border border-zinc-800">
+        <div className="p-4 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm z-10 transition-colors duration-300">
+          <div className="flex bg-zinc-100 dark:bg-zinc-950 rounded-lg p-1 border border-zinc-200 dark:border-zinc-800">
             {['Dine-In', 'Takeaway', 'Delivery'].map((type) => (
               <button
                 key={type}
@@ -120,7 +120,7 @@ export default function POSPage() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                   orderType === type 
                     ? 'bg-accent shadow-lg text-white' 
-                    : 'text-zinc-400 hover:text-white'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 {type}
@@ -134,7 +134,7 @@ export default function POSPage() {
               <select 
                 value={selectedTableId} 
                 onChange={(e) => setSelectedTableId(e.target.value)}
-                className="bg-zinc-950 border border-zinc-800 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-accent"
+                className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-accent"
               >
                 <option value="">Select Table</option>
                 {tables.map(t => <option key={t.id} value={t.id}>{t.table_number}</option>)}
@@ -145,7 +145,7 @@ export default function POSPage() {
 
         <div className="flex flex-1 overflow-hidden">
           {/* Categories Sidebar */}
-          <div className="w-32 bg-zinc-900/50 border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto">
+          <div className="w-32 bg-zinc-50 dark:bg-zinc-900/50 border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto">
             <button
               onClick={() => setActiveCategoryId('All')}
               className={`w-full text-left px-4 py-4 text-xs font-semibold uppercase tracking-tighter transition-all border-l-4 ${
@@ -172,7 +172,7 @@ export default function POSPage() {
           </div>
 
           {/* Menu Grid */}
-          <div className="flex-1 p-6 overflow-y-auto bg-zinc-950">
+          <div className="flex-1 p-6 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredMenu.map(item => (
                 <button
@@ -181,11 +181,11 @@ export default function POSPage() {
                   disabled={!item.is_available}
                   className={`relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all ${
                     item.is_available 
-                      ? 'border-zinc-800 bg-zinc-900 hover:border-accent hover:bg-zinc-800 cursor-pointer active:scale-95' 
-                      : 'border-zinc-900 bg-zinc-950/50 opacity-50 cursor-not-allowed'
+                      ? 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-accent hover:bg-zinc-50 hover:dark:bg-zinc-800 cursor-pointer active:scale-95' 
+                      : 'border-zinc-200 dark:border-zinc-900 bg-zinc-100 dark:bg-zinc-950/50 opacity-50 cursor-not-allowed'
                   }`}
                 >
-                  <div className="font-semibold text-zinc-100 dark:text-zinc-100 line-clamp-2 min-h-[2.5rem]">
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2 min-h-[2.5rem]">
                     {item.name}
                   </div>
                   <div className="mt-auto pt-4 flex items-center justify-between w-full">
@@ -200,10 +200,10 @@ export default function POSPage() {
       </div>
 
       {/* RIGHT PANE: Cart & Checkout */}
-      <div className="w-96 bg-zinc-900 flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)] z-20 relative">
-        <div className="p-4 border-b border-zinc-800 bg-zinc-900 shadow-sm z-10">
+      <div className="w-96 bg-white dark:bg-zinc-900 flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(0,0,0,0.5)] z-20 relative transition-colors duration-300">
+        <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm z-10">
           <h2 className="text-lg font-bold">Current Order</h2>
-          <p className="text-xs text-zinc-400">{orderType} {selectedTableId ? `• ${tables.find(t => t.id === selectedTableId)?.table_number ?? ''}` : ''}</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">{orderType} {selectedTableId ? `• ${tables.find(t => t.id === selectedTableId)?.table_number ?? ''}` : ''}</p>
         </div>
 
         {/* Cart Items */}
@@ -217,13 +217,13 @@ export default function POSPage() {
             </div>
           ) : (
             cart.map(c => (
-              <div key={c.item.id} className="flex items-center gap-3 bg-zinc-950 p-3 rounded-xl border border-zinc-800">
+              <div key={c.item.id} className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-sm truncate">{c.item.name}</h4>
-                  <p className="text-zinc-400 text-xs mt-0.5">₹{c.item.price} x {c.qty}</p>
+                  <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">₹{c.item.price} x {c.qty}</p>
                 </div>
-                <div className="flex items-center gap-2 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
-                  <button onClick={() => updateQty(c.item.id, -1)} className="w-7 h-7 flex items-center justify-center rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300">-</button>
+                <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 rounded-lg p-1 border border-zinc-200 dark:border-zinc-800">
+                  <button onClick={() => updateQty(c.item.id, -1)} className="w-7 h-7 flex items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300">-</button>
                   <span className="w-4 text-center text-sm font-medium">{c.qty}</span>
                   <button onClick={() => updateQty(c.item.id, 1)} className="w-7 h-7 flex items-center justify-center rounded bg-accent hover:bg-accent text-white">+</button>
                 </div>
@@ -236,17 +236,17 @@ export default function POSPage() {
         </div>
 
         {/* Totals & Checkout */}
-        <div className="p-4 bg-zinc-950 border-t border-zinc-800 mt-auto">
+        <div className="p-4 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 mt-auto transition-colors duration-300">
           <div className="space-y-2 mb-4">
-            <div className="flex justify-between text-sm text-zinc-400">
+            <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
               <span>Subtotal</span>
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-sm text-zinc-400">
+            <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
               <span>GST (5%)</span>
               <span>₹{gst.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-zinc-800 border-dashed">
+            <div className="flex justify-between text-lg font-bold text-zinc-900 dark:text-white pt-2 border-t border-zinc-200 dark:border-zinc-800 border-dashed">
               <span>Total</span>
               <span>₹{total.toFixed(2)}</span>
             </div>
