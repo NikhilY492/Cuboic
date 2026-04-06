@@ -129,6 +129,20 @@ export function AnalyticsScreen() {
         'order:status':  handleRealTimeUpdate,
     });
 
+    // Poll every 5 seconds for "live" feel as requested
+    useEffect(() => {
+        if (!restaurantId || !activeDates.startDate || !activeDates.endDate) return;
+        
+        const interval = setInterval(() => {
+            const { startDate, endDate } = activeDatesRef.current;
+            if (startDate && endDate) {
+                loadData(startDate, endDate);
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [restaurantId, loadData, activeDates.startDate, activeDates.endDate]);
+
     const onRefresh = async () => {
         setRefreshing(true);
         await loadData(activeDates.startDate, activeDates.endDate);
