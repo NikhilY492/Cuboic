@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
+import { S } from '../theme';
 
 interface KpiCardProps {
     icon: React.ReactNode;
@@ -59,6 +60,7 @@ export function KpiCard({
 
 const styles = StyleSheet.create({
     card: {
+        ...S.shadow,
         borderRadius: 20,
         borderWidth: 1,
         padding: 16,
