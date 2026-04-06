@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     View, Text, ScrollView, StyleSheet, ActivityIndicator,
     RefreshControl, Dimensions, TouchableOpacity, TextInput,
@@ -10,6 +10,7 @@ import { S } from '../../theme';
 import { KpiCard } from '../../components/KpiCard';
 import { Feather } from '@expo/vector-icons';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
+import { useSocket } from '../../hooks/useSocket';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -23,26 +24,33 @@ const CHIPS: { label: string; value: Timeframe; subLabel: string }[] = [
     { label: 'Custom',   value: 'custom', subLabel: 'Custom Range' },
 ];
 
-/** Compute startDate / endDate strings (YYYY-MM-DD) for a preset timeframe. */
+/**
+ * Compute startDate / endDate strings (YYYY-MM-DD) for a preset timeframe.
+ * Uses en-CA locale which outputs YYYY-MM-DD in LOCAL time (not UTC),
+ * so "Today" always matches the user's actual calendar day.
+ */
+function localDate(d: Date): string {
+    return d.toLocaleDateString('en-CA'); // e.g. "2026-04-06" in local tz
+}
+
 function getDateRange(tf: Timeframe): { startDate: string; endDate: string } {
     const today = new Date();
-    const fmt = (d: Date) => d.toISOString().split('T')[0];
-    const endDate = fmt(today);
+    const endDate = localDate(today);
 
     const sub = (days: number) => {
         const d = new Date(today);
         d.setDate(d.getDate() - days);
-        return fmt(d);
+        return localDate(d);
     };
 
     switch (tf) {
         case 'today':  return { startDate: endDate, endDate };
         case '7d':     return { startDate: sub(7),  endDate };
         case '30d':    return { startDate: sub(30), endDate };
-        case '3m':     {
+        case '3m': {
             const d = new Date(today);
             d.setMonth(d.getMonth() - 3);
-            return { startDate: fmt(d), endDate };
+            return { startDate: localDate(d), endDate };
         }
         default:       return { startDate: sub(30), endDate };
     }
@@ -96,6 +104,11 @@ export function AnalyticsScreen() {
         }
     }, [restaurantId]);
 
+    // Keep a ref to activeDates so socket callbacks always see the latest value
+    // without needing to be re-registered on every chip change.
+    const activeDatesRef = useRef(activeDates);
+    useEffect(() => { activeDatesRef.current = activeDates; }, [activeDates]);
+
     // Fire whenever restaurantId or the selected date range changes
     useEffect(() => {
         if (!activeDates.startDate || !activeDates.endDate) return;
@@ -103,6 +116,18 @@ export function AnalyticsScreen() {
         loadData(activeDates.startDate, activeDates.endDate).finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [restaurantId, selectedTimeframe, appliedStart, appliedEnd]);
+
+    // Real-time: reload analytics silently when orders change
+    const handleRealTimeUpdate = useCallback(() => {
+        const { startDate, endDate } = activeDatesRef.current;
+        if (startDate && endDate) loadData(startDate, endDate);
+    }, [loadData]);
+
+    useSocket(restaurantId, {
+        'order:new':     handleRealTimeUpdate,
+        'order:updated': handleRealTimeUpdate,
+        'order:status':  handleRealTimeUpdate,
+    });
 
     const onRefresh = async () => {
         setRefreshing(true);
