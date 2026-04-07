@@ -42,6 +42,11 @@ export class InventoryController {
     return this.inventoryService.remove(id);
   }
 
+  @Patch('items/bulk')
+  bulkUpdate(@Query('outletId') outletId: string, @Body() body: Array<{ id: string; data: Partial<CreateInventoryItemDto> }>) {
+    return this.inventoryService.bulkUpdate(outletId, body);
+  }
+
   // ── Stock Operations ─────────────────────────────────────────────────────
   @Post('items/:id/stock-in')
   stockIn(@Param('id') id: string, @Body() dto: StockInDto) {

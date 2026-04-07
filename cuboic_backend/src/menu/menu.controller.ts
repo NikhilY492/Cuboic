@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { QueryMenuDto } from './dto/query-menu.dto';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
@@ -39,5 +39,12 @@ export class MenuController {
     @Put(':id')
     updateItem(@Param('id') id: string, @Body() dto: UpdateMenuItemDto) {
         return this.menuService.updateItem(id, dto);
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('Staff', 'Owner')
+    @Patch('bulk')
+    bulkUpdate(@Query('restaurantId') restaurantId: string, @Body() body: Array<{ id: string; data: Partial<UpdateMenuItemDto> }>) {
+        return this.menuService.bulkUpdate(restaurantId, body);
     }
 }

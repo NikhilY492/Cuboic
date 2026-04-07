@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { apiClient } from '../api/apiClient'
 import { useAuth } from '../contexts/AuthContext'
+import * as XLSX from 'xlsx'
 
-type MenuItem = { id: string; name: string }
+type MenuItem = { id: string; name: string; category?: string; price?: number; veg?: boolean }
 type InventoryItem = { id: string; name: string; unit: string }
 
 type Ingredient = {
@@ -116,6 +117,71 @@ export default function RecipesPage() {
     }
   }
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchMenu = async () => {
+      if (!user?.restaurantId) return;
+      try {
+        const { data } = await apiClient.get(`/menu?restaurantId=${user.restaurantId}`);
+        setMenuItems(data);
+      } catch (e) {
+        console.error("Failed to fetch menu", e);
+      }
+  };
+
+  const handleExportMenu = () => {
+    if (menuItems.length === 0) return alert('No data to export');
+
+    const worksheetData = menuItems.map(item => ({
+      'ID (Do Not Edit)': item.id,
+      'Name': item.name,
+      'Category': item.category || 'General',
+      'Price (₹)': item.price || 0,
+      'Vegetarian': item.veg ? 'Yes' : 'No'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Menu");
+    XLSX.writeFile(wb, "Menu_Export.xlsx");
+  };
+
+  const handleImportMenu = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json<any>(ws);
+
+        // Real processing: send bulk patch request
+        const updates = data.map(row => ({
+           id: row['ID (Do Not Edit)'],
+           data: {
+             price: parseFloat(row['Price (₹)'])
+           }
+        })).filter(u => u.id); // Only update items with an ID
+        
+        if (updates.length > 0) {
+            await apiClient.patch(`/menu/bulk?restaurantId=${user?.restaurantId}`, updates);
+            alert(`Successfully updated ${updates.length} menu items from Excel.`);
+        }
+        
+        fetchMenu();
+      } catch (err) {
+         console.error(err);
+         alert('Failed to import menu Excel file.');
+      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsBinaryString(file);
+  };
+
   return (
     <div className="flex h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white p-8 overflow-hidden gap-8 transition-colors duration-300">
       
@@ -140,6 +206,21 @@ export default function RecipesPage() {
               {item.name}
             </button>
           ))}
+        </div>
+        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950/50 flex flex-col gap-2">
+           <button 
+                onClick={handleExportMenu}
+                className="w-full text-xs px-3 py-2 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 font-semibold rounded hover:bg-emerald-100 transition-colors border border-emerald-200 dark:border-emerald-500/20"
+            >
+                Export Menu (Excel)
+            </button>
+            <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full text-xs px-3 py-2 bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 font-semibold rounded hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors border border-zinc-300 dark:border-zinc-700"
+            >
+                Import Menu (Excel)
+            </button>
+            <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="hidden" onChange={handleImportMenu} />
         </div>
       </div>
 

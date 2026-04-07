@@ -131,12 +131,15 @@ function KanbanCard({ item, onAdvance }: { item: Order, onAdvance: (o: Order) =>
 
 // ─── Main Screen Component ──────────────────────────────────────────────────
 
+const ALL_STATUSES = ['All', 'Pending', 'Confirmed', 'Ready', 'Delivered', 'Cancelled'];
+
 export function KanbanOrdersScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
     const restaurantId = user?.restaurantId ?? '';
 
     const [orders, setOrders] = useState<Order[]>([]);
+    const [filterStatus, setFilterStatus] = useState('All');
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [preferredVoice, setPreferredVoice] = useState<string | undefined>(undefined);
@@ -279,6 +282,8 @@ export function KanbanOrdersScreen() {
     const activeTableCount = activeTableKeys.size;
     const tableKeys = new Set(orders.map(o => getTableNum(o)));
 
+    const filteredOrders = filterStatus === 'All' ? orders : orders.filter(o => o.status === filterStatus);
+
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
             {/* Standard App Header */}
@@ -297,19 +302,46 @@ export function KanbanOrdersScreen() {
                 </TouchableOpacity>
             </View>
 
+            {/* Status Filter */}
+            <View style={{ flexGrow: 0, flexShrink: 0 }}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={[styles.tabsContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+                    contentContainerStyle={styles.tabsContent}
+                >
+                    {ALL_STATUSES.map(s => (
+                        <TouchableOpacity
+                            key={s}
+                            style={[
+                                styles.tab, 
+                                { backgroundColor: colors.surface2, borderColor: colors.border },
+                                filterStatus === s && { backgroundColor: colors.accent, borderColor: colors.accent }
+                            ]}
+                            onPress={() => setFilterStatus(s)}
+                            activeOpacity={0.7}
+                        >
+                            <Text style={[styles.tabText, { color: colors.textMuted }, filterStatus === s && { color: '#0f0f13' }]}>{s}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
+
             <ScrollView 
                 contentContainerStyle={styles.gridContainer}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
             >
                 <View style={styles.grid}>
-                    {orders.map(order => (
+                    {filteredOrders.map(order => (
                         <View key={order.id} style={styles.cardWrapper}>
                             <KanbanCard item={order} onAdvance={handleAdvance} />
                         </View>
                     ))}
                 </View>
-                {orders.length === 0 && (
-                    <Text style={[styles.emptyText, { color: colors.textMuted }]}>No orders right now.</Text>
+                {filteredOrders.length === 0 && (
+                    <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+                        {orders.length === 0 ? "No orders right now." : `No orders for "${filterStatus}".`}
+                    </Text>
                 )}
             </ScrollView>
         </View>
@@ -350,6 +382,23 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 60,
     },
+
+    // Filter Tabs
+    tabsContainer: {
+        ...S.shadow, borderBottomWidth: 1, maxHeight: 80 },
+    tabsContent: {
+        paddingHorizontal: 10, paddingVertical: 14, flexDirection: 'row', alignItems: 'center' },
+    tab: {
+        ...S.shadow,
+        paddingHorizontal: 14,
+        paddingVertical: 4,
+        borderRadius: 99,
+        borderWidth: 1,
+        marginRight: 8,
+        flexShrink: 0,
+        height: 40, justifyContent: 'center',
+    },
+    tabText: { fontSize: 13, fontWeight: '600' },
 
     // Card Styles
     card: {

@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import ThemeToggle from './ThemeToggle'
-import { PieChart, MonitorSmartphone, List, Package, CookingPot, Settings, User, LogOut } from 'lucide-react'
+import { PieChart, MonitorSmartphone, List, Package, CookingPot, Settings, User, LogOut, FileText, Database, Share2 } from 'lucide-react'
 import { disconnectSocket } from '../api/socket'
 import logo from '../assets/logo.png'
 
@@ -11,6 +11,9 @@ const FULL_NAV_ITEMS = [
   { path: '/orders', label: 'Orders', icon: List, roles: ['Admin', 'Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen'] },
   { path: '/inventory', label: 'Inventory', icon: Package, roles: ['Admin', 'Owner', 'Manager'] },
   { path: '/recipes', label: 'Recipes', icon: CookingPot, roles: ['Admin', 'Owner', 'Manager'] },
+  { path: '/customers', label: 'CRM', icon: Database, roles: ['Admin', 'Owner', 'Manager'] },
+  { path: '/reports', label: 'Reports', icon: FileText, roles: ['Admin', 'Owner'] },
+  { path: '/integrations', label: 'Integrations', icon: Share2, roles: ['Admin', 'Owner'] },
   { path: '/settings', label: 'Settings', icon: Settings, roles: ['Admin', 'Owner', 'Manager'] },
 ]
 

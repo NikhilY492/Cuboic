@@ -13,6 +13,12 @@ export class CustomersService {
         return { customer: customer || null, phone: localPhone };
     }
 
+    async findAll() {
+        return this.prisma.customer.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
     async register(phone: string, name: string) {
         const localPhone = phone.replace(/^\+91/, '');
         let customer = await this.prisma.customer.findUnique({

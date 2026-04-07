@@ -6,6 +6,9 @@ import POSPage from './pages/POSPage'
 import OrdersPage from './pages/OrdersPage'
 import InventoryPage from './pages/InventoryPage'
 import RecipesPage from './pages/RecipesPage'
+import CustomersPage from './pages/CustomersPage'
+import ReportsPage from './pages/ReportsPage'
+import IntegrationsPage from './pages/IntegrationsPage'
 import Layout from './components/Layout'
 import { useAuth } from './contexts/AuthContext'
 import { connectSocket, disconnectSocket } from './api/socket'
@@ -55,6 +58,9 @@ function App() {
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/recipes" element={<RecipesPage />} />
+        <Route path="/customers" element={<CustomersPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/integrations" element={<IntegrationsPage />} />
         <Route path="/settings" element={<div className="p-8">Settings</div>} />
       </Route>
     </Routes>

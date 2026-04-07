@@ -259,6 +259,7 @@ export function OrdersScreen({ route }: any) {
 
     const [selectedTable, setSelectedTable] = useState<string | null>(null);
     const [filterStatus, setFilterStatus] = useState(statusInitial || 'All');
+    const [tableFilter, setTableFilter] = useState<'All' | 'Active' | 'Idle'>('All');
 
     useEffect(() => {
         if (statusInitial) {
@@ -465,6 +466,13 @@ export function OrdersScreen({ route }: any) {
     // ── Table grid view ────────────────────────────────────────────────────
     const activeTableCount = tableSummaries.filter(t => t.activeOrders.length > 0).length;
 
+    let filteredSummaries = tableSummaries;
+    if (tableFilter === 'Active') {
+        filteredSummaries = tableSummaries.filter(t => t.activeOrders.length > 0);
+    } else if (tableFilter === 'Idle') {
+        filteredSummaries = tableSummaries.filter(t => t.activeOrders.length === 0);
+    }
+
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
             {/* Header */}
@@ -483,11 +491,36 @@ export function OrdersScreen({ route }: any) {
                 </TouchableOpacity>
             </View>
 
+            {/* Filter Tabs */}
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={[styles.tabsContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+                contentContainerStyle={styles.tabsContent}
+            >
+                {(['All', 'Active', 'Idle'] as const).map(s => (
+                    <TouchableOpacity
+                        key={s}
+                        style={[
+                            styles.tab, 
+                            { backgroundColor: colors.surface2, borderColor: colors.border },
+                            tableFilter === s && { backgroundColor: colors.accent, borderColor: colors.accent }
+                        ]}
+                        onPress={() => setTableFilter(s)}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={[styles.tabText, { color: colors.textMuted }, tableFilter === s && { color: '#0f0f13' }]}>{s}</Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+
             {tableSummaries.length === 0 ? (
                 <Text style={[styles.empty, { color: colors.textMuted }]}>No tables configured</Text>
+            ) : filteredSummaries.length === 0 ? (
+                <Text style={[styles.empty, { color: colors.textMuted }]}>No tables for "{tableFilter}" filter</Text>
             ) : (
                 <FlatList
-                    data={tableSummaries}
+                    data={filteredSummaries}
                     keyExtractor={item => item.tableNum}
                     numColumns={2}
                     contentContainerStyle={styles.gridList}

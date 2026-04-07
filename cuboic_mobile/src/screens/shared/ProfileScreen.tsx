@@ -14,16 +14,17 @@ export function ProfileScreen() {
     const { toggleTheme, colors, isDark } = useTheme();
 
     // Contact info – initialise from user object (backend)
-    const [email, setEmail]   = useState(user?.email ?? '');
-    const [phone, setPhone]   = useState(user?.phone ?? '');
+    const [email, setEmail] = useState(user?.email ?? '');
+    const [phone, setPhone] = useState(user?.phone ?? '');
     const [editingContact, setEditingContact] = useState(false);
-    const [savingContact, setSavingContact]   = useState(false);
+    const [savingContact, setSavingContact] = useState(false);
 
     // Password change
-    const [oldPassword, setOldPassword]         = useState('');
-    const [newPassword, setNewPassword]         = useState('');
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [loadingPwd, setLoadingPwd]           = useState(false);
+    const [loadingPwd, setLoadingPwd] = useState(false);
+    const [isPasswordExpanded, setIsPasswordExpanded] = useState(false);
 
     // Keep local state in sync if user object changes
     useEffect(() => {
@@ -68,7 +69,7 @@ export function ProfileScreen() {
         }
     };
 
-    const openEmail = () => Linking.openURL('mailto:support@cuboic.com');
+    const openEmail = () => Linking.openURL('mailto:support@.thambi.com');
     const openPhone = () => Linking.openURL('tel:+918000000000');
 
     /* ─── Components ─────────────────────────────────────────────── */
@@ -120,11 +121,11 @@ export function ProfileScreen() {
             <View style={styles.section}>
                 <SectionLabel title="ACCOUNT" />
                 <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <InfoRow icon="user"       label="Full Name" value={user?.name ?? ''} />
+                    <InfoRow icon="user" label="Full Name" value={user?.name ?? ''} />
                     <Divider />
-                    <InfoRow icon="hash"       label="User ID"   value={user?.userid ?? (user as any)?.userId ?? ''} />
+                    <InfoRow icon="hash" label="User ID" value={user?.userid ?? (user as any)?.userId ?? ''} />
                     <Divider />
-                    <InfoRow icon="briefcase"  label="Role"      value={user?.role ?? ''} />
+                    <InfoRow icon="briefcase" label="Role" value={user?.role ?? ''} />
                     <Divider />
 
                     {/* Editable Contact Fields */}
@@ -173,9 +174,9 @@ export function ProfileScreen() {
                         </View>
                     ) : (
                         <>
-                            <InfoRow icon="mail"  label="Email"        value={email} />
+                            <InfoRow icon="mail" label="Email" value={email} />
                             <Divider />
-                            <InfoRow icon="phone" label="Phone Number"  value={phone} />
+                            <InfoRow icon="phone" label="Phone Number" value={phone} />
                             <TouchableOpacity
                                 style={[styles.editContactBtn, { borderTopColor: colors.border }]}
                                 onPress={() => setEditingContact(true)}
@@ -215,48 +216,55 @@ export function ProfileScreen() {
             <View style={styles.section}>
                 <SectionLabel title="SECURITY" />
                 <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <View style={[styles.listItem, { marginBottom: 4 }]}>
+                    <TouchableOpacity
+                        style={[styles.listItem, { marginBottom: isPasswordExpanded ? 4 : 0 }]}
+                        activeOpacity={0.7}
+                        onPress={() => setIsPasswordExpanded(!isPasswordExpanded)}
+                    >
                         <View style={[styles.iconCircle, { backgroundColor: colors.bg }]}>
                             <Feather name="lock" size={18} color={colors.textMuted} />
                         </View>
-                        <Text style={[styles.listItemTitle, { color: colors.text }]}>Change Password</Text>
-                    </View>
+                        <Text style={[styles.listItemTitle, { color: colors.text, flex: 1 }]}>Change Password</Text>
+                        <Feather name={isPasswordExpanded ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
+                    </TouchableOpacity>
 
-                    <View style={[styles.pwdBlock, { borderTopColor: colors.border }]}>
-                        <TextInput
-                            style={[styles.pwdInput, { backgroundColor: colors.bg, borderColor: colors.border, color: colors.text }]}
-                            secureTextEntry
-                            value={oldPassword}
-                            onChangeText={setOldPassword}
-                            placeholder="Current Password"
-                            placeholderTextColor={colors.textDim}
-                        />
-                        <TextInput
-                            style={[styles.pwdInput, { backgroundColor: colors.bg, borderColor: colors.border, color: colors.text }]}
-                            secureTextEntry
-                            value={newPassword}
-                            onChangeText={setNewPassword}
-                            placeholder="New Password"
-                            placeholderTextColor={colors.textDim}
-                        />
-                        <TextInput
-                            style={[styles.pwdInput, { backgroundColor: colors.bg, borderColor: colors.border, color: colors.text }]}
-                            secureTextEntry
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            placeholder="Confirm New Password"
-                            placeholderTextColor={colors.textDim}
-                        />
-                        <TouchableOpacity
-                            style={[styles.pwdBtn, { backgroundColor: colors.accent }]}
-                            onPress={handlePasswordChange}
-                            disabled={loadingPwd}
-                        >
-                            {loadingPwd
-                                ? <ActivityIndicator color="#000" />
-                                : <Text style={styles.pwdBtnText}>Update Password</Text>}
-                        </TouchableOpacity>
-                    </View>
+                    {isPasswordExpanded && (
+                        <View style={[styles.pwdBlock, { borderTopColor: colors.border }]}>
+                            <TextInput
+                                style={[styles.pwdInput, { backgroundColor: colors.bg, borderColor: colors.border, color: colors.text }]}
+                                secureTextEntry
+                                value={oldPassword}
+                                onChangeText={setOldPassword}
+                                placeholder="Current Password"
+                                placeholderTextColor={colors.textDim}
+                            />
+                            <TextInput
+                                style={[styles.pwdInput, { backgroundColor: colors.bg, borderColor: colors.border, color: colors.text }]}
+                                secureTextEntry
+                                value={newPassword}
+                                onChangeText={setNewPassword}
+                                placeholder="New Password"
+                                placeholderTextColor={colors.textDim}
+                            />
+                            <TextInput
+                                style={[styles.pwdInput, { backgroundColor: colors.bg, borderColor: colors.border, color: colors.text }]}
+                                secureTextEntry
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                placeholder="Confirm New Password"
+                                placeholderTextColor={colors.textDim}
+                            />
+                            <TouchableOpacity
+                                style={[styles.pwdBtn, { backgroundColor: colors.accent }]}
+                                onPress={handlePasswordChange}
+                                disabled={loadingPwd}
+                            >
+                                {loadingPwd
+                                    ? <ActivityIndicator color="#000" />
+                                    : <Text style={styles.pwdBtnText}>Update Password</Text>}
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             </View>
 
@@ -335,9 +343,9 @@ const styles = StyleSheet.create({
         marginBottom: 14,
     },
     avatarText: { fontSize: 30, fontWeight: '800' },
-    userName:   { fontSize: 24, fontWeight: '800', marginBottom: 6 },
-    roleBadge:  { paddingHorizontal: 14, paddingVertical: 4, borderRadius: 20 },
-    roleText:   { fontSize: 13, fontWeight: '700' },
+    userName: { fontSize: 24, fontWeight: '800', marginBottom: 6 },
+    roleBadge: { paddingHorizontal: 14, paddingVertical: 4, borderRadius: 20 },
+    roleText: { fontSize: 13, fontWeight: '700' },
 
     /* Divider between header and sections */
     divider: { height: 10, width: '100%' },
@@ -365,12 +373,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
     },
     infoRowText: { flex: 1 },
-    infoLabel:   { fontSize: 11, fontWeight: '600', marginBottom: 2, letterSpacing: 0.3 },
-    infoValue:   { fontSize: 15, fontWeight: '500' },
-    rowDivider:  { height: 1, marginLeft: 64 },
+    infoLabel: { fontSize: 11, fontWeight: '600', marginBottom: 2, letterSpacing: 0.3 },
+    infoValue: { fontSize: 15, fontWeight: '500' },
+    rowDivider: { height: 1, marginLeft: 64 },
 
     /* Edit contact inline */
-    editBlock:    { padding: 16 },
+    editBlock: { padding: 16 },
     editFieldRow: { flexDirection: 'row', alignItems: 'center' },
     editInput: {
         flex: 1,
@@ -378,7 +386,7 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         borderBottomWidth: 1,
     },
-    editActions:   { flexDirection: 'row', gap: 10, marginTop: 20 },
+    editActions: { flexDirection: 'row', gap: 10, marginTop: 20 },
     editActionBtn: {
         flex: 1,
         paddingVertical: 12,
@@ -407,7 +415,7 @@ const styles = StyleSheet.create({
     },
     listItemText: { flex: 1 },
     listItemTitle: { fontSize: 15, fontWeight: '600', marginLeft: 4 },
-    listItemSub:   { fontSize: 12, marginTop: 2, marginLeft: 4 },
+    listItemSub: { fontSize: 12, marginTop: 2, marginLeft: 4 },
 
     /* Icon circle */
     iconCircle: {

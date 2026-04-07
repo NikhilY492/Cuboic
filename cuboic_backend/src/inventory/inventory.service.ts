@@ -50,6 +50,19 @@ export class InventoryService {
     return this.prisma.inventoryItem.delete({ where: { id } });
   }
 
+  async bulkUpdate(outletId: string, updates: Array<{ id: string; data: Partial<CreateInventoryItemDto> }>) {
+    const results = await this.prisma.$transaction(
+      updates.map((u) =>
+        this.prisma.inventoryItem.update({
+          where: { id: u.id, outletId }, // Safety check: must belong to the outlet
+          data: u.data,
+        }),
+      ),
+    );
+    this.eventsGateway.emitToRestaurant(outletId, 'inventory:bulk-updated', { count: results.length });
+    return results;
+  }
+
   // ── Stock In (Procurement) ───────────────────────────────────────────────
 
   async stockIn(id: string, dto: StockInDto) {
