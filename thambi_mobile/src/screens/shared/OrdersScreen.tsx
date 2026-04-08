@@ -448,6 +448,7 @@ export function OrdersScreen({ route }: any) {
                 </ScrollView>
 
                 <FlatList
+                    key="orders-list"
                     data={filtered}
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.list}
@@ -520,6 +521,7 @@ export function OrdersScreen({ route }: any) {
                 <Text style={[styles.empty, { color: colors.textMuted }]}>No tables for "{tableFilter}" filter</Text>
             ) : (
                 <FlatList
+                    key="tables-grid"
                     data={filteredSummaries}
                     keyExtractor={item => item.tableNum}
                     numColumns={2}
