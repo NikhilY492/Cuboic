@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "T Manager",
-    "slug": "cuboic_mobile",
+    "slug": "thambi",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/bg.png",
@@ -33,8 +33,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "43b9877c-b069-4e15-875e-81c0870ec56f"
+        "projectId": "9c290a79-9324-479a-8b97-d424bdafa829"
       }
-    }
+    },
+    "owner": "h3x4n3"
   }
 }
