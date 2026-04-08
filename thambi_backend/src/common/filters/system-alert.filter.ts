@@ -5,7 +5,7 @@ import {
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
-import { AdminService } from '../admin/admin.service';
+import { AdminService } from '../../admin/admin.service';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
