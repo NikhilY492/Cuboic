@@ -52,6 +52,11 @@ export declare class OrdersController {
         preparing: number;
         completed: number;
     }>;
+    getUnpaidSummary(restaurantId: string, customerId?: string, sessionId?: string): Promise<{
+        count: number;
+        total: number;
+        orderIds: string[];
+    }>;
     findOne(id: string): import("@prisma/client").Prisma.Prisma__OrderClient<({
         table: {
             id: string;
@@ -215,6 +220,13 @@ export declare class OrdersController {
             table_number: string;
             restaurantId: string;
         };
+        customer: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string;
+        } | null;
         payment: {
             id: string;
             createdAt: Date;
@@ -241,5 +253,9 @@ export declare class OrdersController {
         notes: string | null;
         tableId: string;
         customerId: string | null;
+    }>;
+    markPaidBulk(restaurantId: string, orderIds: string[]): Promise<{
+        success: boolean;
+        count: number;
     }>;
 }

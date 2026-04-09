@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getOrder, cancelOrder, type Order } from '../api/orders';
+import { getOrder, cancelOrder, getUnpaidSummary, type Order } from '../api/orders';
 import { getRestaurant } from '../api/menu';
 import { useSocket } from '../hooks/useSocket';
 import { StatusTimeline } from '../components/StatusTimeline';
@@ -20,6 +20,7 @@ export function OrderTrackerPage() {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [cancelling, setCancelling] = useState(false);
     const [customerName, setCustomerName] = useState('');
+    const [unpaidSummary, setUnpaidSummary] = useState<{ total: number; count: number } | null>(null);
 
     useEffect(() => {
         const c = getCustomer();
@@ -58,6 +59,19 @@ export function OrderTrackerPage() {
             .finally(() => setLoading(false));
     }, [orderId]);
 
+    const fetchUnpaidSummary = useCallback(() => {
+        if (!order || !order.restaurantId || !order.customer_session_id) return;
+        getUnpaidSummary(order.restaurantId, order.customerId || undefined, order.customer_session_id)
+            .then(data => {
+                if (data.total > 0) {
+                    setUnpaidSummary(data);
+                } else {
+                    setUnpaidSummary(null);
+                }
+            })
+            .catch(err => console.error('Failed to fetch unpaid summary:', err));
+    }, [order]);
+
     // Initial fetch
     useEffect(() => { fetchOrder(); }, [fetchOrder]);
 
@@ -68,10 +82,15 @@ export function OrderTrackerPage() {
 
         const interval = setInterval(() => {
             fetchOrder();
+            fetchUnpaidSummary();
         }, 10_000);
 
         return () => clearInterval(interval);
-    }, [orderId, order?.status, fetchOrder]);
+    }, [orderId, order?.status, order?.restaurantId, fetchOrder, fetchUnpaidSummary]);
+
+    useEffect(() => {
+        if (order) fetchUnpaidSummary();
+    }, [order, fetchUnpaidSummary]);
 
     // Real-time updates via WebSocket — still active for instant pushes
     const socketRef = useSocket(order?.restaurantId?.toString() ?? null);
@@ -80,9 +99,9 @@ export function OrderTrackerPage() {
         if (!socket || !orderId || !order?.restaurantId) return;
 
         const eventName = `order:updated:${order.restaurantId}`;
-        const handler = (data: { id: string; status: Order['status'] }) => {
+        const handler = (data: Order) => {
             if (data.id === orderId || data.id?.toString() === orderId) {
-                setOrder(prev => prev ? { ...prev, status: data.status } : prev);
+                setOrder(prev => prev ? { ...prev, ...data } : prev);
                 setLastUpdated(new Date());
             }
         };
@@ -183,6 +202,25 @@ export function OrderTrackerPage() {
                         </div>
                     </div>
                 </section>
+                
+                {unpaidSummary && unpaidSummary.total > 0 && (
+                    <section className="tracker-section card unpaid-highlight" style={{ borderColor: 'var(--primary)', borderWidth: '2px', background: 'var(--surface2)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <h2 className="tracker-section__title" style={{ margin: 0, color: 'var(--primary)' }}>Outstanding Balance</h2>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                    Total for {unpaidSummary.count} unpaid order(s) this session
+                                </p>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>₹{unpaidSummary.total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div style={{ marginTop: '12px', padding: '10px', borderRadius: '8px', background: 'rgba(var(--primary-rgb), 0.1)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Please settle this amount at the counter before leaving. Thank you!
+                        </div>
+                    </section>
+                )}
 
                 <p className="tracker-note">Order ID: <code>{order.id}</code></p>
 

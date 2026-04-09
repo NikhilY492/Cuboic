@@ -21,6 +21,7 @@ interface Order {
   id: string
   tableId: string
   table?: { id: string; table_number: string }
+  customer?: { name: string; phone: string }
   orderType: string
   items: OrderItem[]
   notes?: string
@@ -28,6 +29,10 @@ interface Order {
   tax: number
   total: number
   status: string
+  payment?: {
+    status: string
+    method: string
+  }
   createdAt: string
 }
 
@@ -65,6 +70,7 @@ export default function OrdersPage() {
   const [orders, setOrders]           = useState<Order[]>([])
   const [selectedTable, setSelectedTable] = useState<Table | null>(null)
   const [filter, setFilter]           = useState<'all' | 'free' | 'occupied'>('all')
+  const [searchQuery, setSearchQuery]    = useState('')
   const [loading, setLoading]         = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [lastRefresh, setLastRefresh] = useState(new Date())
@@ -153,6 +159,18 @@ export default function OrdersPage() {
     finally { setActionLoading(false) }
   }
 
+  const settleTable = async (tableId: string, orderIds: string[]) => {
+    if (!confirm('Settle all unpaid orders for this table?')) return
+    setActionLoading(true)
+    try {
+      await apiClient.patch('/orders/mark-paid-bulk', { orderIds }, {
+          params: { restaurantId: user?.restaurantId }
+      })
+      await load()
+    } catch (e) { console.error(e) }
+    finally { setActionLoading(false) }
+  }
+
   // ── Summary Stats ────────────────────────────────────────────────────────
   const occupiedCount = activeOrderByTableId.size
   const pendingCount  = orders.filter(o => o.status === 'Pending').length
@@ -215,6 +233,16 @@ export default function OrdersPage() {
               ))}
             </div>
 
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search phone / table..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:ring-1 focus:ring-accent w-48 transition-colors duration-300"
+              />
+            </div>
+            
             <button onClick={load} className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
               <RefreshCw size={16} />
             </button>
@@ -242,9 +270,25 @@ export default function OrdersPage() {
               {tables
                 .filter(table => {
                   const activeOrder = activeOrderByTableId.get(table.id)
+                  const allTableOrders = orders.filter(o => o.tableId === table.id)
+                  
+                  // Status filter
                   const isOccupied = !!activeOrder
-                  if (filter === 'free') return !isOccupied
-                  if (filter === 'occupied') return isOccupied
+                  if (filter === 'free' && isOccupied) return false
+                  if (filter === 'occupied' && !isOccupied) return false
+
+                  // Search filter
+                  if (searchQuery) {
+                    const q = searchQuery.toLowerCase()
+                    const matchesTable = table.table_number.toLowerCase().includes(q)
+                    const matchesOrder = allTableOrders.some(o => 
+                      o.customer?.name.toLowerCase().includes(q) || 
+                      o.customer?.phone.toLowerCase().includes(q) ||
+                      o.id.toLowerCase().includes(q)
+                    )
+                    if (!matchesTable && !matchesOrder) return false
+                  }
+                  
                   return true
                 })
                 .map(table => {
@@ -360,6 +404,12 @@ export default function OrdersPage() {
                     {selectedOrder.status}
                   </span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-zinc-500 font-medium uppercase tracking-widest">Payment</span>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${selectedOrder.payment?.status === 'Paid' ? 'text-green-400 bg-green-400/10 border-green-400/20' : 'text-amber-400 bg-amber-400/10 border-amber-400/20'}`}>
+                    {selectedOrder.payment?.status === 'Paid' ? 'PAID' : 'UNPAID'}
+                  </span>
+                </div>
               </div>
 
               {/* Order Items */}
@@ -420,6 +470,26 @@ export default function OrdersPage() {
                       )}
                     </button>
                   )}
+                  
+                  {(() => {
+                    const unpaidOrders = orders.filter(o => o.tableId === selectedTable.id && o.payment?.status !== 'Paid' && o.status !== 'Cancelled')
+                    const unpaidTotal = unpaidOrders.reduce((sum, o) => sum + o.total, 0)
+                    
+                    if (unpaidOrders.length > 0) {
+                      return (
+                        <button
+                          onClick={() => settleTable(selectedTable.id, unpaidOrders.map(o => o.id))}
+                          disabled={actionLoading}
+                          className="w-full bg-green-500 hover:bg-green-600 text-zinc-950 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60 shadow-lg shadow-green-500/20"
+                        >
+                          <UtensilsCrossed size={18} />
+                          Settle Table (₹{unpaidTotal.toFixed(0)})
+                        </button>
+                      )
+                    }
+                    return null
+                  })()}
+
                   {!['Delivered', 'Cancelled'].includes(selectedOrder.status) && (
                     <button
                       onClick={() => cancelOrder(selectedOrder)}

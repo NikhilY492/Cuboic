@@ -38,6 +38,9 @@ let MenuController = class MenuController {
     updateItem(id, dto) {
         return this.menuService.updateItem(id, dto);
     }
+    bulkUpdate(restaurantId, body) {
+        return this.menuService.bulkUpdate(restaurantId, body);
+    }
 };
 exports.MenuController = MenuController;
 __decorate([
@@ -75,6 +78,16 @@ __decorate([
     __metadata("design:paramtypes", [String, update_menu_item_dto_1.UpdateMenuItemDto]),
     __metadata("design:returntype", void 0)
 ], MenuController.prototype, "updateItem", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner'),
+    (0, common_1.Patch)('bulk'),
+    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Array]),
+    __metadata("design:returntype", void 0)
+], MenuController.prototype, "bulkUpdate", null);
 exports.MenuController = MenuController = __decorate([
     (0, common_1.Controller)('menu'),
     __metadata("design:paramtypes", [menu_service_1.MenuService])

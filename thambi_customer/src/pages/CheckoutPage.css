@@ -408,3 +408,57 @@
     content: '🔒';
     font-size: 0.9rem;
 }
+
+/* Payment Toggle */
+.payment-toggle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.payment-toggle-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+    border: 2px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
+}
+
+.payment-toggle-btn:hover {
+    border-color: var(--accent);
+}
+
+.payment-toggle-btn.active {
+    border-color: var(--accent);
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 4px 12px var(--accent-dim);
+}
+
+.toggle-icon {
+    font-size: 1.5rem;
+}
+
+.toggle-label {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.toggle-sub {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+@media (max-width: 480px) {
+    .payment-toggle-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -9,4 +9,12 @@ export const ordersApi = {
 
     updateStatus: (id: string, status: string) =>
         apiClient.patch(`/orders/${id}/status`, { status }),
+
+    markAsPaid: (id: string) =>
+        apiClient.patch(`/orders/${id}/pay`),
+
+    markPaidBulk: (restaurantId: string, orderIds: string[]) =>
+        apiClient.patch('/orders/mark-paid-bulk', { orderIds }, {
+            params: { restaurantId }
+        }),
 }

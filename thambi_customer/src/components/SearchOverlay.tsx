@@ -70,7 +70,7 @@ export function SearchOverlay({
                         <input
                             ref={inputRef}
                             className="search-overlay__input"
-                            type="search"
+                            type="text"
                             placeholder="Search for restaurants or dishes"
                             value={query}
                             onChange={onQueryChange}

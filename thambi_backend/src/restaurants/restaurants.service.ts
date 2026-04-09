@@ -37,4 +37,11 @@ export class RestaurantsService {
     create(data: { name: string; description?: string; logoUrl?: string }) {
         return this.prisma.restaurant.create({ data });
     }
+
+    update(id: string, data: any) {
+        return this.prisma.restaurant.update({
+            where: { id },
+            data,
+        });
+    }
 }

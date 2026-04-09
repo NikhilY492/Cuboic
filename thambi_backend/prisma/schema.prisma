@@ -71,6 +71,11 @@ enum StockTransactionType {
   Correction
 }
 
+enum PaymentStrategy {
+  PayPerOrder
+  PayAtEnd
+}
+
 // ── Models ─────────────────────────────────────────────────────────────────
 
 model SystemAlert {
@@ -93,6 +98,7 @@ model Restaurant {
   description String?
   logo_url    String?
   is_active   Boolean  @default(true)
+  paymentStrategy PaymentStrategy @default(PayPerOrder)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

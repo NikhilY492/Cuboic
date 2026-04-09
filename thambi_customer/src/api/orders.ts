@@ -12,6 +12,7 @@ export interface PlaceOrderPayload {
     customerSessionId: string;
     notes?: string;
     items: OrderItem[];
+    paymentStatus?: 'Pending' | 'Paid';
 }
 
 // Matches the backend Order schema exactly
@@ -29,6 +30,8 @@ export interface Order {
         unit_price?: number;
         unitPrice?: number;
     }>;
+    customerId?: string;
+    customer_session_id: string;
     subtotal: number;
     tax: number;
     total: number;
@@ -46,3 +49,8 @@ export const updateOrderTable = (id: string, tableId: string) =>
 
 export const cancelOrder = (id: string) =>
     api.patch<Order>(`/orders/${id}/cancel`).then(r => r.data);
+
+export const getUnpaidSummary = (restaurantId: string, customerId?: string, sessionId?: string) =>
+    api.get<{ count: number; total: number; orderIds: string[] }>('/orders/unpaid-summary', {
+        params: { restaurantId, customerId, sessionId }
+    }).then(r => r.data);

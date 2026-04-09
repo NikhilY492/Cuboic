@@ -69,6 +69,13 @@ let MenuService = class MenuService {
         }).catch(() => { throw new common_1.NotFoundException('Menu item not found'); });
         return updated;
     }
+    async bulkUpdate(restaurantId, updates) {
+        const results = await this.prisma.$transaction(updates.map((u) => this.prisma.menuItem.update({
+            where: { id: u.id, restaurantId },
+            data: u.data,
+        })));
+        return results;
+    }
     deleteItem(id) {
         return this.prisma.menuItem.delete({ where: { id } })
             .catch(() => { throw new common_1.NotFoundException('Menu item not found'); });

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Param,
   NotFoundException,
@@ -41,4 +42,10 @@ export class RestaurantsController {
     console.log("BODY:", body);
     return this.restaurantsService.create(body);
   }
-}
+
+  // PATCH /restaurants/:id
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() body: any) {
+    return this.restaurantsService.update(id, body);
+  }
+}

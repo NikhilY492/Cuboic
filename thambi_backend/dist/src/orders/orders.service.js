@@ -48,9 +48,11 @@ let OrdersService = OrdersService_1 = class OrdersService {
         const order = await this.prisma.order.create({
             data: {
                 restaurantId: dto.restaurantId,
+                outletId: dto.outletId,
                 tableId: dto.tableId,
                 customerId: dto.customerId,
                 customer_session_id: dto.customerSessionId,
+                orderType: dto.orderType || 'DineIn',
                 notes: dto.notes,
                 items: orderItems,
                 subtotal,
@@ -60,7 +62,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
                     create: {
                         amount: total,
                         method: 'Counter',
-                        status: 'Pending',
+                        status: dto.paymentStatus || 'Pending',
                         transaction_id: `txn_${Date.now()}`
                     }
                 }
@@ -170,12 +172,54 @@ let OrdersService = OrdersService_1 = class OrdersService {
                     update: { status: 'Paid' }
                 }
             },
-            include: { payment: true, table: true }
+            include: { payment: true, table: true, customer: true }
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
+    }
+    async getUnpaidSummary(restaurantId, customerId, sessionId) {
+        if (!customerId && !sessionId) {
+            throw new common_1.BadRequestException('CustomerId or sessionId is required');
+        }
+        const unpaidOrders = await this.prisma.order.findMany({
+            where: {
+                restaurantId,
+                payment: { status: 'Pending' },
+                OR: [
+                    ...(customerId ? [{ customerId }] : []),
+                    ...(sessionId ? [{ customer_session_id: sessionId }] : []),
+                ],
+                status: { not: 'Cancelled' }
+            },
+            include: { payment: true },
+        });
+        const totalUnpaid = unpaidOrders.reduce((sum, o) => sum + o.total, 0);
+        return {
+            count: unpaidOrders.length,
+            total: totalUnpaid,
+            orderIds: unpaidOrders.map(o => o.id),
+        };
+    }
+    async markPaidBulk(restaurantId, orderIds) {
+        if (!orderIds || orderIds.length === 0)
+            return { success: true, count: 0 };
+        await this.prisma.payment.updateMany({
+            where: {
+                orderId: { in: orderIds },
+                order: { restaurantId }
+            },
+            data: { status: 'Paid' }
+        });
+        const updatedOrders = await this.prisma.order.findMany({
+            where: { id: { in: orderIds } },
+            include: { payment: true, table: true, customer: true }
+        });
+        for (const order of updatedOrders) {
+            this.eventsGateway.emitToRestaurant(restaurantId, 'order:updated', order);
+        }
+        return { success: true, count: updatedOrders.length };
     }
     async cleanupStaleOrders() {
         this.logger.log('Running stale orders cleanup...');

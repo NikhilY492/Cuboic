@@ -4,6 +4,7 @@ import { paymentsApi } from '../api/payments'
 import { deliveriesApi } from '../api/deliveries'
 import { robotsApi } from '../api/robots'
 import { ordersApi } from '../api/orders'
+import { restaurantsApi, Restaurant } from '../api/restaurants'
 import { useSocket } from '../hooks/useSocket'
 import { showToast } from '../components/Toast'
 
@@ -15,6 +16,7 @@ export default function DashboardPage() {
     const [orderSummary, setOrderSummary] = useState({ pending: 0, preparing: 0, completed: 0 })
     const [activeDeliveries, setActiveDeliveries] = useState(0)
     const [robotsOnline, setRobotsOnline] = useState(0)
+    const [restaurantData, setRestaurantData] = useState<Restaurant | null>(null)
     const [pulse, setPulse] = useState(false)
 
     const restaurantId = user?.restaurantId ?? ''
@@ -45,6 +47,9 @@ export default function DashboardPage() {
             if (orderSummaryRes?.data) {
                 setOrderSummary(orderSummaryRes.data);
             }
+
+            const restRes = await restaurantsApi.findById(restaurantId);
+            setRestaurantData(restRes.data);
         } catch (err) {
             console.error('Failed to load operational data:', err);
         }
@@ -120,6 +125,18 @@ export default function DashboardPage() {
         },
     ]
 
+    const handleToggleStrategy = async () => {
+        if (!restaurantData) return;
+        const newStrategy = restaurantData.paymentStrategy === 'PayPerOrder' ? 'PayAtEnd' : 'PayPerOrder';
+        try {
+            await restaurantsApi.update(restaurantId, { paymentStrategy: newStrategy });
+            setRestaurantData({ ...restaurantData, paymentStrategy: newStrategy });
+            showToast('Success', `Payment mode updated to ${newStrategy === 'PayPerOrder' ? 'Pay per order' : 'Pay at end'}`, 'success');
+        } catch (err) {
+            showToast('Error', 'Failed to update payment mode', 'warning');
+        }
+    }
+
     return (
         <div className="page">
             <div className="page-header">
@@ -139,6 +156,32 @@ export default function DashboardPage() {
                     </div>
                 ))}
             </div>
+
+            {user?.role === 'Owner' && restaurantData && (
+                <div className="glass-panel tech-border" style={{ padding: '24px', marginTop: '32px' }}>
+                    <h3 style={{ marginBottom: '16px', fontSize: '1rem', color: 'var(--accent-primary)' }}>System Configuration</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>Payment Workflow</div>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                {restaurantData.paymentStrategy === 'PayPerOrder' 
+                                    ? 'Customers must pay for each order immediately.' 
+                                    : 'Customers can aggregate multiple orders and pay at the end.'}
+                            </div>
+                        </div>
+                        <button 
+                            className="tech-btn" 
+                            onClick={handleToggleStrategy}
+                            style={{ 
+                                borderColor: restaurantData.paymentStrategy === 'PayAtEnd' ? 'var(--accent-primary)' : 'var(--border-color)',
+                                color: restaurantData.paymentStrategy === 'PayAtEnd' ? 'var(--accent-primary)' : 'var(--text-secondary)'
+                            }}
+                        >
+                            {restaurantData.paymentStrategy === 'PayPerOrder' ? 'Switch to "Pay at End"' : 'Switch to "Pay per Order"'}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="dashboard-hint">
                 Real-time updates are active — new orders and delivery changes appear automatically.

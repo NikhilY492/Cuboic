@@ -33,6 +33,7 @@ const analytics_module_1 = require("./analytics/analytics.module");
 const outlets_module_1 = require("./outlets/outlets.module");
 const inventory_module_1 = require("./inventory/inventory.module");
 const recipes_module_1 = require("./recipes/recipes.module");
+const admin_module_1 = require("./admin/admin.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -66,6 +67,7 @@ exports.AppModule = AppModule = __decorate([
             outlets_module_1.OutletsModule,
             inventory_module_1.InventoryModule,
             recipes_module_1.RecipesModule,
+            admin_module_1.AdminModule,
         ],
         providers: [
             {

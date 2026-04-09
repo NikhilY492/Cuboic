@@ -41,6 +41,9 @@ let InventoryController = class InventoryController {
     remove(id) {
         return this.inventoryService.remove(id);
     }
+    bulkUpdate(outletId, body) {
+        return this.inventoryService.bulkUpdate(outletId, body);
+    }
     stockIn(id, dto) {
         return this.inventoryService.stockIn(id, dto);
     }
@@ -95,6 +98,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Patch)('items/bulk'),
+    __param(0, (0, common_1.Query)('outletId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Array]),
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "bulkUpdate", null);
 __decorate([
     (0, common_1.Post)('items/:id/stock-in'),
     __param(0, (0, common_1.Param)('id')),

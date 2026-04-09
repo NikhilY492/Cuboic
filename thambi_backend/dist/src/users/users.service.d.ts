@@ -14,6 +14,9 @@ export declare class UsersService {
         user_id: string;
         outletId: string | null;
         role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     }>;
     findAll(restaurantId: string): import("@prisma/client").Prisma.PrismaPromise<{
         id: string;
@@ -23,6 +26,9 @@ export declare class UsersService {
         restaurantId: string | null;
         user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     }[]>;
     findByUserId(userId: string): Promise<{
         id: string;
@@ -35,12 +41,31 @@ export declare class UsersService {
         outletId: string | null;
         password_hash: string;
         role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     } | null>;
     updatePassword(id: string, hash: string): Promise<{
         id: string;
         name: string;
         user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
+    }>;
+    updateProfile(id: string, dto: {
+        email?: string;
+        phone?: string;
+    }): Promise<{
+        id: string;
+        name: string;
+        restaurantId: string | null;
+        user_id: string;
+        role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     }>;
     update(id: string, dto: UpdateUserDto): Promise<{
         id: string;
@@ -48,6 +73,7 @@ export declare class UsersService {
         is_active: boolean;
         user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -60,5 +86,8 @@ export declare class UsersService {
         outletId: string | null;
         password_hash: string;
         role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     }>;
 }

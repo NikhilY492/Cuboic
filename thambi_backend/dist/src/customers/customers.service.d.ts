@@ -12,6 +12,13 @@ export declare class CustomersService {
         } | null;
         phone: string;
     }>;
+    findAll(): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        phone: string;
+    }[]>;
     register(phone: string, name: string): Promise<{
         id: string;
         name: string;

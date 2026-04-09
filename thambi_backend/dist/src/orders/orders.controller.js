@@ -31,6 +31,9 @@ let OrdersController = class OrdersController {
     getSummary(restaurantId) {
         return this.ordersService.getSummary(restaurantId);
     }
+    getUnpaidSummary(restaurantId, customerId, sessionId) {
+        return this.ordersService.getUnpaidSummary(restaurantId, customerId, sessionId);
+    }
     findOne(id) {
         return this.ordersService.findOne(id);
     }
@@ -52,6 +55,9 @@ let OrdersController = class OrdersController {
     markAsPaid(id) {
         return this.ordersService.markAsPaid(id);
     }
+    markPaidBulk(restaurantId, orderIds) {
+        return this.ordersService.markPaidBulk(restaurantId, orderIds);
+    }
 };
 exports.OrdersController = OrdersController;
 __decorate([
@@ -62,14 +68,21 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "create", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('Staff', 'Owner'),
     (0, common_1.Get)('summary'),
     __param(0, (0, common_1.Query)('restaurantId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getSummary", null);
+__decorate([
+    (0, common_1.Get)('unpaid-summary'),
+    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(1, (0, common_1.Query)('customerId')),
+    __param(2, (0, common_1.Query)('sessionId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "getUnpaidSummary", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
@@ -128,6 +141,16 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "markAsPaid", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner'),
+    (0, common_1.Patch)('mark-paid-bulk'),
+    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(1, (0, common_1.Body)('orderIds')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Array]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "markPaidBulk", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])

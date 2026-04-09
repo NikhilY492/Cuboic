@@ -613,6 +613,7 @@ export function MenuPage() {
                 orders={activeOrders}
                 restaurantId={restaurantId}
                 tableId={tableId}
+                sessionId={SESSION_ID}
             />
 
             {/* ── Table selector modal ───────────────────────────── */}

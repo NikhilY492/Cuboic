@@ -94,6 +94,22 @@ export declare class InventoryController {
         reorderLevel: number;
         reservedStock: number;
     }>;
+    bulkUpdate(outletId: string, body: Array<{
+        id: string;
+        data: Partial<CreateInventoryItemDto>;
+    }>): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        category: string;
+        outletId: string;
+        unit: string;
+        currentStock: number;
+        costPerUnit: number;
+        reorderLevel: number;
+        reservedStock: number;
+    }[]>;
     stockIn(id: string, dto: StockInDto): Promise<{
         id: string;
         name: string;

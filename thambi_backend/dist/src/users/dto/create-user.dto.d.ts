@@ -4,4 +4,5 @@ export declare class CreateUserDto {
     password: string;
     role: string;
     restaurantId?: string;
+    dashboard_config?: any;
 }

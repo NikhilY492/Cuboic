@@ -96,6 +96,22 @@ export declare class InventoryService {
         reorderLevel: number;
         reservedStock: number;
     }>;
+    bulkUpdate(outletId: string, updates: Array<{
+        id: string;
+        data: Partial<CreateInventoryItemDto>;
+    }>): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        category: string;
+        outletId: string;
+        unit: string;
+        currentStock: number;
+        costPerUnit: number;
+        reorderLevel: number;
+        reservedStock: number;
+    }[]>;
     stockIn(id: string, dto: StockInDto): Promise<{
         id: string;
         name: string;

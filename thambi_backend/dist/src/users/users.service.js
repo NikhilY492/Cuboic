@@ -63,6 +63,7 @@ let UsersService = class UsersService {
                 password_hash: passwordHash,
                 role: dto.role ?? 'Staff',
                 restaurantId: dto.restaurantId ?? null,
+                dashboard_config: dto.dashboard_config ?? ["Pending", "Preparing", "Completed", "Robots"],
             },
         });
         return user;
@@ -73,6 +74,7 @@ let UsersService = class UsersService {
             select: {
                 id: true, name: true, user_id: true, role: true,
                 is_active: true, restaurantId: true, createdAt: true,
+                dashboard_config: true, email: true, phone: true,
             },
         });
     }
@@ -83,7 +85,14 @@ let UsersService = class UsersService {
         return this.prisma.user.update({
             where: { id },
             data: { password_hash: hash },
-            select: { id: true, name: true, user_id: true, role: true }
+            select: { id: true, name: true, user_id: true, role: true, dashboard_config: true, email: true, phone: true }
+        });
+    }
+    async updateProfile(id, dto) {
+        return this.prisma.user.update({
+            where: { id },
+            data: { email: dto.email, phone: dto.phone },
+            select: { id: true, name: true, user_id: true, role: true, restaurantId: true, email: true, phone: true, dashboard_config: true },
         });
     }
     async update(id, dto) {
@@ -95,7 +104,7 @@ let UsersService = class UsersService {
         return this.prisma.user.update({
             where: { id },
             data,
-            select: { id: true, name: true, user_id: true, role: true, is_active: true }
+            select: { id: true, name: true, user_id: true, role: true, is_active: true, dashboard_config: true }
         });
     }
     async remove(id) {

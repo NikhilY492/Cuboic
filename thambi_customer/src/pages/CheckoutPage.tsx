@@ -27,6 +27,7 @@ export function CheckoutPage() {
     const [notes, setNotes] = useState('');
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState('');
+    const [paymentMode, setPaymentMode] = useState<'Now' | 'Later'>('Later');
 
     // Guard — if no cart state, redirect back to menu
     if (!state || !state.items?.length) {
@@ -57,6 +58,7 @@ export function CheckoutPage() {
                 customerSessionId: sessionId ?? SESSION_ID,
                 notes: notes.trim() || undefined,
                 items: items.map(c => ({ itemId: c.item.id, quantity: c.quantity })),
+                paymentStatus: paymentMode === 'Now' ? 'Paid' : 'Pending',
             });
 
             localStorage.removeItem('thambi_cart');
@@ -139,10 +141,35 @@ export function CheckoutPage() {
 
                 {/* ── Payment Information Tile ── */}
                 <section className="bento-tile bento-payment fade-up" style={{ animationDelay: '0.2s' }}>
-                    <h2 className="bento-title">Payment</h2>
-                    <p className="co-method-hint fade-in" style={{ marginTop: 0 }}>
-                        <span style={{ fontSize: '1.25rem', marginRight: '8px', verticalAlign: 'middle' }}>💵</span>
-                        <span>Please pay at the counter.</span>
+                    <h2 className="bento-title">Payment Mode</h2>
+                    
+                    <div className="payment-toggle-grid">
+                        <button 
+                            className={`payment-toggle-btn ${paymentMode === 'Later' ? 'active' : ''}`}
+                            onClick={() => setPaymentMode('Later')}
+                        >
+                            <span className="toggle-icon">💵</span>
+                            <div className="toggle-text">
+                                <div className="toggle-label">Pay Later</div>
+                                <div className="toggle-sub">at the counter</div>
+                            </div>
+                        </button>
+                        <button 
+                            className={`payment-toggle-btn ${paymentMode === 'Now' ? 'active' : ''}`}
+                            onClick={() => setPaymentMode('Now')}
+                        >
+                            <span className="toggle-icon">💳</span>
+                            <div className="toggle-text">
+                                <div className="toggle-label">Pay Now</div>
+                                <div className="toggle-sub">UPI / Card</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <p className="co-method-hint fade-in" style={{ marginTop: '16px' }}>
+                        {paymentMode === 'Later' 
+                            ? "Place order first, pay when you're done." 
+                            : "Pay now to get your order faster."}
                     </p>
                 </section>
 

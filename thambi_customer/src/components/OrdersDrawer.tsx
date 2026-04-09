@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getUnpaidSummary } from '../api/orders';
+import { getCustomer } from '../utils/auth';
 import './CartDrawer.css'; // Reusing established bottom sheet styles
 
 export interface ActiveOrderSession {
@@ -14,13 +17,27 @@ interface OrdersDrawerProps {
     orders: ActiveOrderSession[];
     restaurantId: string;
     tableId: string;
+    sessionId: string;
 }
 
 export function OrdersDrawer({
     open,
     onClose,
     orders,
+    restaurantId,
+    sessionId,
 }: OrdersDrawerProps) {
+    const [unpaid, setUnpaid] = useState<{ count: number; total: number } | null>(null);
+
+    useEffect(() => {
+        if (open && orders.length > 0) {
+            const customer = getCustomer();
+            getUnpaidSummary(restaurantId, customer?.id, sessionId)
+                .then(setUnpaid)
+                .catch(() => {});
+        }
+    }, [open, orders, restaurantId, sessionId]);
+
     if (!open) return null;
 
     // Sort newest orders first
@@ -41,6 +58,18 @@ export function OrdersDrawer({
 
                 {/* Body */}
                 <div className="cart-sheet__body">
+                    {unpaid && unpaid.total > 0 && (
+                        <div style={{ backgroundColor: '#ef444415', margin: '0 24px 16px', padding: '16px', borderRadius: '16px', border: '1px solid #ef444433', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Unpaid Balance</div>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}>₹{unpaid.total.toFixed(2)}</div>
+                            </div>
+                            <div style={{ padding: '8px 12px', backgroundColor: '#ef4444', borderRadius: '8px', color: 'white', fontSize: '0.8rem', fontWeight: 700 }}>
+                                Pay at Counter
+                            </div>
+                        </div>
+                    )}
+
                     {sortedOrders.length === 0 ? (
                         <div className="cart-empty">
                             <div className="cart-empty__icon" style={{ marginBottom: '8px' }}>

@@ -20,6 +20,9 @@ let CustomersController = class CustomersController {
     constructor(customersService) {
         this.customersService = customersService;
     }
+    findAll() {
+        return this.customersService.findAll();
+    }
     findByPhone(phone) {
         return this.customersService.findByPhone(phone);
     }
@@ -28,6 +31,12 @@ let CustomersController = class CustomersController {
     }
 };
 exports.CustomersController = CustomersController;
+__decorate([
+    (0, common_1.Get)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], CustomersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('lookup'),
     __param(0, (0, common_1.Query)('phone')),

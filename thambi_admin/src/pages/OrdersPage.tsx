@@ -21,6 +21,10 @@ interface Order {
     notes?: string
     total: number
     status: string
+    payment?: {
+        status: string
+        method: string
+    }
     createdAt: string
 }
 
@@ -28,6 +32,7 @@ export default function OrdersPage() {
     const { user } = useAuth()
     const [orders, setOrders] = useState<Order[]>([])
     const [filterStatus, setFilterStatus] = useState('All')
+    const [searchQuery, setSearchQuery] = useState('')
     const [loading, setLoading] = useState(true)
 
     const restaurantId = user?.restaurantId ?? ''
@@ -56,14 +61,40 @@ export default function OrdersPage() {
     }
 
     const handleCancel = async (order: Order) => {
+        if (!confirm('Cancel this order?')) return
         await ordersApi.updateStatus(order.id, 'Cancelled')
         load()
     }
 
+    const handleMarkPaid = async (order: Order) => {
+        await ordersApi.markAsPaid(order.id)
+        load()
+    }
+
+    const filteredOrders = orders.filter(o => {
+        if (!searchQuery) return true
+        const q = searchQuery.toLowerCase()
+        return (
+            o.id.toLowerCase().includes(q) ||
+            o.customer?.name.toLowerCase().includes(q) ||
+            o.customer?.phone.toLowerCase().includes(q) ||
+            (typeof o.tableId === 'object' && o.tableId.table_number.toLowerCase().includes(q))
+        )
+    })
+
     return (
         <div className="page">
-            <div className="page-header">
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2>Orders</h2>
+                <div className="search-container">
+                    <input 
+                        type="text" 
+                        placeholder="Search phone, table or ID..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)', minWidth: '250px' }}
+                    />
+                </div>
             </div>
 
             <div className="filter-tabs">
@@ -95,11 +126,12 @@ export default function OrdersPage() {
                                 <th>Details</th>
                                 <th>Total</th>
                                 <th>Status</th>
+                                <th>Payment</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {orders.map((order) => (
+                            {filteredOrders.map((order) => (
                                 <tr key={order.id}>
                                     <td className="cell-mono">{new Date(order.createdAt).toLocaleTimeString()}</td>
                                     <td>{typeof order.tableId === 'string' ? order.tableId.slice(-4) : order.tableId?.table_number ?? '—'}</td>
@@ -130,10 +162,20 @@ export default function OrdersPage() {
                                     <td className="cell-mono">₹{order.total.toFixed(2)}</td>
                                     <td><StatusBadge status={order.status} /></td>
                                     <td>
+                                        <span className={`badge ${order.payment?.status === 'Paid' ? 'badge-success' : 'badge-warning'}`}>
+                                            {order.payment?.status === 'Paid' ? 'PAID' : 'UNPAID'}
+                                        </span>
+                                    </td>
+                                    <td>
                                         <div className="action-btns">
                                             {NEXT_STATUS[order.status] && (
                                                 <button className="btn btn-sm btn-primary" onClick={() => handleAdvance(order)}>
                                                     → {NEXT_STATUS[order.status]}
+                                                </button>
+                                            )}
+                                            {order.payment?.status !== 'Paid' && (
+                                                <button className="btn btn-sm btn-success" onClick={() => handleMarkPaid(order)}>
+                                                    Mark Paid
                                                 </button>
                                             )}
                                             {!['Delivered', 'Cancelled', 'Assigned'].includes(order.status) && (

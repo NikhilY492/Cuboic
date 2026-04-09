@@ -15,7 +15,7 @@ async function main() {
     console.log(`Restaurant ID: ${restaurant.id}\n`);
     for (const table of restaurant.tables) {
         console.log(`[${table.table_number}]`);
-        console.log(`Production: https://cuboic.vercel.app/?r=${restaurant.id}&t=${table.id}`);
+        console.log(`Production: https://thambi.vercel.app/?r=${restaurant.id}&t=${table.id}`);
         console.log(`Localhost:  http://localhost:5173/?r=${restaurant.id}&t=${table.id}\n`);
     }
 }

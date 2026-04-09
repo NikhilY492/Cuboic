@@ -66,4 +66,17 @@ export const ordersApi = {
 
     markAsPaid: (id: string) =>
         api.patch<Order>(`/orders/${id}/pay`).then(r => r.data),
+
+    getUnpaidSummary: (restaurantId: string, customerId?: string, sessionId?: string) =>
+        api.get<{ count: number; total: number; orderIds: string[] }>('/orders/unpaid-summary', {
+            params: { restaurantId, customerId, sessionId }
+        }).then(r => r.data),
+
+    markPaidBulk: (restaurantId: string, orderIds: string[]) =>
+        api.patch<{ success: boolean; count: number }>('/orders/mark-paid-bulk', { orderIds }, {
+            params: { restaurantId }
+        }).then(r => r.data),
+
+    getUnpaidGroups: (restaurantId: string) =>
+        api.get<any[]>('/orders/unpaid-groups', { params: { restaurantId } }).then(r => r.data),
 };

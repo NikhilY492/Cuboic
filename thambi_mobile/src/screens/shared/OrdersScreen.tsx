@@ -409,6 +409,30 @@ export function OrdersScreen({ route }: any) {
             ? tableOrders
             : tableOrders.filter(o => o.status === filterStatus);
 
+        const unpaidTotal = filtered.reduce((sum, o) => o.payment?.status === 'Pending' ? sum + o.total : sum, 0);
+        const unpaidOrderIds = filtered.filter(o => o.payment?.status === 'Pending').map(o => o.id);
+
+        const handleSettleAll = async () => {
+            Alert.alert(
+                'Settle All Unpaid',
+                `Are you sure you want to mark all ${unpaidOrderIds.length} unpaid orders as paid? Total: ₹${unpaidTotal.toFixed(2)}`,
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Yes, Settle All',
+                        onPress: async () => {
+                            try {
+                                await ordersApi.markPaidBulk(restaurantId, unpaidOrderIds);
+                                load();
+                            } catch {
+                                Alert.alert('Error', 'Failed to settle orders');
+                            }
+                        }
+                    }
+                ]
+            );
+        };
+
         return (
             <View style={[S.screen, { backgroundColor: colors.bg }]}>
                 {/* Header */}
@@ -428,7 +452,7 @@ export function OrdersScreen({ route }: any) {
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    style={[styles.tabsContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+                    style={[styles.tabsContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border, maxHeight: 60 }]}
                     contentContainerStyle={styles.tabsContent}
                 >
                     {ALL_STATUSES.map(s => (
@@ -451,7 +475,7 @@ export function OrdersScreen({ route }: any) {
                     key="orders-list"
                     data={filtered}
                     keyExtractor={item => item.id}
-                    contentContainerStyle={styles.list}
+                    contentContainerStyle={[styles.list, unpaidTotal > 0 && { paddingBottom: 100 }]}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
                     renderItem={({ item }) => (
                         <OrderCard item={item} onAdvance={handleAdvance} onCancel={handleCancel} onMarkPaid={handleMarkPaid} />
@@ -460,6 +484,21 @@ export function OrdersScreen({ route }: any) {
                         <Text style={[styles.empty, { color: colors.textMuted }]}>No orders for "{filterStatus}"</Text>
                     }
                 />
+
+                {unpaidTotal > 0 && (
+                    <View style={[styles.settleBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+                        <View>
+                            <Text style={[styles.unpaidLabel, { color: colors.text }]}>Unpaid Balance</Text>
+                            <Text style={[styles.unpaidAmount, { color: colors.red }]}>₹{unpaidTotal.toFixed(2)}</Text>
+                        </View>
+                        <TouchableOpacity 
+                            style={[styles.settleBtn, { backgroundColor: colors.green }]}
+                            onPress={handleSettleAll}
+                        >
+                            <Text style={styles.settleBtnText}>Settle All</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
         );
     }
@@ -648,4 +687,31 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     empty: { textAlign: 'center', marginTop: 60, fontSize: 14 },
+    settleBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 16,
+        paddingBottom: 32,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderTopWidth: 1,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+    },
+    unpaidLabel: { fontSize: 12, fontWeight: '600', opacity: 0.7 },
+    unpaidAmount: { fontSize: 24, fontWeight: '800' },
+    settleBtn: {
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    settleBtnText: { color: 'white', fontWeight: '800', fontSize: 16 },
 });

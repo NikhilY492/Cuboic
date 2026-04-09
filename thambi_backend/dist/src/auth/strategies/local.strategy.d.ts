@@ -17,6 +17,9 @@ export declare class LocalStrategy extends LocalStrategy_base {
         outletId: string | null;
         password_hash: string;
         role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     }>;
 }
 export {};

@@ -17,6 +17,7 @@ class CreateUserDto {
     password;
     role;
     restaurantId;
+    dashboard_config;
 }
 exports.CreateUserDto = CreateUserDto;
 __decorate([
@@ -35,7 +36,7 @@ __decorate([
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "password", void 0);
 __decorate([
-    (0, class_validator_1.IsIn)(['Admin', 'Owner', 'Staff']),
+    (0, class_validator_1.IsIn)(['Admin', 'Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff']),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "role", void 0);
 __decorate([
@@ -43,4 +44,8 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "restaurantId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateUserDto.prototype, "dashboard_config", void 0);
 //# sourceMappingURL=create-user.dto.js.map

@@ -222,6 +222,13 @@ export declare class OrdersService {
             table_number: string;
             restaurantId: string;
         };
+        customer: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string;
+        } | null;
         payment: {
             id: string;
             createdAt: Date;
@@ -248,6 +255,15 @@ export declare class OrdersService {
         notes: string | null;
         tableId: string;
         customerId: string | null;
+    }>;
+    getUnpaidSummary(restaurantId: string, customerId?: string, sessionId?: string): Promise<{
+        count: number;
+        total: number;
+        orderIds: string[];
+    }>;
+    markPaidBulk(restaurantId: string, orderIds: string[]): Promise<{
+        success: boolean;
+        count: number;
     }>;
     cleanupStaleOrders(): Promise<void>;
 }

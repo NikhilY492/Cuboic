@@ -54,6 +54,14 @@ let InventoryService = class InventoryService {
             throw new common_1.NotFoundException('Inventory item not found');
         return this.prisma.inventoryItem.delete({ where: { id } });
     }
+    async bulkUpdate(outletId, updates) {
+        const results = await this.prisma.$transaction(updates.map((u) => this.prisma.inventoryItem.update({
+            where: { id: u.id, outletId },
+            data: u.data,
+        })));
+        this.eventsGateway.emitToRestaurant(outletId, 'inventory:bulk-updated', { count: results.length });
+        return results;
+    }
     async stockIn(id, dto) {
         const item = await this.prisma.inventoryItem.findUnique({ where: { id } });
         if (!item)

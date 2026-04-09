@@ -15,6 +15,9 @@ export declare class AuthService {
         outletId: string | null;
         password_hash: string;
         role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     } | null>;
     login(user: any): {
         access_token: string;
@@ -24,6 +27,8 @@ export declare class AuthService {
             userId: any;
             role: any;
             restaurantId: any;
+            email: any;
+            phone: any;
         };
     };
     changePassword(userId: string, oldPass: string, newPass: string): Promise<{
@@ -31,5 +36,8 @@ export declare class AuthService {
         name: string;
         user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     }>;
 }

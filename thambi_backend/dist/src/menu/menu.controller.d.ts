@@ -57,4 +57,20 @@ export declare class MenuController {
         is_available: boolean;
         categoryId: string;
     }>;
+    bulkUpdate(restaurantId: string, body: Array<{
+        id: string;
+        data: Partial<UpdateMenuItemDto>;
+    }>): Promise<{
+        id: string;
+        name: string;
+        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        display_order: number;
+        price: number;
+        image_url: string | null;
+        is_available: boolean;
+        categoryId: string;
+    }[]>;
 }
