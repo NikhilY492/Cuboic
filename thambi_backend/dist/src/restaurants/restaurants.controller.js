@@ -37,6 +37,9 @@ let RestaurantsController = class RestaurantsController {
         console.log("BODY:", body);
         return this.restaurantsService.create(body);
     }
+    async update(id, body) {
+        return this.restaurantsService.update(id, body);
+    }
 };
 exports.RestaurantsController = RestaurantsController;
 __decorate([
@@ -66,6 +69,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], RestaurantsController.prototype, "create", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], RestaurantsController.prototype, "update", null);
 exports.RestaurantsController = RestaurantsController = __decorate([
     (0, common_1.Controller)('restaurants'),
     __metadata("design:paramtypes", [restaurants_service_1.RestaurantsService])

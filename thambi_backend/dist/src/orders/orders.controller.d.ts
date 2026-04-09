@@ -52,11 +52,12 @@ export declare class OrdersController {
         preparing: number;
         completed: number;
     }>;
-    getUnpaidSummary(restaurantId: string, customerId?: string, sessionId?: string): Promise<{
+    getUnpaidSummary(restaurantId: string, customerId?: string, sessionId?: string, phone?: string): Promise<{
         count: number;
         total: number;
         orderIds: string[];
     }>;
+    getUnpaidGroups(restaurantId: string): Promise<any[]>;
     findOne(id: string): import("@prisma/client").Prisma.Prisma__OrderClient<({
         table: {
             id: string;

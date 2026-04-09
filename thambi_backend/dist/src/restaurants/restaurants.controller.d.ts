@@ -8,6 +8,7 @@ export declare class RestaurantsController {
         description: string | null;
         logo_url: string | null;
         is_active: boolean;
+        paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
         createdAt: Date;
         updatedAt: Date;
     }[]>;
@@ -34,6 +35,7 @@ export declare class RestaurantsController {
         description: string | null;
         logo_url: string | null;
         is_active: boolean;
+        paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -43,6 +45,17 @@ export declare class RestaurantsController {
         description: string | null;
         logo_url: string | null;
         is_active: boolean;
+        paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    update(id: string, body: any): Promise<{
+        id: string;
+        name: string;
+        description: string | null;
+        logo_url: string | null;
+        is_active: boolean;
+        paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
         createdAt: Date;
         updatedAt: Date;
     }>;

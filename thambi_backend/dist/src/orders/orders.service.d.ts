@@ -256,11 +256,12 @@ export declare class OrdersService {
         tableId: string;
         customerId: string | null;
     }>;
-    getUnpaidSummary(restaurantId: string, customerId?: string, sessionId?: string): Promise<{
+    getUnpaidSummary(restaurantId: string, customerId?: string, sessionId?: string, customerPhone?: string): Promise<{
         count: number;
         total: number;
         orderIds: string[];
     }>;
+    getUnpaidGroups(restaurantId: string): Promise<any[]>;
     markPaidBulk(restaurantId: string, orderIds: string[]): Promise<{
         success: boolean;
         count: number;

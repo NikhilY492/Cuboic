@@ -33,6 +33,7 @@ export declare class OutletsService {
             description: string | null;
             logo_url: string | null;
             is_active: boolean;
+            paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
             createdAt: Date;
             updatedAt: Date;
         };

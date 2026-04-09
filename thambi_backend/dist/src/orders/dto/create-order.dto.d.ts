@@ -10,6 +10,7 @@ export declare class CreateOrderDto {
     customerId?: string;
     orderType?: string;
     notes?: string;
+    paymentStatus?: string;
     items: OrderItemDto[];
 }
 export {};

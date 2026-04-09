@@ -12,7 +12,7 @@ const NEXT_STATUS: Record<string, string> = {
     Preparing: 'Ready',
 }
 
-interface OrderItem { name: string; quantity: number; unit_price: number }
+interface OrderItem { name: string; quantity: number; unitPrice: number }
 interface Order {
     id: string
     tableId: string | { table_number: string }

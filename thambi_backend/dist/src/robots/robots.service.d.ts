@@ -8,9 +8,9 @@ export declare class RobotsService {
         createdAt: Date;
         updatedAt: Date;
         restaurantId: string;
+        mode: import("@prisma/client").$Enums.RobotMode;
         secretKey: string;
         status: import("@prisma/client").$Enums.RobotStatus;
-        mode: import("@prisma/client").$Enums.RobotMode;
         currentDeliveryId: string | null;
         isOnline: boolean;
         lastSeen: Date | null;
@@ -24,9 +24,9 @@ export declare class RobotsService {
         createdAt: Date;
         updatedAt: Date;
         restaurantId: string;
+        mode: import("@prisma/client").$Enums.RobotMode;
         secretKey: string;
         status: import("@prisma/client").$Enums.RobotStatus;
-        mode: import("@prisma/client").$Enums.RobotMode;
         currentDeliveryId: string | null;
         isOnline: boolean;
         lastSeen: Date | null;
@@ -40,9 +40,9 @@ export declare class RobotsService {
         createdAt: Date;
         updatedAt: Date;
         restaurantId: string;
+        mode: import("@prisma/client").$Enums.RobotMode;
         secretKey: string;
         status: import("@prisma/client").$Enums.RobotStatus;
-        mode: import("@prisma/client").$Enums.RobotMode;
         currentDeliveryId: string | null;
         isOnline: boolean;
         lastSeen: Date | null;
@@ -56,9 +56,9 @@ export declare class RobotsService {
         createdAt: Date;
         updatedAt: Date;
         restaurantId: string;
+        mode: import("@prisma/client").$Enums.RobotMode;
         secretKey: string;
         status: import("@prisma/client").$Enums.RobotStatus;
-        mode: import("@prisma/client").$Enums.RobotMode;
         currentDeliveryId: string | null;
         isOnline: boolean;
         lastSeen: Date | null;
@@ -72,9 +72,9 @@ export declare class RobotsService {
         createdAt: Date;
         updatedAt: Date;
         restaurantId: string;
+        mode: import("@prisma/client").$Enums.RobotMode;
         secretKey: string;
         status: import("@prisma/client").$Enums.RobotStatus;
-        mode: import("@prisma/client").$Enums.RobotMode;
         currentDeliveryId: string | null;
         isOnline: boolean;
         lastSeen: Date | null;
@@ -88,9 +88,9 @@ export declare class RobotsService {
         createdAt: Date;
         updatedAt: Date;
         restaurantId: string;
+        mode: import("@prisma/client").$Enums.RobotMode;
         secretKey: string;
         status: import("@prisma/client").$Enums.RobotStatus;
-        mode: import("@prisma/client").$Enums.RobotMode;
         currentDeliveryId: string | null;
         isOnline: boolean;
         lastSeen: Date | null;

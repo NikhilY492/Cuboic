@@ -179,16 +179,22 @@ let OrdersService = OrdersService_1 = class OrdersService {
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
     }
-    async getUnpaidSummary(restaurantId, customerId, sessionId) {
-        if (!customerId && !sessionId) {
-            throw new common_1.BadRequestException('CustomerId or sessionId is required');
+    async getUnpaidSummary(restaurantId, customerId, sessionId, customerPhone) {
+        if (!customerId && !sessionId && !customerPhone) {
+            throw new common_1.BadRequestException('CustomerId, sessionId or customerPhone is required');
+        }
+        let resolvedCustomerId = customerId;
+        if (customerPhone && !resolvedCustomerId) {
+            const customer = await this.prisma.customer.findUnique({ where: { phone: customerPhone } });
+            if (customer)
+                resolvedCustomerId = customer.id;
         }
         const unpaidOrders = await this.prisma.order.findMany({
             where: {
                 restaurantId,
                 payment: { status: 'Pending' },
                 OR: [
-                    ...(customerId ? [{ customerId }] : []),
+                    ...(resolvedCustomerId ? [{ customerId: resolvedCustomerId }] : []),
                     ...(sessionId ? [{ customer_session_id: sessionId }] : []),
                 ],
                 status: { not: 'Cancelled' }
@@ -201,6 +207,39 @@ let OrdersService = OrdersService_1 = class OrdersService {
             total: totalUnpaid,
             orderIds: unpaidOrders.map(o => o.id),
         };
+    }
+    async getUnpaidGroups(restaurantId) {
+        const unpaidOrders = await this.prisma.order.findMany({
+            where: {
+                restaurantId,
+                payment: { status: 'Pending' },
+                status: { not: 'Cancelled' }
+            },
+            include: { payment: true, customer: true, table: true },
+        });
+        const groups = {};
+        for (const order of unpaidOrders) {
+            const gid = order.customer_session_id;
+            if (!groups[gid]) {
+                groups[gid] = {
+                    sessionId: gid,
+                    customerId: order.customerId,
+                    customer: order.customer,
+                    table: order.table,
+                    total: 0,
+                    count: 0,
+                    orderIds: [],
+                    lastOrderAt: order.createdAt
+                };
+            }
+            groups[gid].total += order.total;
+            groups[gid].count += 1;
+            groups[gid].orderIds.push(order.id);
+            if (order.createdAt > groups[gid].lastOrderAt) {
+                groups[gid].lastOrderAt = order.createdAt;
+            }
+        }
+        return Object.values(groups).sort((a, b) => b.lastOrderAt.getTime() - a.lastOrderAt.getTime());
     }
     async markPaidBulk(restaurantId, orderIds) {
         if (!orderIds || orderIds.length === 0)

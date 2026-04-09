@@ -17,6 +17,7 @@ export declare class RestaurantsService {
         description: string | null;
         logo_url: string | null;
         is_active: boolean;
+        paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
         createdAt: Date;
         updatedAt: Date;
     }) | null, null, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
@@ -34,6 +35,7 @@ export declare class RestaurantsService {
         description: string | null;
         logo_url: string | null;
         is_active: boolean;
+        paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
         createdAt: Date;
         updatedAt: Date;
     }[]>;
@@ -47,6 +49,17 @@ export declare class RestaurantsService {
         description: string | null;
         logo_url: string | null;
         is_active: boolean;
+        paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
+        createdAt: Date;
+        updatedAt: Date;
+    }, never, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
+    update(id: string, data: any): import("@prisma/client").Prisma.Prisma__RestaurantClient<{
+        id: string;
+        name: string;
+        description: string | null;
+        logo_url: string | null;
+        is_active: boolean;
+        paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
         createdAt: Date;
         updatedAt: Date;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;

@@ -14,7 +14,7 @@ interface Table {
 interface OrderItem {
   name: string
   quantity: number
-  unit_price: number
+  unitPrice: number
 }
 
 interface Order {
@@ -420,9 +420,9 @@ export default function OrdersPage() {
                     <div key={i} className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-950 rounded-xl px-4 py-3 border border-zinc-200 dark:border-zinc-800">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm text-zinc-900 dark:text-zinc-100 truncate">{item.name}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5">₹{item.unit_price} × {item.quantity}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5">₹{item.unitPrice} × {item.quantity}</p>
                       </div>
-                      <p className="font-semibold text-sm text-zinc-900 dark:text-white ml-4">₹{(item.unit_price * item.quantity).toFixed(0)}</p>
+                      <p className="font-semibold text-sm text-zinc-900 dark:text-white ml-4">₹{(item.unitPrice * item.quantity).toFixed(0)}</p>
                     </div>
                   ))}
                 </div>

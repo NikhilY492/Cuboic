@@ -110,6 +110,21 @@ export default function InventoryPage() {
     }
   }
 
+  const handleDeleteItem = async () => {
+    if (!selectedItem) return
+    if (!window.confirm(`Are you sure you want to delete ${selectedItem.name}? This action cannot be undone.`)) return
+
+    try {
+      await apiClient.delete(`/inventory/items/${selectedItem.id}`)
+      alert(`Ingredient ${selectedItem.name} deleted successfully!`)
+      setSelectedItem(null)
+      fetchInventory()
+    } catch (err) {
+      alert("Failed to delete ingredient")
+      console.error(err)
+    }
+  }
+
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user?.outletId) return
@@ -320,6 +335,14 @@ export default function InventoryPage() {
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
               Manual Adjustment
+            </button>
+
+            <button 
+              onClick={handleDeleteItem}
+              className="w-full bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-4"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              Delete Ingredient
             </button>
           </div>
         </div>

@@ -3,15 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { apiClient } from '../api/apiClient';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
-// Type declarations to make TS happy with jspdf-autotable
-declare module 'jspdf' {
-    interface jsPDF {
-        lastAutoTable: { finalY: number };
-        autoTable: (options: any) => jsPDF;
-    }
-}
+import autoTable from 'jspdf-autotable';
 
 type OrderType = {
     id: string;
@@ -112,7 +104,7 @@ export default function ReportsPage() {
             tableRows.push(ticketData);
         });
 
-        doc.autoTable({
+        autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
             startY: 30,

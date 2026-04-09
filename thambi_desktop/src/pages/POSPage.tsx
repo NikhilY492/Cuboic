@@ -72,10 +72,12 @@ export default function POSPage() {
     if (orderType === 'Dine-In' && !selectedTableId) return alert("Select a table for Dine-In")
     
     try {
-      // For Dine-In, use selected table UUID. For others, use first table as a dummy stand-in.
-      const tableId = orderType === 'Dine-In'
-        ? selectedTableId
-        : (tables[0]?.id ?? '')
+      // For Dine-In, use selected table UUID. For Takeaway/Delivery, look for a 'Takeaway' table or use dummy.
+      let tableId = selectedTableId;
+      if (orderType !== 'Dine-In') {
+        const takeawayTable = tables.find(t => t.table_number.toLowerCase() === 'takeaway' || t.table_number.toLowerCase() === 'delivery');
+        tableId = takeawayTable?.id ?? tables[0]?.id ?? '';
+      }
 
       const payload = {
         restaurantId: user?.restaurantId,
@@ -83,7 +85,8 @@ export default function POSPage() {
         tableId,
         customerSessionId: `pos-${Date.now()}`,
         orderType: orderType === 'Dine-In' ? 'DineIn' : orderType,
-        items: cart.map(c => ({ itemId: c.item.id, quantity: c.qty }))
+        items: cart.map(c => ({ itemId: c.item.id, quantity: c.qty })),
+        paymentStatus: 'Paid'
       }
 
       const { data } = await apiClient.post('/orders', payload)

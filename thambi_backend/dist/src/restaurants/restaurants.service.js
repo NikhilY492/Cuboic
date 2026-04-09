@@ -43,6 +43,12 @@ let RestaurantsService = class RestaurantsService {
     create(data) {
         return this.prisma.restaurant.create({ data });
     }
+    update(id, data) {
+        return this.prisma.restaurant.update({
+            where: { id },
+            data,
+        });
+    }
 };
 exports.RestaurantsService = RestaurantsService;
 exports.RestaurantsService = RestaurantsService = __decorate([

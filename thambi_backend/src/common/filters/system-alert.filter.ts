@@ -21,7 +21,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
                 ? exception.getStatus()
                 : HttpStatus.INTERNAL_SERVER_ERROR;
 
-        const message =
+        const exceptionResponse =
             exception instanceof HttpException
                 ? exception.getResponse()
                 : 'Internal server error';
@@ -32,7 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
                 await this.adminService.createAlert({
                     severity: 'CRITICAL',
                     source: 'GlobalExceptionFilter',
-                    message: typeof message === 'string' ? message : (message as any).message || 'Unhandled Exception',
+                    message: typeof exceptionResponse === 'string' ? exceptionResponse : (exceptionResponse as any).message || 'Unhandled Exception',
                     details: {
                         path: request.url,
                         method: request.method,
@@ -47,11 +47,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
             }
         }
 
-        response.status(status).json({
-            statusCode: status,
-            timestamp: new Date().toISOString(),
-            path: request.url,
-            message: message,
-        });
+        const responseBody = typeof exceptionResponse === 'object'
+            ? { ...exceptionResponse, timestamp: new Date().toISOString(), path: request.url }
+            : { statusCode: status, message: exceptionResponse, timestamp: new Date().toISOString(), path: request.url };
+
+        response.status(status).json(responseBody);
     }
 }
