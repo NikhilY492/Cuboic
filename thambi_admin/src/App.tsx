@@ -8,9 +8,8 @@ import GlobalDashboard from './pages/GlobalDashboard';
 import AlertConsole from './pages/AlertConsole';
 import FleetMonitor from './pages/FleetMonitor';
 
-// Temporary placeholders for missing pages
-const RestaurantsPage = () => <div className="scifi-page"><h2>Restaurant Matrix</h2><p>Coming Soon...</p></div>;
-const LogsPage = () => <div className="scifi-page"><h2>Neural Log Archives</h2><p>Coming Soon...</p></div>;
+import RestaurantsPage from './pages/RestaurantsPage';
+import LogsPage from './pages/LogsPage';
 
 export default function App() {
     return (
