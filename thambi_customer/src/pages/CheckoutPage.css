@@ -417,6 +417,10 @@
     margin-top: 10px;
 }
 
+.payment-toggle-grid.single-option {
+    grid-template-columns: 1fr;
+}
+
 .payment-toggle-btn {
     display: flex;
     flex-direction: row;

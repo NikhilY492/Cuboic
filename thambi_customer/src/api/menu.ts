@@ -20,6 +20,7 @@ export interface Restaurant {
     id: string;
     name: string;
     slug: string;
+    paymentStrategy?: 'PayPerOrder' | 'PayAtEnd';
     settings?: { tax_percentage: number };
     tables?: Array<{ id: string; table_number: string }>;
 }

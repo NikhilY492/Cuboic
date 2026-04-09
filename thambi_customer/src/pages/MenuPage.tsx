@@ -38,6 +38,7 @@ export function MenuPage() {
     const [tableLabel, setTableLabel] = useState<string>('');
     const [availableTables, setAvailableTables] = useState<any[]>([]);
     const [activeOrders, setActiveOrders] = useState<ActiveOrderSession[]>([]);
+    const [paymentStrategy, setPaymentStrategy] = useState<'PayPerOrder' | 'PayAtEnd'>('PayPerOrder');
 
     const [authOpen, setAuthOpen] = useState(false);
     const [orderTypeOpen, setOrderTypeOpen] = useState(false);
@@ -148,7 +149,8 @@ export function MenuPage() {
                 tableId: tId,
                 tableLabel: tLabel,
                 sessionId: SESSION_ID,
-                customerId: customer.id
+                customerId: customer.id,
+                paymentStrategy
             },
         });
     };
@@ -189,6 +191,7 @@ export function MenuPage() {
         if (!restaurantId) return;
         Promise.all([getRestaurant(restaurantId), getCategories(restaurantId)]).then(([rest, cats]) => {
             setRestaurantName(rest.name);
+            setPaymentStrategy(rest.paymentStrategy ?? 'PayPerOrder');
             const sorted = cats.sort((a, b) => a.display_order - b.display_order);
             setCategories(sorted);
             setActiveCategory(null);
