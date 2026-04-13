@@ -1,14 +1,37 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { S } from '../../theme';
+import { restaurantsApi, Restaurant } from '../../api/restaurants';
 
 export function ManagementScreen({ navigation }: any) {
     const { user } = useAuth();
     const { colors } = useTheme();
     const isOwner = user?.role === 'Owner';
+    const restaurantId = user?.restaurantId ?? '';
+
+    const [restaurantData, setRestaurantData] = useState<Restaurant | null>(null);
+
+    useEffect(() => {
+        if (!restaurantId || !isOwner) return;
+        restaurantsApi.findById(restaurantId)
+            .then(res => setRestaurantData(res))
+            .catch(() => {});
+    }, [restaurantId, isOwner]);
+
+    const handleToggleStrategy = async () => {
+        if (!restaurantData) return;
+        const newStrategy = restaurantData.paymentStrategy === 'PayPerOrder' ? 'PayAtEnd' : 'PayPerOrder';
+        try {
+            await restaurantsApi.update(restaurantId, { paymentStrategy: newStrategy });
+            setRestaurantData({ ...restaurantData, paymentStrategy: newStrategy });
+            Alert.alert('Success', `Payment workflow updated to ${newStrategy === 'PayPerOrder' ? 'Pay per order' : 'Pay at end'}`);
+        } catch (err) {
+            Alert.alert('Error', 'Failed to update payment workflow');
+        }
+    };
 
     const options = [
         { name: 'Menu', icon: 'book-open', screen: 'Menu', color: '#60a5fa', desc: 'Manage categories and items' },
@@ -46,6 +69,40 @@ export function ManagementScreen({ navigation }: any) {
                         </TouchableOpacity>
                     ))}
                 </View>
+
+                {isOwner && restaurantData && (
+                    <View style={[styles.section, { padding: 16, borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 24 }]}>
+                        <Text style={{ fontSize: 16, fontWeight: '700', color: colors.accent, marginBottom: 12 }}>System Configuration</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <View style={{ flex: 1, paddingRight: 16 }}>
+                                <Text style={{ fontWeight: '600', marginBottom: 4, color: colors.text, fontSize: 14 }}>Payment Workflow</Text>
+                                <Text style={{ fontSize: 12, color: colors.textDim }}>
+                                    {restaurantData.paymentStrategy === 'PayPerOrder' 
+                                        ? 'Customers pay for each order immediately.' 
+                                        : 'Customers aggregate orders and pay at the end.'}
+                                </Text>
+                            </View>
+                            <TouchableOpacity 
+                                style={{ 
+                                    paddingVertical: 8, 
+                                    paddingHorizontal: 12, 
+                                    borderRadius: 8, 
+                                    borderWidth: 1, 
+                                    borderColor: restaurantData.paymentStrategy === 'PayAtEnd' ? colors.accent : colors.border 
+                                }}
+                                onPress={handleToggleStrategy}
+                            >
+                                <Text style={{ 
+                                    fontSize: 12, 
+                                    fontWeight: '600', 
+                                    color: restaurantData.paymentStrategy === 'PayAtEnd' ? colors.accent : colors.textDim 
+                                }}>
+                                    {restaurantData.paymentStrategy === 'PayPerOrder' ? 'Switch to Pay at End' : 'Switch to Pay per Order'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
             </ScrollView>
         </View>
     );
@@ -57,6 +114,7 @@ const styles = StyleSheet.create({
         marginBottom: 32, paddingHorizontal: 4 },
     title: { fontSize: 28, fontWeight: '800' },
     subtitle: { fontSize: 15, marginTop: 4 },
+    section: { marginBottom: 24 },
     grid: { gap: 12 },
     card: {
         ...S.shadow,

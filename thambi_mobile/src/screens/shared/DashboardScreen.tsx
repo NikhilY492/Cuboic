@@ -8,7 +8,6 @@ import { useAuth } from '../../context/AuthContext';
 import { ordersApi } from '../../api/orders';
 import { paymentsApi } from '../../api/payments';
 import { deliveriesApi, robotsApi } from '../../api/deliveries';
-import { restaurantsApi, Restaurant } from '../../api/restaurants';
 import { useSocket } from '../../hooks/useSocket';
 import { KpiCard } from '../../components/KpiCard';
 import { useTheme } from '../../context/ThemeContext';
@@ -26,7 +25,6 @@ export function DashboardScreen() {
     const [activeDeliveries, setActiveDeliveries] = useState(0);
     const [robotsOnline, setRobotsOnline] = useState(0);
     const [unpaidGroups, setUnpaidGroups] = useState<any[]>([]);
-    const [restaurantData, setRestaurantData] = useState<Restaurant | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -63,9 +61,6 @@ export function DashboardScreen() {
             setRobotsOnline(robots.filter(r => r.isOnline).length);
             setOrderSummary(orderSum);
             setUnpaidGroups(unpaidRes);
-
-            const restRes = await restaurantsApi.findById(restaurantId);
-            setRestaurantData(restRes);
         } catch { /* ignore */ }
     }, [restaurantId, config]);
 
@@ -117,18 +112,6 @@ export function DashboardScreen() {
         setRefreshing(true);
         await load();
         setRefreshing(false);
-    };
-
-    const handleToggleStrategy = async () => {
-        if (!restaurantData) return;
-        const newStrategy = restaurantData.paymentStrategy === 'PayPerOrder' ? 'PayAtEnd' : 'PayPerOrder';
-        try {
-            await restaurantsApi.update(restaurantId, { paymentStrategy: newStrategy });
-            setRestaurantData({ ...restaurantData, paymentStrategy: newStrategy });
-            Alert.alert('Success', `Payment workflow updated to ${newStrategy === 'PayPerOrder' ? 'Pay per order' : 'Pay at end'}`);
-        } catch (err) {
-            Alert.alert('Error', 'Failed to update payment workflow');
-        }
     };
 
     const allKpis = [
@@ -203,40 +186,6 @@ export function DashboardScreen() {
                     <Text style={[styles.role, thematicStyles.role]}>{user?.role} Overview</Text>
                 </View>
             </View>
-
-            {user?.role === 'Owner' && restaurantData && (
-                <View style={[styles.section, { padding: 16, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginBottom: 24 }]}>
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: colors.accent, marginBottom: 12 }}>System Configuration</Text>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <View style={{ flex: 1, paddingRight: 16 }}>
-                            <Text style={{ fontWeight: '600', marginBottom: 4, color: colors.text, fontSize: 14 }}>Payment Workflow</Text>
-                            <Text style={{ fontSize: 12, color: colors.textDim }}>
-                                {restaurantData.paymentStrategy === 'PayPerOrder' 
-                                    ? 'Customers pay for each order immediately.' 
-                                    : 'Customers aggregate orders and pay at the end.'}
-                            </Text>
-                        </View>
-                        <TouchableOpacity 
-                            style={{ 
-                                paddingVertical: 8, 
-                                paddingHorizontal: 12, 
-                                borderRadius: 8, 
-                                borderWidth: 1, 
-                                borderColor: restaurantData.paymentStrategy === 'PayAtEnd' ? colors.accent : colors.border 
-                            }}
-                            onPress={handleToggleStrategy}
-                        >
-                            <Text style={{ 
-                                fontSize: 12, 
-                                fontWeight: '600', 
-                                color: restaurantData.paymentStrategy === 'PayAtEnd' ? colors.accent : colors.textDim 
-                            }}>
-                                {restaurantData.paymentStrategy === 'PayPerOrder' ? 'Switch to Pay at End' : 'Switch to Pay per Order'}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            )}
 
             {loading ? (
                 <ActivityIndicator color={colors.accent} size="large" style={{ marginTop: 40 }} />

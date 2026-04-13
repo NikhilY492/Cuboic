@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getOrder, cancelOrder, getUnpaidSummary, type Order } from '../api/orders';
+import { getOrder, cancelOrder, getUnpaidSummary, markPaidBulk, type Order } from '../api/orders';
 import { getRestaurant } from '../api/menu';
 import { useSocket } from '../hooks/useSocket';
 import { StatusTimeline } from '../components/StatusTimeline';
@@ -20,7 +20,8 @@ export function OrderTrackerPage() {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [cancelling, setCancelling] = useState(false);
     const [customerName, setCustomerName] = useState('');
-    const [unpaidSummary, setUnpaidSummary] = useState<{ total: number; count: number } | null>(null);
+    const [unpaidSummary, setUnpaidSummary] = useState<{ total: number; count: number; orderIds: string[] } | null>(null);
+    const [settling, setSettling] = useState(false);
 
     useEffect(() => {
         const c = getCustomer();
@@ -108,6 +109,23 @@ export function OrderTrackerPage() {
         socket.on(eventName, handler);
         return () => { socket.off(eventName, handler); };
     }, [socketRef, orderId, order?.restaurantId]);
+
+    const handleSettleAll = async () => {
+        if (!unpaidSummary || !order?.restaurantId || settling) return;
+        if (!window.confirm(`Settle all ${unpaidSummary.count} outstanding orders (₹${unpaidSummary.total.toFixed(2)})?`)) return;
+
+        setSettling(true);
+        try {
+            await markPaidBulk(order.restaurantId, unpaidSummary.orderIds);
+            fetchUnpaidSummary(); // Refresh status
+            alert('Payment settled successfully!');
+        } catch (err) {
+            console.error('Settlement failed:', err);
+            alert('Failed to settle payment. Please try at the counter.');
+        } finally {
+            setSettling(false);
+        }
+    };
 
     if (loading) return <div className="tracker-page"><div className="spinner-center"><div className="spinner" /></div></div>;
     if (error || !order) return (
@@ -219,6 +237,14 @@ export function OrderTrackerPage() {
                         <div style={{ marginTop: '12px', padding: '10px', borderRadius: '8px', background: 'rgba(var(--primary-rgb), 0.1)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                             Please settle this amount at the counter before leaving. Thank you!
                         </div>
+                        <button 
+                            className="btn btn-primary" 
+                            style={{ marginTop: '16px', width: '100%', fontWeight: 700 }}
+                            onClick={handleSettleAll}
+                            disabled={settling}
+                        >
+                            {settling ? 'Settling…' : `Settle All Dues (₹${unpaidSummary.total.toFixed(2)})`}
+                        </button>
                     </section>
                 )}
 

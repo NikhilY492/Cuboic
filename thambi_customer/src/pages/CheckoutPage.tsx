@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { placeOrder } from '../api/orders';
+import { placeOrder, getUnpaidSummary, markPaidBulk } from '../api/orders';
 import type { CartItem } from '../hooks/useCart';
 import './CheckoutPage.css';
 
@@ -31,6 +31,24 @@ export function CheckoutPage() {
     const [paymentMode, setPaymentMode] = useState<'Now' | 'Later'>(
         state?.paymentStrategy === 'PayPerOrder' ? 'Now' : 'Later'
     );
+    const [unpaidSummary, setUnpaidSummary] = useState<{ total: number; orderIds: string[] } | null>(null);
+
+    const fetchUnpaidSummary = useCallback(() => {
+        if (!state?.restaurantId || !state?.sessionId) return;
+        getUnpaidSummary(state.restaurantId, state.customerId || undefined, state.sessionId)
+            .then(data => {
+                if (data.total > 0) {
+                    setUnpaidSummary(data);
+                } else {
+                    setUnpaidSummary(null);
+                }
+            })
+            .catch(err => console.error('Failed to fetch unpaid summary:', err));
+    }, [state?.restaurantId, state?.customerId, state?.sessionId]);
+
+    useEffect(() => {
+        fetchUnpaidSummary();
+    }, [fetchUnpaidSummary]);
 
     // Guard — if no cart state, redirect back to menu
     if (!state || !state.items?.length) {
@@ -45,7 +63,8 @@ export function CheckoutPage() {
     }
 
     const { items, total, restaurantId, tableId, tableLabel, sessionId, customerId, paymentStrategy } = state;
-    const grandTotal = total;
+    const previousBalance = unpaidSummary?.total ?? 0;
+    const grandTotal = total + (paymentMode === 'Now' ? previousBalance : 0);
 
     const handlePay = async () => {
         setError('');
@@ -63,6 +82,16 @@ export function CheckoutPage() {
                 items: items.map(c => ({ itemId: c.item.id, quantity: c.quantity })),
                 paymentStatus: paymentMode === 'Now' ? 'Paid' : 'Pending',
             });
+
+            // If paying now, also settle all previous unpaid orders
+            if (paymentMode === 'Now' && unpaidSummary && unpaidSummary.orderIds.length > 0) {
+                try {
+                    await markPaidBulk(restaurantId, unpaidSummary.orderIds);
+                } catch (bulkErr) {
+                    console.error('Failed to settle previous orders:', bulkErr);
+                    // We don't block the current order success, but we log it
+                }
+            }
 
             localStorage.removeItem('thambi_cart');
 
@@ -123,10 +152,24 @@ export function CheckoutPage() {
 
                 {/* ── Totals Tile ── */}
                 <section className="bento-tile bento-totals fade-up" style={{ animationDelay: '0.1s' }}>
-                    <div className="co-total-row"><span>Subtotal</span><span>₹{total.toFixed(2)}</span></div>
+                    <div className="co-total-row"><span>Items Subtotal</span><span>₹{total.toFixed(2)}</span></div>
+                    
+                    {previousBalance > 0 && paymentMode === 'Now' && (
+                        <div className="co-total-row" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                            <span>Previous Balance</span><span>₹{previousBalance.toFixed(2)}</span>
+                        </div>
+                    )}
 
                     <hr className="divider" style={{ margin: '12px 0' }} />
-                    <div className="co-total-row co-total-grand"><span>Total</span><span>₹{grandTotal.toFixed(2)}</span></div>
+                    <div className="co-total-row co-total-grand">
+                        <span>Total to Pay</span>
+                        <span>₹{grandTotal.toFixed(2)}</span>
+                    </div>
+                    {previousBalance > 0 && paymentMode === 'Later' && (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>
+                            * Previous balance of ₹{previousBalance.toFixed(2)} will remain unpaid.
+                        </p>
+                    )}
                 </section>
 
                 {/* ── Special Instructions Tile ── */}

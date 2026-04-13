@@ -54,3 +54,9 @@ export const getUnpaidSummary = (restaurantId: string, customerId?: string, sess
     api.get<{ count: number; total: number; orderIds: string[] }>('/orders/unpaid-summary', {
         params: { restaurantId, customerId, sessionId }
     }).then(r => r.data);
+
+export const markPaidBulk = (restaurantId: string, orderIds: string[]) =>
+    api.patch<{ success: boolean; count: number }>('/orders/mark-paid-bulk', {
+        restaurantId,
+        orderIds
+    }).then(r => r.data);
