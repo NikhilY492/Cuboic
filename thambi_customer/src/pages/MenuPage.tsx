@@ -12,12 +12,13 @@ import { CustomerAuthModal } from '../components/CustomerAuthModal';
 import { OrderTypeModal } from '../components/OrderTypeModal';
 import { type Customer } from '../api/customers';
 import { getCustomer, setCustomer as setCustomerSession } from '../utils/auth';
+import { getSessionId } from '../utils/session';
 import { SearchOverlay } from '../components/SearchOverlay';
 import { SkeletonLoader } from '../components/SkeletonLoader';
 import './MenuPage.css';
 
-// Stable session id per tab
-const SESSION_ID = crypto.randomUUID();
+// Stable session id per device
+const SESSION_ID = getSessionId();
 
 export function MenuPage() {
     const [params, setParams] = useSearchParams();

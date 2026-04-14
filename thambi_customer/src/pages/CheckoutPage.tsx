@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { placeOrder, getUnpaidSummary, markPaidBulk } from '../api/orders';
 import type { CartItem } from '../hooks/useCart';
+import { getSessionId } from '../utils/session';
 import './CheckoutPage.css';
 
 
@@ -17,8 +18,8 @@ interface LocationState {
     paymentStrategy?: 'PayPerOrder' | 'PayAtEnd';
 }
 
-// Stable per-session UUID
-const SESSION_ID = crypto.randomUUID();
+// Stable session id per device
+const SESSION_ID = getSessionId();
 
 export function CheckoutPage() {
     const location = useLocation();

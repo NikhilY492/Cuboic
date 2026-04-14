@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getUnpaidSummary } from '../api/orders';
+import { getUnpaidSummary, markPaidBulk } from '../api/orders';
 import { getCustomer } from '../utils/auth';
 import './CartDrawer.css'; // Reusing established bottom sheet styles
 
@@ -27,16 +27,38 @@ export function OrdersDrawer({
     restaurantId,
     sessionId,
 }: OrdersDrawerProps) {
-    const [unpaid, setUnpaid] = useState<{ count: number; total: number } | null>(null);
+    const [unpaid, setUnpaid] = useState<{ count: number; total: number; orderIds: string[] } | null>(null);
+    const [settling, setSettling] = useState(false);
+
+    const fetchUnpaid = () => {
+        const customer = getCustomer();
+        getUnpaidSummary(restaurantId, customer?.id, sessionId)
+            .then(setUnpaid)
+            .catch(() => {});
+    };
 
     useEffect(() => {
         if (open && orders.length > 0) {
-            const customer = getCustomer();
-            getUnpaidSummary(restaurantId, customer?.id, sessionId)
-                .then(setUnpaid)
-                .catch(() => {});
+            fetchUnpaid();
         }
     }, [open, orders, restaurantId, sessionId]);
+
+    const handleSettleAll = async () => {
+        if (!unpaid || settling) return;
+        if (!window.confirm(`Settle all outstanding dues (₹${unpaid.total.toFixed(2)})?`)) return;
+
+        setSettling(true);
+        try {
+            await markPaidBulk(restaurantId, unpaid.orderIds);
+            fetchUnpaid();
+            alert('Payment settled successfully!');
+        } catch (err) {
+            console.error('Settlement failed:', err);
+            alert('Failed to settle dues. Please try at the counter.');
+        } finally {
+            setSettling(false);
+        }
+    };
 
     if (!open) return null;
 
@@ -59,14 +81,28 @@ export function OrdersDrawer({
                 {/* Body */}
                 <div className="cart-sheet__body">
                     {unpaid && unpaid.total > 0 && (
-                        <div style={{ backgroundColor: '#ef444415', margin: '0 24px 16px', padding: '16px', borderRadius: '16px', border: '1px solid #ef444433', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ backgroundColor: 'var(--surface2)', margin: '0 24px 16px', padding: '16px', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
-                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Unpaid Balance</div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Unpaid Balance</div>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}>₹{unpaid.total.toFixed(2)}</div>
                             </div>
-                            <div style={{ padding: '8px 12px', backgroundColor: '#ef4444', borderRadius: '8px', color: 'white', fontSize: '0.8rem', fontWeight: 700 }}>
-                                Pay at Counter
-                            </div>
+                            <button 
+                                onClick={handleSettleAll}
+                                disabled={settling}
+                                style={{ 
+                                    padding: '10px 16px', 
+                                    backgroundColor: 'var(--accent)', 
+                                    border: 'none',
+                                    borderRadius: '10px', 
+                                    color: 'white', 
+                                    fontSize: '0.85rem', 
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    opacity: settling ? 0.7 : 1
+                                }}
+                            >
+                                {settling ? 'Settling…' : 'Settle Now'}
+                            </button>
                         </div>
                     )}
 

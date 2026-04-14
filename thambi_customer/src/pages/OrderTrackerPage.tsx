@@ -6,6 +6,7 @@ import { useSocket } from '../hooks/useSocket';
 import { StatusTimeline } from '../components/StatusTimeline';
 import { ConfirmCancelModal } from '../components/ConfirmCancelModal';
 import { getCustomer } from '../utils/auth';
+import { getSessionId } from '../utils/session';
 import './OrderTrackerPage.css';
 
 const TERMINAL = new Set<Order['status']>(['Delivered', 'Cancelled']);
@@ -61,8 +62,9 @@ export function OrderTrackerPage() {
     }, [orderId]);
 
     const fetchUnpaidSummary = useCallback(() => {
-        if (!order || !order.restaurantId || !order.customer_session_id) return;
-        getUnpaidSummary(order.restaurantId, order.customerId || undefined, order.customer_session_id)
+        if (!order || !order.restaurantId) return;
+        const sid = getSessionId();
+        getUnpaidSummary(order.restaurantId, order.customerId || undefined, sid)
             .then(data => {
                 if (data.total > 0) {
                     setUnpaidSummary(data);
