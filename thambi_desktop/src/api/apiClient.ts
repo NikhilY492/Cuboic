@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-export const SOCKET_BASE = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000'
+export const API_BASE = import.meta.env.VITE_API_URL || 'https://api.thambi.in'
+export const SOCKET_BASE = import.meta.env.VITE_SOCKET_URL || 'https://api.thambi.in'
 
 export const apiClient = axios.create({
   baseURL: API_BASE,
