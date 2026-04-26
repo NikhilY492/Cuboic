@@ -1,7 +1,9 @@
+import { EventsGateway } from '../events/events.gateway';
 import { RestaurantsService } from './restaurants.service';
 export declare class RestaurantsController {
     private readonly restaurantsService;
-    constructor(restaurantsService: RestaurantsService);
+    private readonly eventsGateway;
+    constructor(restaurantsService: RestaurantsService, eventsGateway: EventsGateway);
     getAll(): Promise<{
         id: string;
         name: string;
@@ -58,5 +60,11 @@ export declare class RestaurantsController {
         paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
         createdAt: Date;
         updatedAt: Date;
+    }>;
+    callCaptain(id: string, body: {
+        tableId?: string;
+        tableName?: string;
+    }): Promise<{
+        success: boolean;
     }>;
 }

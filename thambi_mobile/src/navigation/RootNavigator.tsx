@@ -2,11 +2,12 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { ActivityIndicator, View, Text } from 'react-native';
+import { ActivityIndicator, View, Text, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useSocket } from '../hooks/useSocket';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { DashboardScreen } from '../screens/shared/DashboardScreen';
 import { OrdersScreen } from '../screens/shared/OrdersScreen';
@@ -74,8 +75,17 @@ function MainTabs() {
     const { user } = useAuth();
     const { colors } = useTheme();
     const isOwner = user?.role === 'Owner';
+    const isManager = user?.role === 'Manager';
     const isStaff = user?.role === 'Staff';
     const insets = useSafeAreaInsets();
+
+    useSocket(user?.restaurant_id, {
+        callCaptain: (data: any) => {
+            if (isOwner || isManager) {
+                Alert.alert('Captain Called!', data?.message || `Customer at ${data?.tableName || 'a table'} needs assistance.`);
+            }
+        }
+    });
 
     return (
         <Tab.Navigator

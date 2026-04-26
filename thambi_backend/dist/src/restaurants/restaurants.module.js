@@ -10,11 +10,13 @@ exports.RestaurantsModule = void 0;
 const common_1 = require("@nestjs/common");
 const restaurants_controller_1 = require("./restaurants.controller");
 const restaurants_service_1 = require("./restaurants.service");
+const events_module_1 = require("../events/events.module");
 let RestaurantsModule = class RestaurantsModule {
 };
 exports.RestaurantsModule = RestaurantsModule;
 exports.RestaurantsModule = RestaurantsModule = __decorate([
     (0, common_1.Module)({
+        imports: [events_module_1.EventsModule],
         controllers: [restaurants_controller_1.RestaurantsController],
         providers: [restaurants_service_1.RestaurantsService],
         exports: [restaurants_service_1.RestaurantsService],

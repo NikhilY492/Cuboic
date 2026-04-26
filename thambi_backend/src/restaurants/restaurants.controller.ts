@@ -7,10 +7,14 @@ import {
   Param,
   NotFoundException,
 } from '@nestjs/common';
+import { EventsGateway } from '../events/events.gateway';
 import { RestaurantsService } from './restaurants.service';
 @Controller('restaurants')
 export class RestaurantsController {
-  constructor(private readonly restaurantsService: RestaurantsService) { }
+  constructor(
+    private readonly restaurantsService: RestaurantsService,
+    private readonly eventsGateway: EventsGateway,
+  ) { }
 
   // GET /restaurants
   @Get()
@@ -47,5 +51,17 @@ export class RestaurantsController {
   @Patch(':id')
   async update(@Param('id') id: string, @Body() body: any) {
     return this.restaurantsService.update(id, body);
+  }
+
+  // POST /restaurants/:id/call-captain
+  @Post(':id/call-captain')
+  async callCaptain(@Param('id') id: string, @Body() body: { tableId?: string, tableName?: string }) {
+    this.eventsGateway.emitToRestaurant(id, 'callCaptain', {
+      tableId: body.tableId,
+      tableName: body.tableName,
+      timestamp: new Date().toISOString(),
+      message: `Customer at ${body.tableName || 'a table'} needs the Captain!`
+    });
+    return { success: true };
   }
 }

@@ -493,6 +493,61 @@
     transform: translateX(3px);
 }
 
+/* ── Captain float ──────────────────────────────────────── */
+.captain-float {
+    position: fixed;
+    right: 24px;
+    z-index: 70;
+    display: flex;
+    justify-content: flex-end;
+    transition: bottom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.captain-float__btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    background: #FFD700; /* Gold */
+    color: #000;
+    border-radius: 99px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    border: none;
+    font-family: var(--font);
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.captain-float__btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+.captain-float__icon {
+    font-size: 1.2rem;
+}
+
+.captain-float__btn.captain-called {
+    background: var(--accent); /* Green */
+    color: #fff;
+    cursor: default;
+    transform: none;
+    box-shadow: 0 4px 16px rgba(101, 163, 13, 0.3);
+}
+
 /* ── Error state ────────────────────────────────────────── */
 .menu-error {
     display: flex;

@@ -14,11 +14,14 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RestaurantsController = void 0;
 const common_1 = require("@nestjs/common");
+const events_gateway_1 = require("../events/events.gateway");
 const restaurants_service_1 = require("./restaurants.service");
 let RestaurantsController = class RestaurantsController {
     restaurantsService;
-    constructor(restaurantsService) {
+    eventsGateway;
+    constructor(restaurantsService, eventsGateway) {
         this.restaurantsService = restaurantsService;
+        this.eventsGateway = eventsGateway;
     }
     async getAll() {
         return this.restaurantsService.findAll();
@@ -39,6 +42,15 @@ let RestaurantsController = class RestaurantsController {
     }
     async update(id, body) {
         return this.restaurantsService.update(id, body);
+    }
+    async callCaptain(id, body) {
+        this.eventsGateway.emitToRestaurant(id, 'callCaptain', {
+            tableId: body.tableId,
+            tableName: body.tableName,
+            timestamp: new Date().toISOString(),
+            message: `Customer at ${body.tableName || 'a table'} needs the Captain!`
+        });
+        return { success: true };
     }
 };
 exports.RestaurantsController = RestaurantsController;
@@ -77,8 +89,17 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], RestaurantsController.prototype, "update", null);
+__decorate([
+    (0, common_1.Post)(':id/call-captain'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], RestaurantsController.prototype, "callCaptain", null);
 exports.RestaurantsController = RestaurantsController = __decorate([
     (0, common_1.Controller)('restaurants'),
-    __metadata("design:paramtypes", [restaurants_service_1.RestaurantsService])
+    __metadata("design:paramtypes", [restaurants_service_1.RestaurantsService,
+        events_gateway_1.EventsGateway])
 ], RestaurantsController);
 //# sourceMappingURL=restaurants.controller.js.map

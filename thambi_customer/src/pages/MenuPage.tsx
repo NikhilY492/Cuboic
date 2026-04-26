@@ -15,6 +15,7 @@ import { getCustomer, setCustomer as setCustomerSession } from '../utils/auth';
 import { getSessionId } from '../utils/session';
 import { SearchOverlay } from '../components/SearchOverlay';
 import { SkeletonLoader } from '../components/SkeletonLoader';
+import api from '../api/client';
 import './MenuPage.css';
 
 // Stable session id per device
@@ -43,6 +44,7 @@ export function MenuPage() {
 
     const [authOpen, setAuthOpen] = useState(false);
     const [orderTypeOpen, setOrderTypeOpen] = useState(false);
+    const [captainCalled, setCaptainCalled] = useState(false);
 
     // Auth State
     const [customer, setCustomer] = useState<Customer | null>(null);
@@ -170,6 +172,21 @@ export function MenuPage() {
         image: string;
     }
     const [flyingItems, setFlyingItems] = useState<FlyingItem[]>([]);
+
+    const handleCallCaptain = async () => {
+        if (!restaurantId || !tableId) return;
+        setCaptainCalled(true);
+        try {
+            await api.post(`/restaurants/${restaurantId}/call-captain`, {
+                tableId,
+                tableName: tableLabel
+            });
+            setTimeout(() => setCaptainCalled(false), 5000);
+        } catch (e) {
+            console.error('Failed to call captain', e);
+            setCaptainCalled(false);
+        }
+    };
 
     const handleAdd = (item: MenuItem, e?: React.MouseEvent) => {
         cart.add(item);
@@ -577,6 +594,22 @@ export function MenuPage() {
                             ₹{cart.total.toFixed(2)}
                             <span className="cart-float__arrow">→</span>
                         </div>
+                    </button>
+                </div>
+            )}
+
+            {/* ── Captain float ───────────────────────────────────── */}
+            {!cartOpen && !ordersOpen && tableId && String(tableId).toLowerCase() !== 'takeaway_virtual' && (
+                <div className="captain-float" style={{ bottom: cart.count > 0 && activeOrders.length > 0 ? '152px' : cart.count > 0 || activeOrders.length > 0 ? '88px' : '24px' }}>
+                    <button 
+                        className={`captain-float__btn ${captainCalled ? 'captain-called' : ''}`}
+                        onClick={handleCallCaptain}
+                        disabled={captainCalled}
+                    >
+                        <span className="captain-float__icon">🔔</span>
+                        <span className="captain-float__label">
+                            {captainCalled ? "Captain Notified!" : "Call the Captain"}
+                        </span>
                     </button>
                 </div>
             )}
