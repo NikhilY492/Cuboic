@@ -28,14 +28,6 @@ services:
         condition: service_healthy
     restart: always
 
-  public:
-    build:
-      context: ../thambi_public
-      dockerfile: Dockerfile
-    ports:
-      - "8081:80"
-    restart: always
-
   customer:
     build:
       context: ../thambi_customer
