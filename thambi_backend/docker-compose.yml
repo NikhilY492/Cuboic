@@ -1,31 +1,12 @@
 services:
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=thambi_user
-      - POSTGRES_PASSWORD=thambi_password
-      - POSTGRES_DB=thambi_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U thambi_user -d thambi_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   backend:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://thambi_user:thambi_password@db:5432/thambi_db?schema=public
-      - JWT_SECRET=${JWT_SECRET:-supersecret}
-    depends_on:
-      db:
-        condition: service_healthy
+    env_file:
+      - .env
     restart: always
 
   customer:
@@ -35,6 +16,3 @@ services:
     ports:
       - "8082:80"
     restart: always
-
-volumes:
-  postgres_data:
