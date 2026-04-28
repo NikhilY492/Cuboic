@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "iOS",
+      "bundleIdentifier": "com.h3x4n3.thambimobile",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
