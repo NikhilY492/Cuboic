@@ -4,7 +4,7 @@
     "slug": "thambi",
     "version": "1.0.0",
     "orientation": "default",
-    "icon": "./assets/bg.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/bg.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -36,6 +36,9 @@
         "projectId": "9c290a79-9324-479a-8b97-d424bdafa829"
       }
     },
-    "owner": "h3x4n3"
+    "owner": "h3x4n3",
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
