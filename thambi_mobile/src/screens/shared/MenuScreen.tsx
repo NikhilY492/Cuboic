@@ -43,6 +43,27 @@ export function MenuScreen() {
     const [uploading, setUploading] = useState(false);
     const [showUrlInput, setShowUrlInput] = useState(false);
 
+    // New category inline creation
+    const [showNewCat, setShowNewCat] = useState(false);
+    const [newCatName, setNewCatName] = useState('');
+    const [creatingCat, setCreatingCat] = useState(false);
+
+    const handleCreateCategory = async () => {
+        if (!newCatName.trim()) return;
+        setCreatingCat(true);
+        try {
+            const created = await menuApi.createCategory(restaurantId, newCatName.trim());
+            setCategories(prev => [...prev, created]);
+            setForm(f => ({ ...f, categoryId: created.id }));
+            setNewCatName('');
+            setShowNewCat(false);
+        } catch {
+            Alert.alert('Error', 'Failed to create category');
+        } finally {
+            setCreatingCat(false);
+        }
+    };
+
     const pickImage = async () => {
         const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!perm.granted) {
@@ -112,7 +133,7 @@ export function MenuScreen() {
         setModalOpen(true);
     };
 
-    const closeModal = () => { setModalOpen(false); setEditingId(null); setShowUrlInput(false); };
+    const closeModal = () => { setModalOpen(false); setEditingId(null); setShowUrlInput(false); setShowNewCat(false); setNewCatName(''); };
 
     const handleSave = async () => {
         if (!form.name.trim()) { Alert.alert('Validation', 'Name is required'); return; }
@@ -338,7 +359,47 @@ export function MenuScreen() {
                                             </Text>
                                         </TouchableOpacity>
                                     ))}
+                                    {/* + New Category chip */}
+                                    <TouchableOpacity
+                                        style={[styles.catOption, { backgroundColor: colors.surface, borderColor: colors.border, borderStyle: 'dashed' }]}
+                                        onPress={() => setShowNewCat(v => !v)}
+                                    >
+                                        <Feather name="plus" size={13} color={colors.textMuted} />
+                                        <Text style={[styles.catOptionText, { color: colors.textMuted, marginLeft: 4 }]}>New</Text>
+                                    </TouchableOpacity>
                                 </ScrollView>
+
+                                {/* Inline new category form */}
+                                {showNewCat && (
+                                    <View style={[styles.newCatRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                                        <TextInput
+                                            style={[styles.newCatInput, { color: colors.text }]}
+                                            value={newCatName}
+                                            onChangeText={setNewCatName}
+                                            placeholder="Category name…"
+                                            placeholderTextColor={colors.textDim}
+                                            autoFocus
+                                            returnKeyType="done"
+                                            onSubmitEditing={handleCreateCategory}
+                                        />
+                                        <TouchableOpacity
+                                            style={[styles.newCatBtn, { backgroundColor: colors.accent }, creatingCat && { opacity: 0.6 }]}
+                                            onPress={handleCreateCategory}
+                                            disabled={creatingCat}
+                                        >
+                                            {creatingCat
+                                                ? <ActivityIndicator size="small" color="#000" />
+                                                : <Feather name="check" size={16} color="#000" />
+                                            }
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[styles.newCatBtn, { backgroundColor: colors.surface2, borderColor: colors.border, borderWidth: 1 }]}
+                                            onPress={() => { setShowNewCat(false); setNewCatName(''); }}
+                                        >
+                                            <Feather name="x" size={16} color={colors.textMuted} />
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </View>
                         </View>
 
@@ -498,10 +559,6 @@ const styles = StyleSheet.create({
         padding: 14, fontSize: 15,
     },
     catPicker: { maxHeight: 48 },
-    catOption: {
-        paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8,
-        borderWidth: 1, marginRight: 8,
-    },
     catOptionText: { fontSize: 13, fontWeight: '600' },
     availToggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 20, marginBottom: 8 },
     availToggleHint: { fontSize: 13, flex: 1 },
@@ -538,4 +595,22 @@ const styles = StyleSheet.create({
         gap: 6, paddingVertical: 10, borderRadius: 10,
     },
     imgActionBtnText: { color: '#000', fontWeight: '700', fontSize: 13 },
+
+    // Inline new category
+    newCatRow: {
+        flexDirection: 'row', alignItems: 'center', gap: 8,
+        borderRadius: 10, borderWidth: 1, padding: 8, marginTop: 8,
+    },
+    newCatInput: {
+        flex: 1, fontSize: 14, paddingVertical: 4,
+    },
+    newCatBtn: {
+        width: 34, height: 34, borderRadius: 8,
+        alignItems: 'center', justifyContent: 'center',
+    },
+    catOption: {
+        paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8,
+        borderWidth: 1, marginRight: 8,
+        flexDirection: 'row', alignItems: 'center',
+    },
 });

@@ -1,5 +1,13 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
+
+class CreateCategoryDto {
+    @IsString() @IsNotEmpty() restaurantId: string;
+    @IsString() @IsNotEmpty() name: string;
+    @IsOptional() @IsNumber() display_order?: number;
+}
 
 @Controller('categories')
 export class CategoriesController {
@@ -8,5 +16,11 @@ export class CategoriesController {
     @Get()
     findAll(@Query('restaurantId') restaurantId: string) {
         return this.categoriesService.findAll(restaurantId);
+    }
+
+    @Post()
+    @UseGuards(JwtAuthGuard)
+    create(@Body() dto: CreateCategoryDto) {
+        return this.categoriesService.create(dto);
     }
 }

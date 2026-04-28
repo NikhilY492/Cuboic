@@ -56,6 +56,10 @@ export const menuApi = {
     updateItem: (id: string, payload: UpdateMenuItemPayload) =>
         api.put<MenuItem>(`/menu/${id}`, payload).then(r => r.data),
 
+    /** Create a new category for this restaurant */
+    createCategory: (restaurantId: string, name: string): Promise<Category> =>
+        api.post<Category>('/categories', { restaurantId, name }).then(r => r.data),
+
     /**
      * Upload an image file and return its public URL.
      * @param uri - local file URI from expo-image-picker

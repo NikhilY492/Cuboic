@@ -34,12 +34,14 @@ export function TablesScreen() {
 
     useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
 
-    // Redirect if the user has no permission (handles direct navigation / deep links)
+    // Redirect if the user has no permission (handles direct navigation / deep links).
+    // We only redirect when: loading finished, user is hydrated, and they definitely lack access.
     useEffect(() => {
-        if (!loading && !canManageTables) {
+        if (loading || !user) return; // still loading – wait
+        if (!canManageTables) {
             navigation.goBack();
         }
-    }, [loading, canManageTables, navigation]);
+    }, [loading, user, canManageTables, navigation]);
 
     const handleRefresh = async () => {
         setRefreshing(true);
