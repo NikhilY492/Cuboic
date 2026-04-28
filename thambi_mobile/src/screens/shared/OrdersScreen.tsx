@@ -122,6 +122,8 @@ function TableCard({ summary, onPress }: { summary: TableSummary; onPress: () =>
 
 function OrderCard({
     item,
+    canCancel,
+    canModify,
     onAdvance,
     onCancel,
     onMarkPaid,
