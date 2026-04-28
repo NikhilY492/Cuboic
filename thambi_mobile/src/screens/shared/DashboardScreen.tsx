@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View, Text, ScrollView, StyleSheet, ActivityIndicator,
     TouchableOpacity, RefreshControl, Alert, TextInput,
@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ordersApi } from '../../api/orders';
 import { paymentsApi } from '../../api/payments';
 import { deliveriesApi, robotsApi } from '../../api/deliveries';
-import { useSocket } from '../../hooks/useSocket';
+import { useSocketEvent } from '../../context/SocketContext';
 import { KpiCard } from '../../components/KpiCard';
 import { useTheme } from '../../context/ThemeContext';
 import { S } from '../../theme';
@@ -29,16 +29,20 @@ export function DashboardScreen() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    // Dynamic styles
-    const thematicStyles = {
+    // Dynamic styles — memoized so this object isn't recreated on every render
+    const thematicStyles = useMemo(() => ({
         screen: { backgroundColor: colors.bg },
         greeting: { color: colors.textMuted },
         restaurantName: { color: colors.text },
         role: { color: colors.textDim },
-        hint: { color: colors.textDim }
-    };
+        hint: { color: colors.textDim },
+    }), [colors]);
 
-    const config = user?.dashboard_config || (user?.role === 'Owner' ? ['Revenue', 'Orders', 'Pending', 'Preparing', 'Completed', 'Robots'] : ['Pending', 'Preparing', 'Completed', 'Robots']);
+    const config = useMemo(
+        () => user?.dashboard_config || (user?.role === 'Owner' ? ['Revenue', 'Orders', 'Pending', 'Preparing', 'Completed', 'Robots'] : ['Pending', 'Preparing', 'Completed', 'Robots']),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [user?.dashboard_config, user?.role]
+    );
 
     const load = useCallback(async () => {
         if (!restaurantId) return;
@@ -68,13 +72,14 @@ export function DashboardScreen() {
         load().finally(() => setLoading(false));
     }, [load]);
 
-    // Poll every 1 second
+    // Silent 30s fallback poll — WebSocket events handle true real-time updates above.
+    // This is just a safety net in case a socket event is ever missed.
     useEffect(() => {
-        const interval = setInterval(load, 1000);
+        const interval = setInterval(load, 30000);
         return () => clearInterval(interval);
     }, [load]);
 
-    useSocket(restaurantId, {
+    useSocketEvent(restaurantId, {
         'order:new': () => load(),
         'order:updated': () => load(),
         'order:status': () => load(),
@@ -193,7 +198,7 @@ export function DashboardScreen() {
                 <View style={styles.grid}>
                     {kpis.map(k => (
                         <KpiCard
-                            key={k.label}
+                            key={k.id}
                             icon={k.icon}
                             value={k.value}
                             label={k.label}

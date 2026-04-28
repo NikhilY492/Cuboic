@@ -10,7 +10,7 @@ import { S } from '../../theme';
 import { KpiCard } from '../../components/KpiCard';
 import { Feather } from '@expo/vector-icons';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
-import { useSocket } from '../../hooks/useSocket';
+import { useSocketEvent } from '../../context/SocketContext';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -141,7 +141,7 @@ export function AnalyticsScreen() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [restaurantId, selectedTimeframe, appliedStart, appliedEnd]);
 
-    useSocket(restaurantId, {
+    useSocketEvent(restaurantId, {
         'order:new': debouncedReload,
         'order:updated': debouncedReload,
         'order:status': debouncedReload,

@@ -11,6 +11,11 @@ export function TablesScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
     const navigation = useNavigation();
+
+    // Screen-level permission guard (BUG-06)
+    const isOwner = user?.role === 'Owner';
+    const canManageTables = isOwner || (user?.dashboard_config ?? []).includes('ManageTables');
+
     const [tables, setTables] = useState<RestaurantTable[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -28,6 +33,13 @@ export function TablesScreen() {
     }, [user?.restaurantId]);
 
     useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
+
+    // Redirect if the user has no permission (handles direct navigation / deep links)
+    useEffect(() => {
+        if (!loading && !canManageTables) {
+            navigation.goBack();
+        }
+    }, [loading, canManageTables, navigation]);
 
     const handleRefresh = async () => {
         setRefreshing(true);

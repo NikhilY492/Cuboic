@@ -9,7 +9,7 @@ import { deliveriesApi, robotsApi, type Delivery, type Robot } from '../../api/d
 import { ordersApi, type Order } from '../../api/orders';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useSocket } from '../../hooks/useSocket';
+import { useSocketEvent } from '../../context/SocketContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { FONT, S } from '../../theme';
 
@@ -52,7 +52,7 @@ export function DeliveriesScreen() {
 
     useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
 
-    useSocket(restaurantId, {
+    useSocketEvent(restaurantId, {
         'delivery:started': () => load(),
         'delivery:updated': () => load(),
         'order:updated': () => load(),
@@ -128,15 +128,13 @@ export function DeliveriesScreen() {
             {/* Header */}
             <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
                 <Text style={[styles.title, { color: colors.text }]}>Deliveries</Text>
-                {user?.role === 'Staff' && (
-                    <TouchableOpacity
-                        style={[styles.newBtn, { backgroundColor: colors.accent }]}
-                        onPress={() => setShowCreate(true)}
-                        activeOpacity={0.8}
-                    >
-                        <Text style={styles.newBtnText}>+ New</Text>
-                    </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                    style={[styles.newBtn, { backgroundColor: colors.accent }]}
+                    onPress={() => setShowCreate(true)}
+                    activeOpacity={0.8}
+                >
+                    <Text style={styles.newBtnText}>+ New</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Tab bar */}
@@ -177,7 +175,7 @@ export function DeliveriesScreen() {
                                     <Text style={[styles.stopText, { color: colors.text }]}>Stop {stop.sequence} · {stop.cabinets.join(', ')}</Text>
                                     <StatusBadge status={stop.status} size="sm" />
                                 </View>
-                                {tab === 'active' && stop.status === 'Pending' && user?.role === 'Staff' && (
+                                {tab === 'active' && stop.status === 'Pending' && (
                                     <TouchableOpacity
                                         style={[styles.confirmBtn, { backgroundColor: colors.accent }]}
                                         onPress={() => handleConfirmStop(item.id, si)}

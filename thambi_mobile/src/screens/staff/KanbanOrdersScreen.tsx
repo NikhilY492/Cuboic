@@ -7,7 +7,7 @@ import { Feather } from '@expo/vector-icons';
 import { ordersApi, type Order } from '../../api/orders';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useSocket } from '../../hooks/useSocket';
+import { useSocketEvent } from '../../context/SocketContext';
 import * as Speech from 'expo-speech';
 import { S, getStatusColor, FONT } from '../../theme';
 
@@ -36,7 +36,7 @@ const NEXT_STATUS: Record<string, string> = {
 
 // ─── Order Card Component ───────────────────────────────────────────────────
 
-function KanbanCard({ item, onAdvance }: { item: Order, onAdvance: (o: Order) => void }) {
+function KanbanCard({ item, canModify, onAdvance }: { item: Order, canModify: boolean, onAdvance: (o: Order) => void }) {
     const { colors } = useTheme();
     const indicatorColor = getStatusColor(item.status, colors);
     const tableNum = getTableNum(item);
@@ -105,25 +105,27 @@ function KanbanCard({ item, onAdvance }: { item: Order, onAdvance: (o: Order) =>
                 </View>
 
                 {/* Finish Button */}
-                <TouchableOpacity 
-                    style={[
-                        styles.finishBtn, 
-                        { backgroundColor: colors.surface2 },
-                        isTerminal && { borderColor: colors.border },
-                        !isTerminal && { borderColor: btnColor }
-                    ]} 
-                    disabled={isTerminal}
-                    onPress={() => onAdvance(item)}
-                    activeOpacity={0.8}
-                >
-                    <Text style={[
-                        styles.finishBtnText, 
-                        isTerminal && { color: colors.textDim },
-                        !isTerminal && { color: btnColor }
-                    ]}>
-                        {isTerminal ? 'Finished' : (nextState ? `Mark ${nextState}` : 'Finish')}
-                    </Text>
-                </TouchableOpacity>
+                {canModify && (
+                    <TouchableOpacity 
+                        style={[
+                            styles.finishBtn, 
+                            { backgroundColor: colors.surface2 },
+                            isTerminal && { borderColor: colors.border },
+                            !isTerminal && { borderColor: btnColor }
+                        ]} 
+                        disabled={isTerminal}
+                        onPress={() => onAdvance(item)}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={[
+                            styles.finishBtnText, 
+                            isTerminal && { color: colors.textDim },
+                            !isTerminal && { color: btnColor }
+                        ]}>
+                            {isTerminal ? 'Finished' : (nextState ? `Mark ${nextState}` : 'Finish')}
+                        </Text>
+                    </TouchableOpacity>
+                )}
             </View>
         </View>
     );
@@ -143,6 +145,10 @@ export function KanbanOrdersScreen() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [preferredVoice, setPreferredVoice] = useState<string | undefined>(undefined);
+
+    const isOwner = user?.role === 'Owner';
+    const config = user?.dashboard_config || [];
+    const canModifyOrders = isOwner || config.includes('ModifyOrders');
 
     useEffect(() => {
         const initVoices = async () => {
@@ -241,13 +247,13 @@ export function KanbanOrdersScreen() {
         }
     }, [orders, announcementLoop]);
 
-    // Poll every 2 seconds
+    // Silent 30s fallback poll — socket events above handle real-time updates.
     useEffect(() => {
-        const interval = setInterval(loadOrders, 2000);
+        const interval = setInterval(loadOrders, 30000);
         return () => clearInterval(interval);
     }, [loadOrders]);
 
-    useSocket(restaurantId, {
+    useSocketEvent(restaurantId, {
         'order:new': async (newOrder: Order) => {
             loadOrders();
         },
@@ -334,7 +340,7 @@ export function KanbanOrdersScreen() {
                 <View style={styles.grid}>
                     {filteredOrders.map(order => (
                         <View key={order.id} style={styles.cardWrapper}>
-                            <KanbanCard item={order} onAdvance={handleAdvance} />
+                            <KanbanCard item={order} canModify={canModifyOrders} onAdvance={handleAdvance} />
                         </View>
                     ))}
                 </View>

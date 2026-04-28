@@ -8,7 +8,7 @@ import { ordersApi, type Order } from '../../api/orders';
 import { tablesApi, type RestaurantTable } from '../../api/tables';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useSocket } from '../../hooks/useSocket';
+import { useSocketEvent } from '../../context/SocketContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { FONT, S, getStatusColor } from '../../theme';
 import * as Speech from 'expo-speech';
@@ -127,6 +127,8 @@ function OrderCard({
     onMarkPaid,
 }: {
     item: Order;
+    canCancel: boolean;
+    canModify: boolean;
     onAdvance: (o: Order) => void;
     onCancel: (o: Order) => void;
     onMarkPaid: (o: Order) => void;
@@ -192,7 +194,7 @@ function OrderCard({
             <View style={styles.cardFooter}>
                 <Text style={[styles.total, { color: colors.text }]}>₹{item.total.toFixed(2)}</Text>
                 <View style={styles.actions}>
-                    {item.payment?.status === 'Pending' && (
+                    {canModify && item.payment?.status === 'Pending' && (
                         <TouchableOpacity
                             style={[styles.btnAdvance, { backgroundColor: colors.green }]}
                             onPress={() => onMarkPaid(item)}
@@ -201,7 +203,7 @@ function OrderCard({
                             <Text style={[styles.btnAdvanceText, { color: 'white' }]}>Paid</Text>
                         </TouchableOpacity>
                     )}
-                    {NEXT_STATUS[item.status] && (
+                    {canModify && NEXT_STATUS[item.status] && (
                         <TouchableOpacity
                             style={[styles.btnAdvance, { backgroundColor: colors.accent }]}
                             onPress={() => onAdvance(item)}
@@ -210,7 +212,7 @@ function OrderCard({
                             <Text style={[styles.btnAdvanceText, { color: '#0f0f13' }]}>{NEXT_STATUS[item.status]}</Text>
                         </TouchableOpacity>
                     )}
-                    {!['Delivered', 'Cancelled', 'Assigned'].includes(item.status) && (
+                    {canCancel && !['Delivered', 'Cancelled', 'Assigned'].includes(item.status) && (
                         <TouchableOpacity
                             style={[styles.btnCancel, { paddingHorizontal: 10, justifyContent: 'center', backgroundColor: colors.red + '15', borderColor: colors.red + '55' }]}
                             onPress={() => onCancel(item)}
@@ -239,6 +241,11 @@ export function OrdersScreen({ route }: any) {
     const [refreshing, setRefreshing] = useState(false);
     const [preferredVoice, setPreferredVoice] = useState<string | undefined>(undefined);
     const [isMuted, setIsMuted] = useState(false);
+
+    const isOwner = user?.role === 'Owner';
+    const config = user?.dashboard_config || [];
+    const canCancelOrders = isOwner || config.includes('CancelOrders');
+    const canModifyOrders = isOwner || config.includes('ModifyOrders');
 
     useEffect(() => {
         const initVoices = async () => {
@@ -351,12 +358,13 @@ export function OrdersScreen({ route }: any) {
         }
     }, [orders, announcementLoop, isMuted]);
 
+    // Silent 30s fallback poll — socket events above handle real-time updates.
     useEffect(() => {
-        const interval = setInterval(load, 2000);
+        const interval = setInterval(load, 30000);
         return () => clearInterval(interval);
     }, [load]);
 
-    useSocket(restaurantId, {
+    useSocketEvent(restaurantId, {
         'order:new': () => load(),
         'order:updated': () => load(),
     });
@@ -366,10 +374,14 @@ export function OrdersScreen({ route }: any) {
     const handleAdvance = async (order: Order) => {
         const next = NEXT_STATUS[order.status];
         if (!next) return;
+        // Optimistic update
+        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: next } : o));
         try {
             await ordersApi.updateStatus(order.id, next);
-            load();
-        } catch { Alert.alert('Error', 'Failed to update order'); }
+        } catch {
+            Alert.alert('Error', 'Failed to update order');
+            load(); // revert to server state
+        }
     };
 
     const handleCancel = (order: Order) => {
@@ -377,20 +389,31 @@ export function OrdersScreen({ route }: any) {
             { text: 'No', style: 'cancel' },
             {
                 text: 'Yes, Cancel', style: 'destructive', onPress: async () => {
+                    // Optimistic update
+                    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'Cancelled' } : o));
                     try {
                         await ordersApi.updateStatus(order.id, 'Cancelled');
-                        load();
-                    } catch { Alert.alert('Error', 'Failed to cancel order'); }
+                    } catch {
+                        Alert.alert('Error', 'Failed to cancel order');
+                        load(); // revert to server state
+                    }
                 }
             },
         ]);
     };
 
     const handleMarkPaid = async (order: Order) => {
+        // Optimistic update
+        setOrders(prev => prev.map(o => o.id === order.id
+            ? { ...o, payment: o.payment ? { ...o.payment, status: 'Paid' } : o.payment }
+            : o
+        ));
         try {
             await ordersApi.markAsPaid(order.id);
-            load();
-        } catch { Alert.alert('Error', 'Failed to mark order as paid'); }
+        } catch {
+            Alert.alert('Error', 'Failed to mark order as paid');
+            load(); // revert to server state
+        }
     };
 
     if (loading) return (
@@ -478,7 +501,7 @@ export function OrdersScreen({ route }: any) {
                     contentContainerStyle={[styles.list, unpaidTotal > 0 && { paddingBottom: 100 }]}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
                     renderItem={({ item }) => (
-                        <OrderCard item={item} onAdvance={handleAdvance} onCancel={handleCancel} onMarkPaid={handleMarkPaid} />
+                        <OrderCard item={item} canCancel={canCancelOrders} canModify={canModifyOrders} onAdvance={handleAdvance} onCancel={handleCancel} onMarkPaid={handleMarkPaid} />
                     )}
                     ListEmptyComponent={
                         <Text style={[styles.empty, { color: colors.textMuted }]}>No orders for "{filterStatus}"</Text>

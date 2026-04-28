@@ -33,13 +33,16 @@ export function ManagementScreen({ navigation }: any) {
         }
     };
 
+    const config = user?.dashboard_config || [];
+    const canManageStaff = isOwner || config.includes('ManageStaff');
+    const canManageTables = isOwner || config.includes('ManageTables');
+    const canViewPayments = isOwner || config.includes('ViewPayments');
+
     const options = [
         { name: 'Menu', icon: 'book-open', screen: 'Menu', color: '#60a5fa', desc: 'Manage categories and items' },
-        ...(isOwner ? [
-            { name: 'Staff', icon: 'users', screen: 'Staff', color: '#c084fc', desc: 'Manage your restaurant team' },
-            { name: 'Tables', icon: 'grid', screen: 'Tables', color: '#fbbf24', desc: 'Configure dining areas' },
-            { name: 'Payments', icon: 'credit-card', screen: 'Payments', color: '#4ade80', desc: 'View transaction history' },
-        ] : []),
+        ...(canManageStaff ? [{ name: 'Staff', icon: 'users', screen: 'Staff', color: '#c084fc', desc: 'Manage your restaurant team' }] : []),
+        ...(canManageTables ? [{ name: 'Tables', icon: 'grid', screen: 'Tables', color: '#fbbf24', desc: 'Configure dining areas' }] : []),
+        ...(canViewPayments ? [{ name: 'Payments', icon: 'credit-card', screen: 'Payments', color: '#4ade80', desc: 'View transaction history' }] : []),
     ];
 
     return (

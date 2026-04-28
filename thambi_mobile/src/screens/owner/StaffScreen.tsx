@@ -26,6 +26,7 @@ export function StaffScreen() {
 
     const ALL_ROLES = ['Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff'];
     const DASHBOARD_WIDGETS = ['Revenue', 'Orders', 'Pending', 'Preparing', 'Completed', 'Robots'];
+    const PERMISSIONS = ['ManageTables', 'CancelOrders', 'ModifyOrders', 'ManageStaff', 'ViewPayments'];
 
     const load = useCallback(async () => {
         if (!user?.restaurantId) return;
@@ -177,6 +178,27 @@ export function StaffScreen() {
                                 >
                                     <Feather name={selected ? "check-square" : "square"} size={14} color={selected ? colors.green : colors.textMuted} style={{ marginRight: 6 }} />
                                     <Text style={[styles.roleBtnText, { color: colors.textMuted }, selected && { color: colors.text }]}>{w}</Text>
+                                </TouchableOpacity>
+                            )
+                        })}
+                    </View>
+
+                    <Text style={[styles.label, { color: colors.textMuted }]}>System Permissions</Text>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16, marginTop: 4 }}>
+                        {PERMISSIONS.map(p => {
+                            const selected = dashboardConfig.includes(p);
+                            const label = p.replace(/([A-Z])/g, ' $1').trim();
+                            return (
+                                <TouchableOpacity 
+                                    key={p} 
+                                    style={[styles.roleBtn, { backgroundColor: colors.surface2, borderColor: colors.border }, selected && { backgroundColor: colors.accent + '15', borderColor: colors.accent + '55' }]}
+                                    onPress={() => {
+                                        if (selected) setDashboardConfig(prev => prev.filter(x => x !== p));
+                                        else setDashboardConfig(prev => [...prev, p]);
+                                    }}
+                                >
+                                    <Feather name={selected ? "check-square" : "square"} size={14} color={selected ? colors.accent : colors.textMuted} style={{ marginRight: 6 }} />
+                                    <Text style={[styles.roleBtnText, { color: colors.textMuted }, selected && { color: colors.text }]}>{label}</Text>
                                 </TouchableOpacity>
                             )
                         })}

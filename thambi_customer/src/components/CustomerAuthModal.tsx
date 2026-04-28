@@ -79,6 +79,7 @@ export function CustomerAuthModal({ open, onClose, onSuccess }: Props) {
                             <input
                                 autoFocus
                                 type="tel"
+                                maxLength={10}
                                 placeholder="10-digit phone number"
                                 value={phone}
                                 onChange={e => setPhone(e.target.value)}

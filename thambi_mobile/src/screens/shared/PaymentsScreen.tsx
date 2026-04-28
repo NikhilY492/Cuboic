@@ -113,7 +113,7 @@ export function PaymentsScreen() {
                             <Text style={[styles.paidBadgeText, { color: colors.green }]}>Paid</Text>
                         </View>
                     ) : (
-                        user?.role === 'Admin' && (
+                        user?.role === 'Owner' && (
                             <TouchableOpacity
                                 style={[styles.markPaidBtn, { backgroundColor: colors.accent }]}
                                 onPress={() => handleMarkFeePaid(item.id)}
@@ -243,7 +243,7 @@ export function PaymentsScreen() {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.filterBtnReset, { backgroundColor: colors.surface2, borderColor: colors.border }]}
-                                onPress={() => { setFrom(''); setTo(''); }}
+                                onPress={() => { setFrom(''); setTo(''); load(); }}
                                 activeOpacity={0.8}
                             >
                                 <Text style={[styles.filterBtnResetText, { color: colors.textMuted }]}>Reset</Text>

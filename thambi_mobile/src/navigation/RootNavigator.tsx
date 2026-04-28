@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useSocket } from '../hooks/useSocket';
+import { SocketProvider, useSocketEvent } from '../context/SocketContext';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { DashboardScreen } from '../screens/shared/DashboardScreen';
 import { OrdersScreen } from '../screens/shared/OrdersScreen';
@@ -79,7 +79,7 @@ function MainTabs() {
     const isStaff = user?.role === 'Staff';
     const insets = useSafeAreaInsets();
 
-    useSocket(user?.restaurant_id, {
+    useSocketEvent(user?.restaurantId, {
         callCaptain: (data: any) => {
             if (isOwner || isManager) {
                 Alert.alert('Captain Called!', data?.message || `Customer at ${data?.tableName || 'a table'} needs assistance.`);
@@ -144,29 +144,31 @@ export function RootNavigator() {
     }
 
     return (
-        <NavigationContainer>
-            <Stack.Navigator
-                screenOptions={{
-                    headerStyle: { backgroundColor: colors.surface },
-                    headerTintColor: colors.text,
-                    headerTitleStyle: { fontWeight: '700' },
-                    contentStyle: { backgroundColor: colors.bg },
-                }}
-            >
-                {!user ? (
-                    <Stack.Screen
-                        name="Login"
-                        component={LoginScreen}
-                        options={{ headerShown: false }}
-                    />
-                ) : (
-                    <Stack.Screen
-                        name="Main"
-                        component={MainTabs}
-                        options={{ headerShown: false }}
-                    />
-                )}
-            </Stack.Navigator>
-        </NavigationContainer>
+        <SocketProvider restaurantId={user?.restaurantId}>
+            <NavigationContainer>
+                <Stack.Navigator
+                    screenOptions={{
+                        headerStyle: { backgroundColor: colors.surface },
+                        headerTintColor: colors.text,
+                        headerTitleStyle: { fontWeight: '700' },
+                        contentStyle: { backgroundColor: colors.bg },
+                    }}
+                >
+                    {!user ? (
+                        <Stack.Screen
+                            name="Login"
+                            component={LoginScreen}
+                            options={{ headerShown: false }}
+                        />
+                    ) : (
+                        <Stack.Screen
+                            name="Main"
+                            component={MainTabs}
+                            options={{ headerShown: false }}
+                        />
+                    )}
+                </Stack.Navigator>
+            </NavigationContainer>
+        </SocketProvider>
     );
 }

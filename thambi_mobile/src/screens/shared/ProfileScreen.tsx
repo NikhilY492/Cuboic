@@ -69,7 +69,7 @@ export function ProfileScreen() {
         }
     };
 
-    const openEmail = () => Linking.openURL('mailto:support@.thambi.com');
+    const openEmail = () => Linking.openURL('mailto:support@thambi.com');
     const openPhone = () => Linking.openURL('tel:+918000000000');
 
     /* ─── Components ─────────────────────────────────────────────── */
