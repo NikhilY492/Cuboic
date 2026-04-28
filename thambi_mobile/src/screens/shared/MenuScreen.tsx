@@ -5,6 +5,7 @@ import {
     ScrollView, KeyboardAvoidingView, Platform, Image,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { menuApi, type MenuItem, type Category } from '../../api/menu';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -39,6 +40,33 @@ export function MenuScreen() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState<FormState>(EMPTY_FORM);
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [showUrlInput, setShowUrlInput] = useState(false);
+
+    const pickImage = async () => {
+        const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!perm.granted) {
+            Alert.alert('Permission Required', 'Please allow access to your photo library to upload an image.');
+            return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+        });
+        if (result.canceled || !result.assets?.[0]) return;
+        const asset = result.assets[0];
+        setUploading(true);
+        try {
+            const url = await menuApi.uploadImage(asset.uri, asset.mimeType ?? 'image/jpeg');
+            setForm(f => ({ ...f, image_url: url }));
+        } catch {
+            Alert.alert('Upload Failed', 'Could not upload image. Try pasting a URL instead.');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const load = useCallback(async () => {
         if (!restaurantId) return;
@@ -84,7 +112,7 @@ export function MenuScreen() {
         setModalOpen(true);
     };
 
-    const closeModal = () => { setModalOpen(false); setEditingId(null); };
+    const closeModal = () => { setModalOpen(false); setEditingId(null); setShowUrlInput(false); };
 
     const handleSave = async () => {
         if (!form.name.trim()) { Alert.alert('Validation', 'Name is required'); return; }
@@ -314,17 +342,66 @@ export function MenuScreen() {
                             </View>
                         </View>
 
-                        {/* Image URL */}
-                        <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Image URL</Text>
-                        <TextInput
-                            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
-                            value={form.image_url}
-                            onChangeText={v => setForm(f => ({ ...f, image_url: v }))}
-                            placeholder="https://…"
-                            placeholderTextColor={colors.textDim}
-                            keyboardType="url"
-                            autoCapitalize="none"
-                        />
+                        {/* Image */}
+                        <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Item Image</Text>
+
+                        {/* Preview area */}
+                        <TouchableOpacity
+                            style={[styles.imgPreview, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                            onPress={pickImage}
+                            activeOpacity={0.8}
+                            disabled={uploading}
+                        >
+                            {form.image_url ? (
+                                <Image source={{ uri: form.image_url }} style={styles.imgPreviewImage} resizeMode="cover" />
+                            ) : (
+                                <View style={styles.imgPreviewPlaceholder}>
+                                    <Feather name="image" size={32} color={colors.textDim} />
+                                    <Text style={[styles.imgPreviewHint, { color: colors.textDim }]}>Tap to pick from gallery</Text>
+                                </View>
+                            )}
+                            {uploading && (
+                                <View style={styles.imgUploadingOverlay}>
+                                    <ActivityIndicator color="#fff" />
+                                    <Text style={styles.imgUploadingText}>Uploading…</Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* Action row */}
+                        <View style={styles.imgActions}>
+                            <TouchableOpacity
+                                style={[styles.imgActionBtn, { backgroundColor: colors.accent }]}
+                                onPress={pickImage}
+                                disabled={uploading}
+                                activeOpacity={0.8}
+                            >
+                                <Feather name="image" size={15} color="#000" />
+                                <Text style={styles.imgActionBtnText}>Pick from Gallery</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.imgActionBtn, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 }]}
+                                onPress={() => setShowUrlInput(v => !v)}
+                                activeOpacity={0.8}
+                            >
+                                <Feather name="link" size={15} color={colors.textMuted} />
+                                <Text style={[styles.imgActionBtnText, { color: colors.textMuted }]}>Paste URL</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Collapsible URL input */}
+                        {showUrlInput && (
+                            <TextInput
+                                style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text, marginTop: 8 }]}
+                                value={form.image_url}
+                                onChangeText={v => setForm(f => ({ ...f, image_url: v }))}
+                                placeholder="https://…"
+                                placeholderTextColor={colors.textDim}
+                                keyboardType="url"
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
+                        )}
 
                         {/* Available toggle */}
                         <View style={styles.availToggleRow}>
@@ -438,4 +515,27 @@ const styles = StyleSheet.create({
     btnSave: {
         ...S.shadow, flex: 1, borderRadius: 12, padding: 16, alignItems: 'center' },
     btnSaveText: { color: '#0f0f13', fontWeight: '800', fontSize: 15 },
+
+    // Image picker
+    imgPreview: {
+        width: '100%', height: 180, borderRadius: 12, borderWidth: 1,
+        overflow: 'hidden', marginBottom: 0,
+    },
+    imgPreviewImage: { width: '100%', height: '100%' },
+    imgPreviewPlaceholder: {
+        flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8,
+    },
+    imgPreviewHint: { fontSize: 13, fontWeight: '500' },
+    imgUploadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        alignItems: 'center', justifyContent: 'center', gap: 8,
+    },
+    imgUploadingText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+    imgActions: { flexDirection: 'row', gap: 10, marginTop: 10 },
+    imgActionBtn: {
+        flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        gap: 6, paddingVertical: 10, borderRadius: 10,
+    },
+    imgActionBtnText: { color: '#000', fontWeight: '700', fontSize: 13 },
 });

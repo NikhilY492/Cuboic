@@ -55,4 +55,20 @@ export const menuApi = {
     /** Update an existing menu item */
     updateItem: (id: string, payload: UpdateMenuItemPayload) =>
         api.put<MenuItem>(`/menu/${id}`, payload).then(r => r.data),
+
+    /**
+     * Upload an image file and return its public URL.
+     * @param uri - local file URI from expo-image-picker
+     * @param mimeType - e.g. 'image/jpeg'
+     */
+    uploadImage: async (uri: string, mimeType: string = 'image/jpeg'): Promise<string> => {
+        const filename = uri.split('/').pop() ?? `upload_${Date.now()}.jpg`;
+        const form = new FormData();
+        form.append('file', { uri, name: filename, type: mimeType } as any);
+        const res = await api.post<{ url: string }>('/upload/image', form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return res.data.url;
+    },
 };
+
