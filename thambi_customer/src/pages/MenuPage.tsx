@@ -557,9 +557,9 @@ export function MenuPage() {
                         Autonomous restaurant delivery, powered by robots.
                     </p>
                     <div className="menu-footer__links">
-                        <a href="mailto:hello@thambi.com">placeholder@thambi.com</a>
+                        <a href="mailto:support@thambi.in">support@thambi.in</a>
                         <span className="menu-footer__dot">·</span>
-                        <a href="https://thambi.com" target="_blank" rel="noopener noreferrer">thambi.com</a>
+                        <a href="https://thambi.in" target="_blank" rel="noopener noreferrer">thambi.in</a>
                         <span className="menu-footer__dot">·</span>
                         <span>Kerala, India</span>
                     </div>

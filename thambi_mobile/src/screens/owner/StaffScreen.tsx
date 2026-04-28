@@ -97,7 +97,8 @@ export function StaffScreen() {
             setIsEditing(false);
             load();
         } catch (err: any) {
-            Alert.alert('Error', err?.response?.data?.message || 'Failed to save staff');
+            const msg = err?.response?.data?.message;
+            Alert.alert('Error', Array.isArray(msg) ? msg.join('\n') : (msg || 'Failed to save staff'));
         }
     };
 

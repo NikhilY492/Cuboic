@@ -63,14 +63,15 @@ export function ProfileScreen() {
             setNewPassword('');
             setConfirmPassword('');
         } catch (err: any) {
-            Alert.alert('Error', err?.response?.data?.message || 'Failed to change password');
+            const msg = err?.response?.data?.message;
+            Alert.alert('Error', Array.isArray(msg) ? msg.join('\n') : (msg || 'Failed to change password'));
         } finally {
             setLoadingPwd(false);
         }
     };
 
-    const openEmail = () => Linking.openURL('mailto:support@thambi.com');
-    const openPhone = () => Linking.openURL('tel:+918000000000');
+    const openEmail = () => Linking.openURL('mailto:support@thambi.in');
+    const openPhone = () => Linking.openURL('tel:+917997827211');
 
     /* ─── Components ─────────────────────────────────────────────── */
 
@@ -278,7 +279,7 @@ export function ProfileScreen() {
                         </View>
                         <View style={styles.listItemText}>
                             <Text style={[styles.listItemTitle, { color: colors.text }]}>Email Support</Text>
-                            <Text style={[styles.listItemSub, { color: colors.textMuted }]}>support@cuboic.com</Text>
+                            <Text style={[styles.listItemSub, { color: colors.textMuted }]}>support@thambi.in</Text>
                         </View>
                         <Feather name="chevron-right" size={18} color={colors.textMuted} />
                     </TouchableOpacity>
@@ -289,7 +290,7 @@ export function ProfileScreen() {
                         </View>
                         <View style={styles.listItemText}>
                             <Text style={[styles.listItemTitle, { color: colors.text }]}>Call Support</Text>
-                            <Text style={[styles.listItemSub, { color: colors.textMuted }]}>+91 80000 00000</Text>
+                            <Text style={[styles.listItemSub, { color: colors.textMuted }]}>+91 79978 27211</Text>
                         </View>
                         <Feather name="chevron-right" size={18} color={colors.textMuted} />
                     </TouchableOpacity>
