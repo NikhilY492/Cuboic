@@ -15,6 +15,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoriesController = void 0;
 const common_1 = require("@nestjs/common");
 const categories_service_1 = require("./categories.service");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const class_validator_1 = require("class-validator");
+class CreateCategoryDto {
+    restaurantId;
+    name;
+    display_order;
+}
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateCategoryDto.prototype, "restaurantId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateCategoryDto.prototype, "name", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateCategoryDto.prototype, "display_order", void 0);
 let CategoriesController = class CategoriesController {
     categoriesService;
     constructor(categoriesService) {
@@ -22,6 +44,9 @@ let CategoriesController = class CategoriesController {
     }
     findAll(restaurantId) {
         return this.categoriesService.findAll(restaurantId);
+    }
+    create(dto) {
+        return this.categoriesService.create(dto);
     }
 };
 exports.CategoriesController = CategoriesController;
@@ -32,6 +57,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], CategoriesController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Post)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [CreateCategoryDto]),
+    __metadata("design:returntype", void 0)
+], CategoriesController.prototype, "create", null);
 exports.CategoriesController = CategoriesController = __decorate([
     (0, common_1.Controller)('categories'),
     __metadata("design:paramtypes", [categories_service_1.CategoriesService])

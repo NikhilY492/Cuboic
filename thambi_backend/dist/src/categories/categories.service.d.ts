@@ -11,4 +11,17 @@ export declare class CategoriesService {
         restaurantId: string;
         display_order: number;
     }[]>;
+    create({ restaurantId, name, display_order }: {
+        restaurantId: string;
+        name: string;
+        display_order?: number;
+    }): Promise<{
+        id: string;
+        name: string;
+        is_active: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        display_order: number;
+    }>;
 }

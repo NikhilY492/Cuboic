@@ -23,6 +23,17 @@ let CategoriesService = class CategoriesService {
             orderBy: { display_order: 'asc' },
         });
     }
+    async create({ restaurantId, name, display_order }) {
+        const count = await this.prisma.category.count({ where: { restaurantId } });
+        return this.prisma.category.create({
+            data: {
+                restaurantId,
+                name,
+                display_order: display_order ?? count + 1,
+                is_active: true,
+            },
+        });
+    }
 };
 exports.CategoriesService = CategoriesService;
 exports.CategoriesService = CategoriesService = __decorate([

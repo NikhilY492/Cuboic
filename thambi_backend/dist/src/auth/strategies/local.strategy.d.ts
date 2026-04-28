@@ -14,12 +14,12 @@ export declare class LocalStrategy extends LocalStrategy_base {
         updatedAt: Date;
         restaurantId: string | null;
         user_id: string;
-        outletId: string | null;
         password_hash: string;
         role: import("@prisma/client").$Enums.UserRole;
         email: string | null;
         phone: string | null;
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
+        outletId: string | null;
     }>;
 }
 export {};
