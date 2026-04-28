@@ -377,7 +377,7 @@ export function OrdersScreen({ route }: any) {
         const next = NEXT_STATUS[order.status];
         if (!next) return;
         // Optimistic update
-        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: next } : o));
+        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: next as Order['status'] } : o));
         try {
             await ordersApi.updateStatus(order.id, next);
         } catch {
@@ -392,7 +392,7 @@ export function OrdersScreen({ route }: any) {
             {
                 text: 'Yes, Cancel', style: 'destructive', onPress: async () => {
                     // Optimistic update
-                    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'Cancelled' } : o));
+                    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'Cancelled' as Order['status'] } : o));
                     try {
                         await ordersApi.updateStatus(order.id, 'Cancelled');
                     } catch {
