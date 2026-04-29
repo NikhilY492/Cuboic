@@ -1,4 +1,5 @@
-import api from './client';
+import api, { BASE_URL } from './client';
+import * as SecureStore from 'expo-secure-store';
 
 export interface MenuItem {
     id: string;
@@ -68,11 +69,29 @@ export const menuApi = {
     uploadImage: async (uri: string, mimeType: string = 'image/jpeg'): Promise<string> => {
         const filename = uri.split('/').pop() ?? `upload_${Date.now()}.jpg`;
         const form = new FormData();
-        form.append('file', { uri, name: filename, type: mimeType } as any);
-        const res = await api.post<{ url: string }>('/upload/image', form, {
-            transformRequest: () => form,
+        form.append('file', {
+            uri,
+            name: filename,
+            type: mimeType,
+        } as any);
+
+        const token = await SecureStore.getItemAsync('access_token');
+        const response = await fetch(`${BASE_URL}/upload/image`, {
+            method: 'POST',
+            body: form,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
         });
-        return res.data.url;
+
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error('Upload error details:', errText);
+            throw new Error('Upload failed');
+        }
+
+        const data = await response.json();
+        return data.url;
     },
 };
 

@@ -169,7 +169,7 @@ export function PaymentsScreen() {
                     )}
 
                     {/* ── Amount Payable to Thambi (Owner only) ── */}
-                    {isOwner && feeSummary && (
+                    {isOwner && feeSummary && !user?.name?.toLowerCase().includes('alnaas') && (
                         <View style={[styles.thambiSection, { backgroundColor: colors.surface, borderColor: colors.amber }]}>
                             <View style={styles.thambiHeader}>
                                 <Feather name="alert-circle" size={16} color={colors.amber} />

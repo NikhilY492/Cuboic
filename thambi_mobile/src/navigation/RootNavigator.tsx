@@ -99,15 +99,18 @@ function MainTabs() {
                     paddingTop: 8,
                     paddingLeft: Math.max(insets.left, 0),
                     paddingRight: Math.max(insets.right, 0),
-                    height: 64 + insets.bottom,
+                    minHeight: 64 + insets.bottom,
                 },
                 tabBarActiveTintColor: colors.accent,
                 tabBarInactiveTintColor: colors.textDim,
-                tabBarLabel: ({ color, focused }) => (
-                    <Text style={{ color, fontSize: 10, fontWeight: focused ? '700' : '500' }}>
-                        {route.name}
-                    </Text>
-                ),
+                tabBarLabelStyle: {
+                    fontSize: 12,
+                    fontWeight: '500',
+                    width: '100%',
+                },
+                tabBarItemStyle: {
+                    paddingHorizontal: 2,
+                },
                 tabBarIcon: ({ color, size }) => {
                     let iconName: any = 'circle';
                     if (route.name === 'Dashboard') iconName = 'pie-chart';
