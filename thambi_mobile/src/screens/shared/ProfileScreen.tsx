@@ -52,7 +52,9 @@ export function ProfileScreen() {
         setUploading(true);
         try {
             const imageUrl = await menuApi.uploadImage(uri);
+            console.log('Uploaded image URL:', imageUrl);
             const updated = await updateProfile({ image_url: imageUrl });
+            console.log('Updated user profile:', updated);
             await updateUser({ image_url: updated.image_url });
             Alert.alert('Success', 'Profile picture updated!');
         } catch (err) {
@@ -145,7 +147,11 @@ export function ProfileScreen() {
                 <TouchableOpacity onPress={pickImage} disabled={uploading} activeOpacity={0.8}>
                     <View style={[styles.avatar, { backgroundColor: colors.accent + '22' }]}>
                         {user?.image_url ? (
-                            <Image source={{ uri: user.image_url }} style={styles.avatarImage} />
+                            <Image 
+                                key={user.image_url}
+                                source={{ uri: user.image_url }} 
+                                style={styles.avatarImage} 
+                            />
                         ) : (
                             <Text style={[styles.avatarText, { color: colors.accent }]}>
                                 {(user?.name ?? 'U')[0].toUpperCase()}
