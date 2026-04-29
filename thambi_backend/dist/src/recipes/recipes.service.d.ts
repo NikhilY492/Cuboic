@@ -14,14 +14,14 @@ export declare class RecipesService {
                 outletId: string;
                 unit: string;
                 currentStock: number;
+                reservedStock: number;
                 costPerUnit: number;
                 reorderLevel: number;
-                reservedStock: number;
             };
         } & {
             id: string;
-            quantity: number;
             inventoryItemId: string;
+            quantity: number;
             recipeId: string;
         })[];
     } & {
@@ -42,14 +42,14 @@ export declare class RecipesService {
                 outletId: string;
                 unit: string;
                 currentStock: number;
+                reservedStock: number;
                 costPerUnit: number;
                 reorderLevel: number;
-                reservedStock: number;
             };
         } & {
             id: string;
-            quantity: number;
             inventoryItemId: string;
+            quantity: number;
             recipeId: string;
         })[];
     } & {
@@ -73,8 +73,8 @@ export declare class RecipesService {
             };
         } & {
             id: string;
-            quantity: number;
             inventoryItemId: string;
+            quantity: number;
             recipeId: string;
         })[];
     } & {

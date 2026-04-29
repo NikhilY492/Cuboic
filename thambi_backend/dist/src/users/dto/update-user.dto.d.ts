@@ -6,4 +6,5 @@ export declare class UpdateUserDto {
     restaurantId?: string;
     dashboard_config?: any;
     is_active?: boolean;
+    image_url?: string;
 }

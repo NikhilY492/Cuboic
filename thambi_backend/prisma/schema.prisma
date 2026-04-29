@@ -172,6 +172,7 @@ model User {
   email         String?
   phone         String?
   dashboard_config Json @default("[\"Pending\",\"Preparing\",\"Completed\",\"Robots\"]")
+  image_url     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

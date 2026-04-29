@@ -34,6 +34,7 @@ export class UsersService {
                 id: true, name: true, user_id: true, role: true,
                 is_active: true, restaurantId: true, createdAt: true,
                 dashboard_config: true, email: true, phone: true,
+                image_url: true,
             },
         });
     }
@@ -46,15 +47,19 @@ export class UsersService {
         return this.prisma.user.update({
             where: { id },
             data: { password_hash: hash },
-            select: { id: true, name: true, user_id: true, role: true, dashboard_config: true, email: true, phone: true }
+            select: { id: true, name: true, user_id: true, role: true, dashboard_config: true, email: true, phone: true, image_url: true }
         });
     }
 
-    async updateProfile(id: string, dto: { email?: string; phone?: string }) {
+    async updateProfile(id: string, dto: { email?: string; phone?: string; image_url?: string }) {
         return this.prisma.user.update({
             where: { id },
-            data: { email: dto.email, phone: dto.phone },
-            select: { id: true, name: true, user_id: true, role: true, restaurantId: true, email: true, phone: true, dashboard_config: true },
+            data: { ...dto },
+            select: { 
+                id: true, name: true, user_id: true, role: true, 
+                restaurantId: true, email: true, phone: true, 
+                dashboard_config: true, image_url: true 
+            },
         });
     }
 

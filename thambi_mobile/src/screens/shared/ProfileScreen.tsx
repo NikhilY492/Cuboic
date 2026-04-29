@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
-    Alert, ActivityIndicator, ScrollView, Switch, Linking,
+    Alert, ActivityIndicator, ScrollView, Switch, Linking, Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { menuApi } from '../../api/menu';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -25,6 +27,41 @@ export function ProfileScreen() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loadingPwd, setLoadingPwd] = useState(false);
     const [isPasswordExpanded, setIsPasswordExpanded] = useState(false);
+    const [uploading, setUploading] = useState(false);
+
+    const pickImage = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'We need camera roll permissions to upload a profile picture.');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.7,
+        });
+
+        if (!result.canceled) {
+            uploadProfilePicture(result.assets[0].uri);
+        }
+    };
+
+    const uploadProfilePicture = async (uri: string) => {
+        setUploading(true);
+        try {
+            const imageUrl = await menuApi.uploadImage(uri);
+            const updated = await updateProfile({ image_url: imageUrl });
+            await updateUser({ image_url: updated.image_url });
+            Alert.alert('Success', 'Profile picture updated!');
+        } catch (err) {
+            console.error('Profile upload error:', err);
+            Alert.alert('Error', 'Failed to upload image');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     // Keep local state in sync if user object changes
     useEffect(() => {
@@ -105,11 +142,24 @@ export function ProfileScreen() {
         >
             {/* ── Header ─────────────────────────────────────────── */}
             <View style={styles.header}>
-                <View style={[styles.avatar, { backgroundColor: colors.accent + '22' }]}>
-                    <Text style={[styles.avatarText, { color: colors.accent }]}>
-                        {(user?.name ?? 'U')[0].toUpperCase()}
-                    </Text>
-                </View>
+                <TouchableOpacity onPress={pickImage} disabled={uploading} activeOpacity={0.8}>
+                    <View style={[styles.avatar, { backgroundColor: colors.accent + '22' }]}>
+                        {user?.image_url ? (
+                            <Image source={{ uri: user.image_url }} style={styles.avatarImage} />
+                        ) : (
+                            <Text style={[styles.avatarText, { color: colors.accent }]}>
+                                {(user?.name ?? 'U')[0].toUpperCase()}
+                            </Text>
+                        )}
+                        <View style={[styles.cameraBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                            {uploading ? (
+                                <ActivityIndicator size="small" color={colors.accent} />
+                            ) : (
+                                <Feather name="camera" size={12} color={colors.text} />
+                            )}
+                        </View>
+                    </View>
+                </TouchableOpacity>
                 <Text style={[styles.userName, { color: colors.text }]}>{user?.name ?? '—'}</Text>
                 <View style={[styles.roleBadge, { backgroundColor: colors.accent + '22' }]}>
                     <Text style={[styles.roleText, { color: colors.accent }]}>{user?.role}</Text>
@@ -344,6 +394,19 @@ const styles = StyleSheet.create({
         marginBottom: 14,
     },
     avatarText: { fontSize: 30, fontWeight: '800' },
+    avatarImage: { width: 76, height: 76, borderRadius: 38 },
+    cameraBtn: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        ...S.shadow,
+    },
     userName: { fontSize: 24, fontWeight: '800', marginBottom: 6 },
     roleBadge: { paddingHorizontal: 14, paddingVertical: 4, borderRadius: 20 },
     roleText: { fontSize: 13, fontWeight: '700' },

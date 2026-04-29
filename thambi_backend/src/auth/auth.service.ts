@@ -35,6 +35,7 @@ export class AuthService {
                 restaurantId: user.restaurantId,
                 email: user.email ?? null,
                 phone: user.phone ?? null,
+                image_url: user.image_url ?? null,
             },
         };
     }

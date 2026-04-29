@@ -13,9 +13,9 @@ export declare class InventoryController {
         outletId: string;
         unit: string;
         currentStock: number;
+        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
-        reservedStock: number;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
     findAll(outletId: string): import("@prisma/client").Prisma.PrismaPromise<{
         id: string;
@@ -26,9 +26,9 @@ export declare class InventoryController {
         outletId: string;
         unit: string;
         currentStock: number;
+        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
-        reservedStock: number;
     }[]>;
     findLowStock(outletId: string): Promise<{
         id: string;
@@ -39,9 +39,9 @@ export declare class InventoryController {
         outletId: string;
         unit: string;
         currentStock: number;
+        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
-        reservedStock: number;
     }[]>;
     findOne(id: string): Promise<{
         transactions: {
@@ -49,11 +49,11 @@ export declare class InventoryController {
             createdAt: Date;
             outletId: string;
             notes: string | null;
-            quantity: number;
             costPerUnit: number | null;
-            referenceId: string | null;
-            type: import("@prisma/client").$Enums.StockTransactionType;
             inventoryItemId: string;
+            type: import("@prisma/client").$Enums.StockTransactionType;
+            quantity: number;
+            referenceId: string | null;
         }[];
     } & {
         id: string;
@@ -64,9 +64,9 @@ export declare class InventoryController {
         outletId: string;
         unit: string;
         currentStock: number;
+        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
-        reservedStock: number;
     }>;
     update(id: string, body: Partial<CreateInventoryItemDto>): Promise<{
         id: string;
@@ -77,9 +77,9 @@ export declare class InventoryController {
         outletId: string;
         unit: string;
         currentStock: number;
+        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
-        reservedStock: number;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -90,9 +90,9 @@ export declare class InventoryController {
         outletId: string;
         unit: string;
         currentStock: number;
+        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
-        reservedStock: number;
     }>;
     bulkUpdate(outletId: string, body: Array<{
         id: string;
@@ -106,9 +106,9 @@ export declare class InventoryController {
         outletId: string;
         unit: string;
         currentStock: number;
+        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
-        reservedStock: number;
     }[]>;
     stockIn(id: string, dto: StockInDto): Promise<{
         id: string;
@@ -119,9 +119,9 @@ export declare class InventoryController {
         outletId: string;
         unit: string;
         currentStock: number;
+        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
-        reservedStock: number;
     }>;
     adjust(id: string, dto: StockAdjustDto): Promise<{
         id: string;
@@ -132,9 +132,9 @@ export declare class InventoryController {
         outletId: string;
         unit: string;
         currentStock: number;
+        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
-        reservedStock: number;
     }>;
     checkAvailability(body: {
         outletId: string;
