@@ -38,7 +38,8 @@
     },
     "owner": "h3x4n3",
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "@react-native-community/datetimepicker"
     ]
   }
 }

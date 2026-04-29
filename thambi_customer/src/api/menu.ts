@@ -22,7 +22,7 @@ export interface Restaurant {
     slug: string;
     paymentStrategy?: 'PayPerOrder' | 'PayAtEnd';
     settings?: { tax_percentage: number };
-    tables?: Array<{ id: string; table_number: string }>;
+    tables?: Array<{ id: string; table_number: string; is_active?: boolean }>;
 }
 
 export const getRestaurant = (id: string) =>

@@ -47,19 +47,27 @@ interface TableSummary {
     orders: Order[];
     activeOrders: Order[];
     dominantStatus: string | null;
+    isActive: boolean;
 }
 
 function buildTableSummaries(orders: Order[], allTables: RestaurantTable[]): TableSummary[] {
     const map = new Map<string, Order[]>();
 
+    const tableStatusMap = new Map<string, boolean>();
+
     for (const t of allTables) {
         const num = String(t.table_number);
-        map.set(num.startsWith('T') ? num.substring(1) : num, []);
+        const parsedNum = num.startsWith('T') ? num.substring(1) : num;
+        map.set(parsedNum, []);
+        tableStatusMap.set(parsedNum, t.is_active);
     }
 
     for (const o of orders) {
         const key = getTableNum(o);
-        if (!map.has(key)) map.set(key, []);
+        if (!map.has(key)) {
+            map.set(key, []);
+            tableStatusMap.set(key, true); // Fallback for unknown tables
+        }
         map.get(key)!.push(o);
     }
 
@@ -71,7 +79,13 @@ function buildTableSummaries(orders: Order[], allTables: RestaurantTable[]): Tab
         for (const s of statusPriority) {
             if (activeOrders.some(o => o.status === s)) { dominantStatus = s; break; }
         }
-        summaries.push({ tableNum, orders: tableOrders, activeOrders, dominantStatus });
+        summaries.push({ 
+            tableNum, 
+            orders: tableOrders, 
+            activeOrders, 
+            dominantStatus, 
+            isActive: tableStatusMap.get(tableNum) ?? true 
+        });
     });
 
     summaries.sort((a, b) => {
@@ -100,7 +114,8 @@ function TableCard({ summary, onPress }: { summary: TableSummary; onPress: () =>
             style={[
                 styles.tableCard, 
                 { backgroundColor: colors.surface, borderColor: colors.border },
-                hasActive && { borderColor: colors.accent + '55', backgroundColor: colors.surface2 }
+                hasActive && { borderColor: colors.accent + '55', backgroundColor: colors.surface2 },
+                !summary.isActive && { opacity: 0.6 }
             ]}
             onPress={onPress}
             activeOpacity={0.75}
@@ -113,6 +128,8 @@ function TableCard({ summary, onPress }: { summary: TableSummary; onPress: () =>
                 <Text style={[styles.tableOrderCount, { color: dotColor }]}>
                     {summary.activeOrders.length} order{summary.activeOrders.length !== 1 ? 's' : ''}
                 </Text>
+            ) : !summary.isActive ? (
+                <Text style={[styles.tableIdle, { color: colors.red }]}>Maintenance</Text>
             ) : (
                 <Text style={[styles.tableIdle, { color: colors.textDim }]}>Idle</Text>
             )}

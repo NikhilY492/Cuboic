@@ -24,7 +24,9 @@ export function StaffScreen() {
     const [role, setRole] = useState<'Owner' | 'Manager' | 'Cashier' | 'Waiter' | 'Kitchen' | 'Staff'>('Staff');
     const [dashboardConfig, setDashboardConfig] = useState<string[]>(['Pending', 'Preparing', 'Completed', 'Robots']);
 
-    const ALL_ROLES = ['Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff'];
+    const ALL_ROLES = user?.role === 'Owner' 
+        ? ['Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff']
+        : ['Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff'];
     const DASHBOARD_WIDGETS = ['Revenue', 'Orders', 'Pending', 'Preparing', 'Completed', 'Robots'];
     const PERMISSIONS = ['ManageTables', 'CancelOrders', 'ModifyOrders', 'ManageStaff', 'ViewPayments'];
 
@@ -55,6 +57,10 @@ export function StaffScreen() {
     };
 
     const openEdit = (u: User) => {
+        if (u.role === 'Owner' && user?.role !== 'Owner') {
+            Alert.alert('Access Denied', 'Only the Owner can modify owner privileges.');
+            return;
+        }
         setSelectedUser(u);
         setName(u.name);
         setUserId(u.user_id);

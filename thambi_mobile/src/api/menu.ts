@@ -70,7 +70,7 @@ export const menuApi = {
         const form = new FormData();
         form.append('file', { uri, name: filename, type: mimeType } as any);
         const res = await api.post<{ url: string }>('/upload/image', form, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            transformRequest: () => form,
         });
         return res.data.url;
     },

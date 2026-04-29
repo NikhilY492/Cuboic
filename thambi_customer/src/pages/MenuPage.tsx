@@ -41,6 +41,7 @@ export function MenuPage() {
     const [availableTables, setAvailableTables] = useState<any[]>([]);
     const [activeOrders, setActiveOrders] = useState<ActiveOrderSession[]>([]);
     const [paymentStrategy, setPaymentStrategy] = useState<'PayPerOrder' | 'PayAtEnd'>('PayPerOrder');
+    const [isTableMaintenance, setIsTableMaintenance] = useState(false);
 
     const [authOpen, setAuthOpen] = useState(false);
     const [orderTypeOpen, setOrderTypeOpen] = useState(false);
@@ -230,6 +231,12 @@ export function MenuPage() {
 
             if (tableId) {
                 const tbl = rest.tables ? rest.tables.find(t => t.id === tableId) : undefined;
+                if (tbl && tbl.is_active === false) {
+                    setIsTableMaintenance(true);
+                } else {
+                    setIsTableMaintenance(false);
+                }
+                
                 if (tableId === 'takeaway_virtual' || tbl?.table_number.toLowerCase() === 'takeaway') {
                     setTableLabel('Takeaway');
                 } else if (tbl) {
@@ -305,7 +312,6 @@ export function MenuPage() {
         setSearchQuery('');
     };
 
-    /* show QR hint if no params */
     if (!restaurantId) {
         return (
             <div className="menu-error fade-in">
@@ -313,6 +319,42 @@ export function MenuPage() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                     Ask your server for the QR code to view the menu.
                 </p>
+            </div>
+        );
+    }
+
+    if (isTableMaintenance) {
+        return (
+            <div className="menu-page" style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg)' }}>
+                <header className="menu-header">
+                    <div className="menu-header__inner">
+                        <div className="menu-header__brand">
+                            <img src="/pic1.png" className="menu-header__logo" alt="Thambi" />
+                            <div>
+                                <div className="menu-header__name">{restaurantName}</div>
+                                <div className="menu-header__sub">Thambi</div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
+                    <div className="fade-up" style={{ width: '100%', maxWidth: '340px', backgroundColor: 'var(--surface)', padding: '32px 24px', borderRadius: '24px', boxShadow: '0 8px 30px rgba(0,0,0,0.04)', border: '1px solid var(--border)' }}>
+                        <div style={{ width: '64px', height: '64px', backgroundColor: 'var(--surface2)', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                            <span style={{ fontSize: '28px' }}>🛠️</span>
+                        </div>
+                        <h1 style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: '8px', color: 'var(--text)' }}>Table Under Maintenance</h1>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '32px', lineHeight: 1.5 }}>
+                            This table is currently unavailable. Please ask a staff member to assist you with another table or scan a different QR code.
+                        </p>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => window.location.href = `/?r=${restaurantId}`}
+                            style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 600, backgroundColor: 'var(--surface2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '14px' }}
+                        >
+                            Select Another Table
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }

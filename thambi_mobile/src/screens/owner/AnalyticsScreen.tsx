@@ -11,6 +11,7 @@ import { KpiCard } from '../../components/KpiCard';
 import { Feather } from '@expo/vector-icons';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { useSocketEvent } from '../../context/SocketContext';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -78,6 +79,9 @@ export function AnalyticsScreen() {
     // Applied custom dates (only set when user presses Apply)
     const [appliedStart, setAppliedStart] = useState('');
     const [appliedEnd, setAppliedEnd] = useState('');
+
+    const [showStartPicker, setShowStartPicker] = useState(false);
+    const [showEndPicker, setShowEndPicker] = useState(false);
 
     const [revenueData, setRevenueData] = useState<RevenueTrends | null>(null);
     const [menuData, setMenuData] = useState<MenuAnalytics | null>(null);
@@ -267,28 +271,48 @@ export function AnalyticsScreen() {
                 <View style={[styles.customRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <View style={styles.dateInputWrap}>
                         <Text style={[styles.dateLabel, { color: colors.textDim }]}>From</Text>
-                        <TextInput
-                            style={[styles.dateInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.bg }]}
-                            placeholder="YYYY-MM-DD"
-                            placeholderTextColor={colors.textDim}
-                            value={customStart}
-                            onChangeText={setCustomStart}
-                            keyboardType="numeric"
-                            maxLength={10}
-                        />
+                        <TouchableOpacity
+                            style={[styles.dateInput, { borderColor: colors.border, backgroundColor: colors.bg }]}
+                            onPress={() => setShowStartPicker(true)}
+                        >
+                            <Text style={{ color: customStart ? colors.text : colors.textDim, fontSize: 13 }}>
+                                {customStart || 'Select Date'}
+                            </Text>
+                        </TouchableOpacity>
+                        {showStartPicker && (
+                            <DateTimePicker
+                                value={customStart ? new Date(customStart) : new Date()}
+                                mode="date"
+                                display="default"
+                                onChange={(event, date) => {
+                                    setShowStartPicker(false);
+                                    if (date) setCustomStart(localDate(date));
+                                }}
+                            />
+                        )}
                     </View>
                     <Feather name="arrow-right" size={16} color={colors.textDim} style={styles.arrow} />
                     <View style={styles.dateInputWrap}>
                         <Text style={[styles.dateLabel, { color: colors.textDim }]}>To</Text>
-                        <TextInput
-                            style={[styles.dateInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.bg }]}
-                            placeholder="YYYY-MM-DD"
-                            placeholderTextColor={colors.textDim}
-                            value={customEnd}
-                            onChangeText={setCustomEnd}
-                            keyboardType="numeric"
-                            maxLength={10}
-                        />
+                        <TouchableOpacity
+                            style={[styles.dateInput, { borderColor: colors.border, backgroundColor: colors.bg }]}
+                            onPress={() => setShowEndPicker(true)}
+                        >
+                            <Text style={{ color: customEnd ? colors.text : colors.textDim, fontSize: 13 }}>
+                                {customEnd || 'Select Date'}
+                            </Text>
+                        </TouchableOpacity>
+                        {showEndPicker && (
+                            <DateTimePicker
+                                value={customEnd ? new Date(customEnd) : new Date()}
+                                mode="date"
+                                display="default"
+                                onChange={(event, date) => {
+                                    setShowEndPicker(false);
+                                    if (date) setCustomEnd(localDate(date));
+                                }}
+                            />
+                        )}
                     </View>
                     <TouchableOpacity
                         style={[styles.applyBtn, { backgroundColor: colors.accent }]}
