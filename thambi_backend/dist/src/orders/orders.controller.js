@@ -37,6 +37,12 @@ let OrdersController = class OrdersController {
     getUnpaidGroups(restaurantId) {
         return this.ordersService.getUnpaidGroups(restaurantId);
     }
+    checkSession(restaurantId, tableId) {
+        return this.ordersService.getOrCreateSession(restaurantId, tableId);
+    }
+    closeSession(id) {
+        return this.ordersService.closeSession(id);
+    }
     findOne(id) {
         return this.ordersService.findOne(id);
     }
@@ -94,6 +100,23 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getUnpaidGroups", null);
+__decorate([
+    (0, common_1.Get)('check-session'),
+    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(1, (0, common_1.Query)('tableId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "checkSession", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner'),
+    (0, common_1.Patch)('session/:id/close'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "closeSession", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),

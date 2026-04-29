@@ -60,3 +60,8 @@ export const markPaidBulk = (restaurantId: string, orderIds: string[]) =>
         restaurantId,
         orderIds
     }).then(r => r.data);
+
+export const checkSession = (restaurantId: string, tableId: string) =>
+    api.get<{ id: string; status: string }>('/orders/check-session', {
+        params: { restaurantId, tableId }
+    }).then(r => r.data);

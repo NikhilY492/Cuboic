@@ -20,13 +20,13 @@ export declare class AuthController {
     me(req: any): any;
     changePassword(req: any, body: any): Promise<{
         id: string;
-        user_id: string;
         name: string;
+        image_url: string | null;
+        user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
         email: string | null;
         phone: string | null;
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
-        image_url: string | null;
     }>;
     updateProfile(req: any, body: {
         email?: string;
@@ -34,13 +34,13 @@ export declare class AuthController {
         image_url?: string;
     }): Promise<{
         id: string;
-        user_id: string;
-        restaurantId: string | null;
         name: string;
+        restaurantId: string | null;
+        image_url: string | null;
+        user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
         email: string | null;
         phone: string | null;
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
-        image_url: string | null;
     }>;
 }

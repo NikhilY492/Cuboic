@@ -29,6 +29,7 @@ export interface OrderCustomer {
 export interface Order {
     id: string;
     tableId: string;
+    sessionId?: string;
     table?: OrderTable | null;
     customerId?: string;
     customer?: OrderCustomer | null;
@@ -79,4 +80,7 @@ export const ordersApi = {
 
     getUnpaidGroups: (restaurantId: string) =>
         api.get<any[]>('/orders/unpaid-groups', { params: { restaurantId } }).then(r => r.data),
+
+    closeSession: (sessionId: string) =>
+        api.patch(`/orders/session/${sessionId}/close`).then(r => r.data),
 };

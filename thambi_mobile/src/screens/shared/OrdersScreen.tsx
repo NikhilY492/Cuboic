@@ -450,30 +450,7 @@ export function OrdersScreen({ route }: any) {
         const filtered = filterStatus === 'All'
             ? tableOrders
             : tableOrders.filter(o => o.status === filterStatus);
-
-        const unpaidTotal = filtered.reduce((sum, o) => o.payment?.status === 'Pending' ? sum + o.total : sum, 0);
-        const unpaidOrderIds = filtered.filter(o => o.payment?.status === 'Pending').map(o => o.id);
-
-        const handleSettleAll = async () => {
-            Alert.alert(
-                'Settle All Unpaid',
-                `Are you sure you want to mark all ${unpaidOrderIds.length} unpaid orders as paid? Total: ₹${unpaidTotal.toFixed(2)}`,
-                [
-                    { text: 'Cancel', style: 'cancel' },
-                    {
-                        text: 'Yes, Settle All',
-                        onPress: async () => {
-                            try {
-                                await ordersApi.markPaidBulk(restaurantId, unpaidOrderIds);
-                                load();
-                            } catch {
-                                Alert.alert('Error', 'Failed to settle orders');
-                            }
-                        }
-                    }
-                ]
-            );
-        };
+        const sessionIds = [...new Set(filtered.map(o => o.sessionId || 'no-session'))];
 
         return (
             <View style={[S.screen, { backgroundColor: colors.bg }]}>
@@ -484,7 +461,7 @@ export function OrdersScreen({ route }: any) {
                     </Pressable>
                     <View style={{ flex: 1 }}>
                         <Text style={[styles.title, { color: colors.text }]}>
-                            {selectedTable?.toLowerCase() === 'takeaway' ? 'Takeaway' : `T${selectedTable}`}
+                            {selectedTable?.toLowerCase() === 'takeaway' ? 'Takeaway' : `Table ${selectedTable}`}
                         </Text>
                         <Text style={[styles.sub, { color: colors.textMuted }]}>{tableOrders.length} order{tableOrders.length !== 1 ? 's' : ''} total</Text>
                     </View>
@@ -513,34 +490,64 @@ export function OrdersScreen({ route }: any) {
                     ))}
                 </ScrollView>
 
-                <FlatList
-                    key="orders-list"
-                    data={filtered}
-                    keyExtractor={item => item.id}
-                    contentContainerStyle={[styles.list, unpaidTotal > 0 && { paddingBottom: 100 }]}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
-                    renderItem={({ item }) => (
-                        <OrderCard item={item} canCancel={canCancelOrders} canModify={canModifyOrders} onAdvance={handleAdvance} onCancel={handleCancel} onMarkPaid={handleMarkPaid} />
+                <ScrollView style={{ flex: 1 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}>
+                    {sessionIds.length === 0 ? (
+                        <Text style={[styles.empty, { color: colors.textMuted, marginTop: 40 }]}>No orders for "{filterStatus}"</Text>
+                    ) : (
+                        sessionIds.map(sid => {
+                            const sessionOrders = filtered.filter(o => (o.sessionId || 'no-session') === sid);
+                            const unpaidTotal = sessionOrders.reduce((sum, o) => o.payment?.status === 'Pending' ? sum + o.total : sum, 0);
+                            const unpaidIds = sessionOrders.filter(o => o.payment?.status === 'Pending').map(o => o.id);
+                            
+                            return (
+                                <View key={sid} style={[styles.sessionBlock, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                                    <View style={styles.sessionHeader}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={[styles.sessionTitle, { color: colors.text }]}>
+                                                {sid === 'no-session' ? 'Legacy Orders' : `Bill #${sid.slice(-4).toUpperCase()}`}
+                                            </Text>
+                                            <Text style={[styles.sessionSub, { color: colors.textDim }]}>
+                                                {sessionOrders.length} item{sessionOrders.length !== 1 ? 's' : ''} • {unpaidIds.length > 0 ? `${unpaidIds.length} Unpaid` : 'All Paid'}
+                                            </Text>
+                                        </View>
+                                        {unpaidTotal > 0 && (
+                                            <TouchableOpacity 
+                                                style={[styles.miniSettleBtn, { backgroundColor: colors.green }]}
+                                                onPress={async () => {
+                                                    Alert.alert('Settle Bill', `Mark ₹${unpaidTotal.toFixed(2)} as Paid?`, [
+                                                        { text: 'Cancel' },
+                                                        { text: 'Settle', onPress: async () => {
+                                                            try {
+                                                                await ordersApi.markPaidBulk(restaurantId, unpaidIds);
+                                                                load();
+                                                            } catch { Alert.alert('Error', 'Failed to settle'); }
+                                                        }}
+                                                    ]);
+                                                }}
+                                            >
+                                                <Text style={styles.miniSettleText}>Settle ₹{unpaidTotal.toFixed(0)}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                    
+                                    <View style={styles.sessionItems}>
+                                        {sessionOrders.map(o => (
+                                            <OrderCard 
+                                                key={o.id} 
+                                                item={o} 
+                                                canCancel={canCancelOrders} 
+                                                canModify={canModifyOrders} 
+                                                onAdvance={handleAdvance} 
+                                                onCancel={handleCancel} 
+                                                onMarkPaid={handleMarkPaid} 
+                                            />
+                                        ))}
+                                    </View>
+                                </View>
+                            );
+                        })
                     )}
-                    ListEmptyComponent={
-                        <Text style={[styles.empty, { color: colors.textMuted }]}>No orders for "{filterStatus}"</Text>
-                    }
-                />
-
-                {unpaidTotal > 0 && (
-                    <View style={[styles.settleBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
-                        <View>
-                            <Text style={[styles.unpaidLabel, { color: colors.text }]}>Unpaid Balance</Text>
-                            <Text style={[styles.unpaidAmount, { color: colors.red }]}>₹{unpaidTotal.toFixed(2)}</Text>
-                        </View>
-                        <TouchableOpacity 
-                            style={[styles.settleBtn, { backgroundColor: colors.green }]}
-                            onPress={handleSettleAll}
-                        >
-                            <Text style={styles.settleBtnText}>Settle All</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
+                </ScrollView>
             </View>
         );
     }
@@ -728,7 +735,56 @@ const styles = StyleSheet.create({
         paddingVertical: 7,
         borderRadius: 8,
     },
-    empty: { textAlign: 'center', marginTop: 60, fontSize: 14 },
+    empty: {
+        textAlign: 'center',
+        marginTop: 40,
+        fontSize: 14,
+        fontFamily: FONT.medium,
+    },
+    // Session Block Styles
+    sessionBlock: {
+        marginHorizontal: 16,
+        marginVertical: 12,
+        borderRadius: 16,
+        borderWidth: 1,
+        overflow: 'hidden',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    sessionHeader: {
+        padding: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.05)',
+    },
+    sessionTitle: {
+        fontSize: 16,
+        fontFamily: FONT.bold,
+        letterSpacing: 0.5,
+    },
+    sessionSub: {
+        fontSize: 12,
+        fontFamily: FONT.regular,
+        marginTop: 2,
+    },
+    miniSettleBtn: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+    },
+    miniSettleText: {
+        color: '#fff',
+        fontSize: 13,
+        fontFamily: FONT.bold,
+    },
+    sessionItems: {
+        paddingTop: 8,
+        paddingBottom: 16,
+    },
     settleBar: {
         position: 'absolute',
         bottom: 0,

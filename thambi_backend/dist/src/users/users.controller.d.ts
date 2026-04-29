@@ -5,55 +5,55 @@ export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     create(dto: CreateUserDto): Promise<{
-        name: string;
         id: string;
-        restaurantId: string | null;
-        outletId: string | null;
-        user_id: string;
-        role: import("@prisma/client").$Enums.UserRole;
+        name: string;
         is_active: boolean;
-        email: string | null;
-        phone: string | null;
-        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
-        image_url: string | null;
         createdAt: Date;
         updatedAt: Date;
-    }>;
-    findAll(restaurantId: string): import("@prisma/client").Prisma.PrismaPromise<{
-        name: string;
-        id: string;
         restaurantId: string | null;
+        image_url: string | null;
         user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
-        is_active: boolean;
         email: string | null;
         phone: string | null;
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
-        image_url: string | null;
-        createdAt: Date;
-    }[]>;
-    update(id: string, dto: UpdateUserDto): Promise<{
-        name: string;
+        outletId: string | null;
+    }>;
+    findAll(restaurantId: string): import("@prisma/client").Prisma.PrismaPromise<{
         id: string;
+        name: string;
+        is_active: boolean;
+        createdAt: Date;
+        restaurantId: string | null;
+        image_url: string | null;
         user_id: string;
         role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
+    }[]>;
+    update(id: string, dto: UpdateUserDto): Promise<{
+        id: string;
+        name: string;
         is_active: boolean;
+        user_id: string;
+        role: import("@prisma/client").$Enums.UserRole;
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     }>;
     remove(id: string): Promise<{
-        password_hash: string;
-        name: string;
         id: string;
-        restaurantId: string | null;
-        outletId: string | null;
-        user_id: string;
-        role: import("@prisma/client").$Enums.UserRole;
+        name: string;
         is_active: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string | null;
+        image_url: string | null;
+        user_id: string;
+        password_hash: string;
+        role: import("@prisma/client").$Enums.UserRole;
         email: string | null;
         phone: string | null;
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
-        image_url: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        outletId: string | null;
     }>;
 }

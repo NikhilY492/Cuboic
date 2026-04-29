@@ -34,6 +34,18 @@ export class OrdersController {
     getUnpaidGroups(@Query('restaurantId') restaurantId: string) {
         return this.ordersService.getUnpaidGroups(restaurantId);
     }
+    
+    @Get('check-session')
+    checkSession(@Query('restaurantId') restaurantId: string, @Query('tableId') tableId: string) {
+        return this.ordersService.getOrCreateSession(restaurantId, tableId);
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('Staff', 'Owner')
+    @Patch('session/:id/close')
+    closeSession(@Param('id') id: string) {
+        return this.ordersService.closeSession(id);
+    }
 
     @Get(':id')
     findOne(@Param('id') id: string) {

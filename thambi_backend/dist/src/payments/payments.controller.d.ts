@@ -18,6 +18,7 @@ export declare class PaymentsController {
             total: number;
             notes: string | null;
             tableId: string;
+            sessionId: string | null;
             customerId: string | null;
         };
     } & {

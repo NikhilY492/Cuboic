@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getRestaurant, getCategories, getMenuItems, type Category, type MenuItem } from '../api/menu';
-import { updateOrderTable } from '../api/orders';
+import { updateOrderTable, checkSession } from '../api/orders';
 import { useCart } from '../hooks/useCart';
 import { ItemCard } from '../components/ItemCard';
 import { CartDrawer } from '../components/CartDrawer';
@@ -49,6 +49,7 @@ export function MenuPage() {
 
     // Auth State
     const [customer, setCustomer] = useState<Customer | null>(null);
+    const [dbSessionId, setDbSessionId] = useState<string | null>(null);
 
     const cart = useCart();
     const navigate = useNavigate();
@@ -81,6 +82,16 @@ export function MenuPage() {
             console.error('Failed to parse active orders', e);
         }
     }, []);
+
+    useEffect(() => {
+        if (restaurantId && tableId && String(tableId).toLowerCase() !== 'takeaway_virtual') {
+            checkSession(restaurantId, tableId).then(s => {
+                setDbSessionId(s.id);
+            }).catch(err => console.error('Failed to check session', err));
+        } else {
+            setDbSessionId(null);
+        }
+    }, [restaurantId, tableId]);
 
     const handleTableSelect = (newTableId: string) => {
         if (activeOrders.length > 0) {
@@ -152,7 +163,7 @@ export function MenuPage() {
                 restaurantId,
                 tableId: tId,
                 tableLabel: tLabel,
-                sessionId: SESSION_ID,
+                sessionId: dbSessionId || SESSION_ID,
                 customerId: customer.id,
                 paymentStrategy
             },
@@ -665,7 +676,7 @@ export function MenuPage() {
                 restaurantId={restaurantId}
                 tableId={tableId}
                 tableLabel={tableLabel}
-                sessionId={SESSION_ID}
+                sessionId={dbSessionId || SESSION_ID}
                 onAdd={cart.add}
                 onRemove={cart.remove}
                 onClear={cart.clear}
@@ -692,7 +703,7 @@ export function MenuPage() {
                 orders={activeOrders}
                 restaurantId={restaurantId}
                 tableId={tableId}
-                sessionId={SESSION_ID}
+                sessionId={dbSessionId || SESSION_ID}
             />
 
             {/* ── Table selector modal ───────────────────────────── */}

@@ -29,6 +29,55 @@ let OrdersService = OrdersService_1 = class OrdersService {
         this.platformFeesService = platformFeesService;
         this.inventoryService = inventoryService;
     }
+    async getOrCreateSession(restaurantId, tableId) {
+        let session = await this.prisma.tableSession.findFirst({
+            where: {
+                restaurantId,
+                tableId,
+                status: 'Active',
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        const now = new Date();
+        if (session) {
+            const lastActivity = new Date(session.lastActivityAt);
+            const diffMins = (now.getTime() - lastActivity.getTime()) / (1000 * 60);
+            if (diffMins > 90) {
+                this.logger.log(`Session ${session.id} expired due to inactivity (${diffMins.toFixed(1)} mins)`);
+                await this.prisma.tableSession.update({
+                    where: { id: session.id },
+                    data: { status: 'Expired' },
+                });
+                session = null;
+            }
+        }
+        if (!session) {
+            session = await this.prisma.tableSession.create({
+                data: {
+                    restaurantId,
+                    tableId,
+                    status: 'Active',
+                    lastActivityAt: now,
+                },
+            });
+        }
+        else {
+            await this.prisma.tableSession.update({
+                where: { id: session.id },
+                data: { lastActivityAt: now },
+            });
+        }
+        return session;
+    }
+    async closeSession(sessionId) {
+        return this.prisma.tableSession.update({
+            where: { id: sessionId },
+            data: {
+                status: 'Closed',
+                closedAt: new Date()
+            },
+        });
+    }
     async create(dto) {
         console.log('[DEBUG] createOrder DTO:', JSON.stringify(dto, null, 2));
         const itemDocs = await this.prisma.menuItem.findMany({
@@ -50,6 +99,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 restaurantId: dto.restaurantId,
                 outletId: dto.outletId,
                 tableId: dto.tableId,
+                sessionId: dto.orderType === 'Takeaway' ? null : (await this.getOrCreateSession(dto.restaurantId, dto.tableId)).id,
                 customerId: dto.customerId,
                 customer_session_id: dto.customerSessionId,
                 orderType: dto.orderType || 'DineIn',
@@ -215,14 +265,16 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 payment: { status: 'Pending' },
                 status: { not: 'Cancelled' }
             },
-            include: { payment: true, customer: true, table: true },
+            include: { payment: true, customer: true, table: true, session: true },
         });
         const groups = {};
         for (const order of unpaidOrders) {
-            const gid = order.customer_session_id;
+            const gid = order.sessionId || order.customer_session_id;
             if (!groups[gid]) {
                 groups[gid] = {
                     sessionId: gid,
+                    dbSessionId: order.sessionId,
+                    sessionStatus: order.session?.status,
                     customerId: order.customerId,
                     customer: order.customer,
                     table: order.table,
@@ -258,6 +310,19 @@ let OrdersService = OrdersService_1 = class OrdersService {
         for (const order of updatedOrders) {
             this.eventsGateway.emitToRestaurant(restaurantId, 'order:updated', order);
         }
+        const sessionIds = [...new Set(updatedOrders.map(o => o.sessionId).filter(Boolean))];
+        for (const sid of sessionIds) {
+            const unpaidCount = await this.prisma.order.count({
+                where: {
+                    sessionId: sid,
+                    payment: { status: 'Pending' }
+                }
+            });
+            if (unpaidCount === 0) {
+                await this.closeSession(sid);
+                this.logger.log(`Session ${sid} closed as all orders are paid.`);
+            }
+        }
         return { success: true, count: updatedOrders.length };
     }
     async cleanupStaleOrders() {
@@ -283,6 +348,17 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 where: { id: { in: orderIds } },
             });
             this.logger.log(`Cleanup complete: Deleted ${deleted.count} stale pending order(s).`);
+            const sessionCutoff = new Date(Date.now() - 120 * 60 * 1000);
+            const expiredSessions = await this.prisma.tableSession.updateMany({
+                where: {
+                    status: 'Active',
+                    lastActivityAt: { lt: sessionCutoff }
+                },
+                data: { status: 'Expired' }
+            });
+            if (expiredSessions.count > 0) {
+                this.logger.log(`Cleanup: Marked ${expiredSessions.count} inactive sessions as Expired.`);
+            }
         }
         catch (error) {
             this.logger.error('Error during stale orders cleanup:', error);
