@@ -17,8 +17,8 @@ export declare class RecipesController {
             };
         } & {
             id: string;
-            inventoryItemId: string;
             quantity: number;
+            inventoryItemId: string;
             recipeId: string;
         })[];
     } & {
@@ -39,14 +39,14 @@ export declare class RecipesController {
                 outletId: string;
                 unit: string;
                 currentStock: number;
-                reservedStock: number;
                 costPerUnit: number;
                 reorderLevel: number;
+                reservedStock: number;
             };
         } & {
             id: string;
-            inventoryItemId: string;
             quantity: number;
+            inventoryItemId: string;
             recipeId: string;
         })[];
     } & {
@@ -67,14 +67,14 @@ export declare class RecipesController {
                 outletId: string;
                 unit: string;
                 currentStock: number;
-                reservedStock: number;
                 costPerUnit: number;
                 reorderLevel: number;
+                reservedStock: number;
             };
         } & {
             id: string;
-            inventoryItemId: string;
             quantity: number;
+            inventoryItemId: string;
             recipeId: string;
         })[];
     } & {
@@ -95,14 +95,14 @@ export declare class RecipesController {
                 outletId: string;
                 unit: string;
                 currentStock: number;
-                reservedStock: number;
                 costPerUnit: number;
                 reorderLevel: number;
+                reservedStock: number;
             };
         } & {
             id: string;
-            inventoryItemId: string;
             quantity: number;
+            inventoryItemId: string;
             recipeId: string;
         })[];
     } & {

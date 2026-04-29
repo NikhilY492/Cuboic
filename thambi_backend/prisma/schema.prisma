@@ -260,6 +260,7 @@ model Delivery {
   restaurant Restaurant @relation(fields: [restaurantId], references: [id])
 }
 
+
 model Payment {
   id             String        @id @default(cuid())
   orderId        String        @unique

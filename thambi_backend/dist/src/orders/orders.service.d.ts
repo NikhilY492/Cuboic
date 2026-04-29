@@ -13,54 +13,55 @@ export declare class OrdersService {
     constructor(prisma: PrismaService, eventsGateway: EventsGateway, platformFeesService: PlatformFeesService, inventoryService: InventoryService);
     getOrCreateSession(restaurantId: string, tableId: string): Promise<{
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: string;
-        lastActivityAt: Date;
         createdAt: Date;
+        restaurantId: string;
+        status: string;
+        tableId: string;
+        lastActivityAt: Date;
         closedAt: Date | null;
     }>;
     closeSession(sessionId: string): Promise<{
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: string;
-        lastActivityAt: Date;
         createdAt: Date;
+        restaurantId: string;
+        status: string;
+        tableId: string;
+        lastActivityAt: Date;
         closedAt: Date | null;
     }>;
     create(dto: CreateOrderDto): Promise<{
         table: {
             id: string;
-            restaurantId: string;
+            is_active: boolean;
             createdAt: Date;
             updatedAt: Date;
             table_number: string;
-            is_active: boolean;
+            restaurantId: string;
         };
         customer: {
             id: string;
-            createdAt: Date;
             name: string;
+            createdAt: Date;
             updatedAt: Date;
             phone: string;
         } | null;
         payment: {
             id: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
             amount: number;
+            orderId: string;
             method: string;
             transaction_id: string | null;
-            orderId: string;
         } | null;
     } & {
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: import("@prisma/client").$Enums.OrderStatus;
         createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
         customer_session_id: string;
         orderType: string;
         items: import("@prisma/client/runtime/library").JsonValue;
@@ -68,43 +69,43 @@ export declare class OrdersService {
         tax: number;
         total: number;
         notes: string | null;
-        updatedAt: Date;
-        outletId: string | null;
+        tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }>;
     findOne(id: string): import("@prisma/client").Prisma.Prisma__OrderClient<({
         table: {
             id: string;
-            restaurantId: string;
+            is_active: boolean;
             createdAt: Date;
             updatedAt: Date;
             table_number: string;
-            is_active: boolean;
+            restaurantId: string;
         };
         customer: {
             id: string;
-            createdAt: Date;
             name: string;
+            createdAt: Date;
             updatedAt: Date;
             phone: string;
         } | null;
         payment: {
             id: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
             amount: number;
+            orderId: string;
             method: string;
             transaction_id: string | null;
-            orderId: string;
         } | null;
     } & {
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: import("@prisma/client").$Enums.OrderStatus;
         createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
         customer_session_id: string;
         orderType: string;
         items: import("@prisma/client/runtime/library").JsonValue;
@@ -112,43 +113,43 @@ export declare class OrdersService {
         tax: number;
         total: number;
         notes: string | null;
-        updatedAt: Date;
-        outletId: string | null;
+        tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }) | null, null, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
     findAll(restaurantId: string, status?: string): import("@prisma/client").Prisma.PrismaPromise<({
         table: {
             id: string;
-            restaurantId: string;
+            is_active: boolean;
             createdAt: Date;
             updatedAt: Date;
             table_number: string;
-            is_active: boolean;
+            restaurantId: string;
         };
         customer: {
             id: string;
-            createdAt: Date;
             name: string;
+            createdAt: Date;
             updatedAt: Date;
             phone: string;
         } | null;
         payment: {
             id: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
             amount: number;
+            orderId: string;
             method: string;
             transaction_id: string | null;
-            orderId: string;
         } | null;
     } & {
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: import("@prisma/client").$Enums.OrderStatus;
         createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
         customer_session_id: string;
         orderType: string;
         items: import("@prisma/client/runtime/library").JsonValue;
@@ -156,8 +157,7 @@ export declare class OrdersService {
         tax: number;
         total: number;
         notes: string | null;
-        updatedAt: Date;
-        outletId: string | null;
+        tableId: string;
         sessionId: string | null;
         customerId: string | null;
     })[]>;
@@ -168,10 +168,11 @@ export declare class OrdersService {
     }>;
     updateStatus(id: string, dto: UpdateOrderStatusDto): Promise<{
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: import("@prisma/client").$Enums.OrderStatus;
         createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
         customer_session_id: string;
         orderType: string;
         items: import("@prisma/client/runtime/library").JsonValue;
@@ -179,17 +180,17 @@ export declare class OrdersService {
         tax: number;
         total: number;
         notes: string | null;
-        updatedAt: Date;
-        outletId: string | null;
+        tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }>;
     updateTable(id: string, tableId: string): Promise<{
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: import("@prisma/client").$Enums.OrderStatus;
         createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
         customer_session_id: string;
         orderType: string;
         items: import("@prisma/client/runtime/library").JsonValue;
@@ -197,17 +198,17 @@ export declare class OrdersService {
         tax: number;
         total: number;
         notes: string | null;
-        updatedAt: Date;
-        outletId: string | null;
+        tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }>;
     cancelOrder(id: string): Promise<{
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: import("@prisma/client").$Enums.OrderStatus;
         createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
         customer_session_id: string;
         orderType: string;
         items: import("@prisma/client/runtime/library").JsonValue;
@@ -215,17 +216,17 @@ export declare class OrdersService {
         tax: number;
         total: number;
         notes: string | null;
-        updatedAt: Date;
-        outletId: string | null;
+        tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }>;
     confirmDelivery(id: string): Promise<{
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: import("@prisma/client").$Enums.OrderStatus;
         createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
         customer_session_id: string;
         orderType: string;
         items: import("@prisma/client/runtime/library").JsonValue;
@@ -233,43 +234,43 @@ export declare class OrdersService {
         tax: number;
         total: number;
         notes: string | null;
-        updatedAt: Date;
-        outletId: string | null;
+        tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }>;
     markAsPaid(id: string): Promise<{
         table: {
             id: string;
-            restaurantId: string;
+            is_active: boolean;
             createdAt: Date;
             updatedAt: Date;
             table_number: string;
-            is_active: boolean;
+            restaurantId: string;
         };
         customer: {
             id: string;
-            createdAt: Date;
             name: string;
+            createdAt: Date;
             updatedAt: Date;
             phone: string;
         } | null;
         payment: {
             id: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
             amount: number;
+            orderId: string;
             method: string;
             transaction_id: string | null;
-            orderId: string;
         } | null;
     } & {
         id: string;
-        restaurantId: string;
-        tableId: string;
-        status: import("@prisma/client").$Enums.OrderStatus;
         createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
         customer_session_id: string;
         orderType: string;
         items: import("@prisma/client/runtime/library").JsonValue;
@@ -277,8 +278,7 @@ export declare class OrdersService {
         tax: number;
         total: number;
         notes: string | null;
-        updatedAt: Date;
-        outletId: string | null;
+        tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }>;

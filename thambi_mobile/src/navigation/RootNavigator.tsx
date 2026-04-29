@@ -2,7 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { ActivityIndicator, View, Text, Alert } from 'react-native';
+import { ActivityIndicator, View, Text, Alert, Vibration } from 'react-native';
+import * as Speech from 'expo-speech';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
@@ -79,10 +80,40 @@ function MainTabs() {
     const isStaff = user?.role === 'Staff';
     const insets = useSafeAreaInsets();
 
+    const [preferredVoice, setPreferredVoice] = React.useState<string | undefined>(undefined);
+
+    React.useEffect(() => {
+        const initVoices = async () => {
+            try {
+                const voices = await Speech.getAvailableVoicesAsync();
+                const inVoice = voices.find(v => {
+                    const lang = v.language.replace('_', '-').toLowerCase();
+                    return lang.startsWith('en-in');
+                })?.identifier;
+                const enVoice = voices.find(v => v.language.toLowerCase().startsWith('en-'))?.identifier;
+                setPreferredVoice(inVoice || enVoice);
+            } catch (err) {
+                console.error('[DEBUG] Error fetching voices:', err);
+            }
+        };
+        initVoices();
+    }, []);
+
     useSocketEvent(user?.restaurantId, {
         callCaptain: (data: any) => {
             if (isOwner || isManager) {
-                Alert.alert('Captain Called!', data?.message || `Customer at ${data?.tableName || 'a table'} needs assistance.`);
+                // Trigger Vibration (Pattern: [Wait, Vibrate, Wait, Vibrate])
+                Vibration.vibrate([0, 500, 200, 500]);
+                
+                // Voice Announcement
+                const speakMsg = data?.message || `Customer at ${data?.tableName || 'a table'} needs the Captain.`;
+                Speech.speak(speakMsg, {
+                    language: 'en-IN',
+                    voice: preferredVoice,
+                    rate: 0.9,
+                });
+
+                Alert.alert('Captain Called!', speakMsg);
             }
         }
     });

@@ -15,9 +15,9 @@ export declare class InventoryService {
         outletId: string;
         unit: string;
         currentStock: number;
-        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
+        reservedStock: number;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
     findAll(outletId: string): import("@prisma/client").Prisma.PrismaPromise<{
         id: string;
@@ -28,9 +28,9 @@ export declare class InventoryService {
         outletId: string;
         unit: string;
         currentStock: number;
-        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
+        reservedStock: number;
     }[]>;
     findLowStock(outletId: string): Promise<{
         id: string;
@@ -41,9 +41,9 @@ export declare class InventoryService {
         outletId: string;
         unit: string;
         currentStock: number;
-        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
+        reservedStock: number;
     }[]>;
     findOne(id: string): Promise<{
         transactions: {
@@ -51,11 +51,11 @@ export declare class InventoryService {
             createdAt: Date;
             outletId: string;
             notes: string | null;
-            costPerUnit: number | null;
-            inventoryItemId: string;
-            type: import("@prisma/client").$Enums.StockTransactionType;
             quantity: number;
+            costPerUnit: number | null;
             referenceId: string | null;
+            type: import("@prisma/client").$Enums.StockTransactionType;
+            inventoryItemId: string;
         }[];
     } & {
         id: string;
@@ -66,9 +66,9 @@ export declare class InventoryService {
         outletId: string;
         unit: string;
         currentStock: number;
-        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
+        reservedStock: number;
     }>;
     update(id: string, data: Partial<CreateInventoryItemDto>): Promise<{
         id: string;
@@ -79,9 +79,9 @@ export declare class InventoryService {
         outletId: string;
         unit: string;
         currentStock: number;
-        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
+        reservedStock: number;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -92,9 +92,9 @@ export declare class InventoryService {
         outletId: string;
         unit: string;
         currentStock: number;
-        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
+        reservedStock: number;
     }>;
     bulkUpdate(outletId: string, updates: Array<{
         id: string;
@@ -108,9 +108,9 @@ export declare class InventoryService {
         outletId: string;
         unit: string;
         currentStock: number;
-        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
+        reservedStock: number;
     }[]>;
     stockIn(id: string, dto: StockInDto): Promise<{
         id: string;
@@ -121,9 +121,9 @@ export declare class InventoryService {
         outletId: string;
         unit: string;
         currentStock: number;
-        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
+        reservedStock: number;
     }>;
     adjust(id: string, dto: StockAdjustDto): Promise<{
         id: string;
@@ -134,9 +134,9 @@ export declare class InventoryService {
         outletId: string;
         unit: string;
         currentStock: number;
-        reservedStock: number;
         costPerUnit: number;
         reorderLevel: number;
+        reservedStock: number;
     }>;
     deductForOrder(outletId: string, orderId: string, items: Array<{
         itemId: string;
