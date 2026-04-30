@@ -19,6 +19,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:load": "artillery run load-test-config.yml",
+    "test:load:report": "artillery run --output report.json load-test-config.yml && artillery report report.json",
     "seed": "npx tsx src/seed.ts",
     "postinstall": "npx prisma generate"
   },

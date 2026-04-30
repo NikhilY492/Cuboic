@@ -1,0 +1,66 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 10
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 30
+      name: "Ramp up"
+    - duration: 60
+      arrivalRate: 30
+      name: "Sustained load"
+  
+  # Load the Socket.io engine
+  engines:
+    socketio: {}
+
+  # Define common variables
+  variables:
+    restaurantId: "cmmg60qir0000c2lwao9t1z9m"
+    tableId: "cmnpy928k0001v3fwvz87ynb6"
+    itemId: "cmnpy290j0012v35gdqds2xtj"
+
+scenarios:
+  - name: "Full Customer Flow (Menu -> Order -> Socket)"
+    engine: socketio
+    flow:
+      # 1. Connect to Socket.io
+      - emit:
+          channel: "joinRestaurant"
+          data: "{{ restaurantId }}"
+      
+      # 2. Browse Menu (REST)
+      - get:
+          url: "/restaurants/{{ restaurantId }}"
+      - think: 1
+      - get:
+          url: "/restaurants/{{ restaurantId }}/tables"
+      
+      # 3. Join Table Session
+      - get:
+          url: "/orders/check-session?restaurantId={{ restaurantId }}&tableId={{ tableId }}"
+          capture:
+            - json: "$.id"
+              as: "sessionId"
+
+      # 4. Place Order
+      - think: 2
+      - post:
+          url: "/orders"
+          json:
+            restaurantId: "{{ restaurantId }}"
+            tableId: "{{ tableId }}"
+            customer_session_id: "load-test-{{ $uuid }}"
+            items:
+              - itemId: "{{ itemId }}"
+                quantity: 2
+            subtotal: 160
+            tax: 8
+            total: 168
+          ifTrue: "sessionId"
+
+      # 5. Wait for updates
+      - think: 5
