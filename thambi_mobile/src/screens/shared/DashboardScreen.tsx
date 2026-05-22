@@ -178,19 +178,19 @@ export function DashboardScreen() {
     const kpis = allKpis.filter(k => config.includes(k.id));
 
     return (
-        <ScrollView
-            style={thematicStyles.screen}
-            contentContainerStyle={styles.body}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
-        >
+        <View style={thematicStyles.screen}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16 }]}>
                 <View>
                     <Text style={[styles.greeting, thematicStyles.greeting]}>Welcome back,</Text>
                     <Text style={[styles.restaurantName, thematicStyles.restaurantName]}>{user?.name || 'Administrator'}</Text>
                     <Text style={[styles.role, thematicStyles.role]}>{user?.role} Overview</Text>
                 </View>
             </View>
+            <ScrollView
+                contentContainerStyle={[styles.body, { paddingTop: 16 }]}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+            >
 
             {loading ? (
                 <ActivityIndicator color={colors.accent} size="large" style={{ marginTop: 40 }} />
@@ -270,7 +270,8 @@ export function DashboardScreen() {
             <Text style={[styles.hint, thematicStyles.hint]}>
                 Real-time updates active — pull to refresh manually
             </Text>
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 

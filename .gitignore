@@ -6,3 +6,4 @@ build/
 .next/
 out/
 *.log
+graphify-out/cache/

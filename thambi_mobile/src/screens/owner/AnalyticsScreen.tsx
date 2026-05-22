@@ -231,13 +231,14 @@ export function AnalyticsScreen() {
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <ScrollView
-            style={[S.screen, { backgroundColor: colors.bg }]}
-            contentContainerStyle={styles.body}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
-        >
-            {/* Title */}
-            <Text style={[styles.title, { color: colors.text }]}>Analytics</Text>
+        <View style={[S.screen, { backgroundColor: colors.bg }]}>
+            <View style={{ backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingTop: 60, paddingBottom: 16, marginBottom: 0 }}>
+                <Text style={[styles.title, { color: colors.text, marginBottom: 0 }]}>Analytics</Text>
+            </View>
+            <ScrollView
+                contentContainerStyle={[styles.body, { paddingTop: 16 }]}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+            >
 
             {/* ── Timeframe Chip Bar ─────────────────────────────────────── */}
             <ScrollView
@@ -472,7 +473,8 @@ export function AnalyticsScreen() {
                     </View>
                 </>
             )}
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 

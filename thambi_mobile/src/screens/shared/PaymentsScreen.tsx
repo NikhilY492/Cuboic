@@ -133,22 +133,21 @@ export function PaymentsScreen() {
     );
 
     return (
-        <FlatList
-            style={[S.screen, { backgroundColor: colors.bg }]}
-            contentContainerStyle={styles.body}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
-            ListHeaderComponent={
-                <View>
-                    <View style={styles.header}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                            <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.surface2 }]}>
-                                <Feather name="arrow-left" size={20} color={colors.text} />
-                            </TouchableOpacity>
-                            <Text style={[styles.title, { color: colors.text }]}>Payments</Text>
-                        </View>
-                    </View>
-
-                    {/* KPI Cards */}
+        <View style={[S.screen, { backgroundColor: colors.bg }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingBottom: 16 }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.surface2 }]}>
+                        <Feather name="arrow-left" size={20} color={colors.text} />
+                    </TouchableOpacity>
+                    <Text style={[styles.title, { color: colors.text }]}>Payments</Text>
+                </View>
+            </View>
+            <FlatList
+                contentContainerStyle={[styles.body, { paddingTop: 16 }]}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+                ListHeaderComponent={
+                    <View>
+                        {/* KPI Cards */}
                     {summary && (
                         <View style={styles.kpiRow}>
                             <KpiCard
@@ -289,6 +288,7 @@ export function PaymentsScreen() {
                 </View>
             }
         />
+        </View>
     );
 }
 

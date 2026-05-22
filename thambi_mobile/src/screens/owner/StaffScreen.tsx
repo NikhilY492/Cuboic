@@ -137,8 +137,8 @@ export function StaffScreen() {
 
     if (isEditing) {
         return (
-            <ScrollView style={[S.screen, { backgroundColor: colors.bg }]} contentContainerStyle={{ padding: 16, paddingBottom: 40, paddingTop: 48 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
+            <View style={[S.screen, { backgroundColor: colors.bg }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 16, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border }}>
                     <TouchableOpacity onPress={() => setIsEditing(false)} style={{ marginRight: 12 }}>
                         <Feather name="arrow-left" size={24} color={colors.text} />
                     </TouchableOpacity>
@@ -146,6 +146,7 @@ export function StaffScreen() {
                         {selectedUser ? 'Edit Staff' : 'Add Staff'}
                     </Text>
                 </View>
+                <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
 
                 <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <Text style={[styles.label, { color: colors.textMuted }]}>Name</Text>
@@ -221,7 +222,8 @@ export function StaffScreen() {
                         </TouchableOpacity>
                     )}
                 </View>
-            </ScrollView>
+                </ScrollView>
+            </View>
         );
     }
 

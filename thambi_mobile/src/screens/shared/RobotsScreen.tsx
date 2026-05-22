@@ -43,12 +43,8 @@ export function RobotsScreen() {
     );
 
     return (
-        <ScrollView
-            style={[S.screen, { backgroundColor: colors.bg }]}
-            contentContainerStyle={styles.body}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
-        >
-            <View style={styles.header}>
+        <View style={[S.screen, { backgroundColor: colors.bg }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, marginBottom: 0 }]}>
                 <View>
                     <Text style={[styles.title, { color: colors.text }]}>Robot Fleet</Text>
                     <Text style={[styles.sub, { color: colors.textMuted }]}>{online} / {robots.length} online</Text>
@@ -57,6 +53,10 @@ export function RobotsScreen() {
                     <Text style={[styles.refreshText, { color: colors.textMuted }]}>↻ Refresh</Text>
                 </TouchableOpacity>
             </View>
+            <ScrollView
+                contentContainerStyle={[styles.body, { paddingTop: 16 }]}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+            >
 
             {robots.length === 0 ? (
                 <View style={styles.empty}>
@@ -138,7 +138,8 @@ export function RobotsScreen() {
             )}
 
             <Text style={[styles.hint, { color: colors.textDim }]}>Auto-refreshes every 10 seconds</Text>
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 

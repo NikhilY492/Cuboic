@@ -137,13 +137,9 @@ export function ProfileScreen() {
     );
 
     return (
-        <ScrollView
-            style={[S.screen, { backgroundColor: colors.bg }]}
-            contentContainerStyle={{ paddingBottom: 48 }}
-            showsVerticalScrollIndicator={false}
-        >
+        <View style={[S.screen, { backgroundColor: colors.bg }]}>
             {/* ── Header ─────────────────────────────────────────── */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={pickImage} disabled={uploading} activeOpacity={0.8}>
                     <View style={[styles.avatar, { backgroundColor: colors.accent + '22' }]}>
                         {user?.image_url ? (
@@ -171,6 +167,10 @@ export function ProfileScreen() {
                     <Text style={[styles.roleText, { color: colors.accent }]}>{user?.role}</Text>
                 </View>
             </View>
+            <ScrollView
+                contentContainerStyle={{ paddingBottom: 48 }}
+                showsVerticalScrollIndicator={false}
+            >
 
             <View style={[styles.divider, { backgroundColor: isDark ? '#1a1a1a' : '#efefef' }]} />
 
@@ -379,7 +379,8 @@ export function ProfileScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 

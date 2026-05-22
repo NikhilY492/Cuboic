@@ -739,7 +739,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 40,
         fontSize: 14,
-        fontFamily: FONT.medium,
+        ...FONT.medium,
     },
     // Session Block Styles
     sessionBlock: {
@@ -763,12 +763,12 @@ const styles = StyleSheet.create({
     },
     sessionTitle: {
         fontSize: 16,
-        fontFamily: FONT.bold,
+        ...FONT.bold,
         letterSpacing: 0.5,
     },
     sessionSub: {
         fontSize: 12,
-        fontFamily: FONT.regular,
+        ...FONT.regular,
         marginTop: 2,
     },
     miniSettleBtn: {
@@ -779,7 +779,7 @@ const styles = StyleSheet.create({
     miniSettleText: {
         color: '#fff',
         fontSize: 13,
-        fontFamily: FONT.bold,
+        ...FONT.bold,
     },
     sessionItems: {
         paddingTop: 8,

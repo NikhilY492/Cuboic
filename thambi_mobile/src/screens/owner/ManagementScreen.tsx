@@ -47,11 +47,11 @@ export function ManagementScreen({ navigation }: any) {
 
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
-            <ScrollView contentContainerStyle={styles.body}>
-                <View style={styles.header}>
-                    <Text style={[styles.title, { color: colors.text }]}>Management</Text>
-                    <Text style={[styles.subtitle, { color: colors.textMuted }]}>Configure and oversee operations</Text>
-                </View>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingTop: 48, paddingBottom: 16, marginBottom: 0 }]}>
+                <Text style={[styles.title, { color: colors.text }]}>Management</Text>
+                <Text style={[styles.subtitle, { color: colors.textMuted }]}>Configure and oversee operations</Text>
+            </View>
+            <ScrollView contentContainerStyle={[styles.body, { paddingTop: 16 }]}>
 
                 <View style={styles.grid}>
                     {options.map((opt) => (
