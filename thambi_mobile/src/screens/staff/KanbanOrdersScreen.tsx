@@ -10,6 +10,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useSocketEvent } from '../../context/SocketContext';
 import * as Speech from 'expo-speech';
 import { S, getStatusColor, FONT } from '../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function getTableNum(order: Order): string {
     if (order.table?.table_number !== undefined) {
@@ -138,6 +139,7 @@ const ALL_STATUSES = ['All', 'Pending', 'Confirmed', 'Ready', 'Delivered', 'Canc
 export function KanbanOrdersScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
+    const insets = useSafeAreaInsets();
     const restaurantId = user?.restaurantId ?? '';
 
     const [orders, setOrders] = useState<Order[]>([]);
@@ -293,7 +295,7 @@ export function KanbanOrdersScreen() {
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
             {/* Standard App Header */}
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16) }]}>
                 <View>
                     <Text style={[styles.title, { color: colors.text }]}>Orders</Text>
                     <Text style={[styles.sub, { color: colors.textMuted }]}>
@@ -309,11 +311,10 @@ export function KanbanOrdersScreen() {
             </View>
 
             {/* Status Filter */}
-            <View style={{ flexGrow: 0, flexShrink: 0 }}>
+            <View style={[styles.tabsWrapper, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    style={[styles.tabsContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
                     contentContainerStyle={styles.tabsContent}
                 >
                     {ALL_STATUSES.map(s => (
@@ -358,7 +359,6 @@ const styles = StyleSheet.create({
     header: {
         ...S.shadow,
         padding: 16,
-        paddingTop: 48,
         borderBottomWidth: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -390,10 +390,12 @@ const styles = StyleSheet.create({
     },
 
     // Filter Tabs
-    tabsContainer: {
-        ...S.shadow, borderBottomWidth: 1, maxHeight: 80 },
+    tabsWrapper: {
+        borderBottomWidth: 1,
+        ...S.shadow,
+    },
     tabsContent: {
-        paddingHorizontal: 10, paddingVertical: 14, flexDirection: 'row', alignItems: 'center' },
+        paddingHorizontal: 10, paddingVertical: 8, flexDirection: 'row', alignItems: 'center' },
     tab: {
         ...S.shadow,
         paddingHorizontal: 14,

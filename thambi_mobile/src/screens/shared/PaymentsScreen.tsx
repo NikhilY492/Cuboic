@@ -11,11 +11,13 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { KpiCard } from '../../components/KpiCard';
 import { S, FONT } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function PaymentsScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
     const navigation = useNavigation();
+    const insets = useSafeAreaInsets();
     const restaurantId = user?.restaurantId ?? '';
     const isOwner = user?.role === 'Owner';
 
@@ -134,7 +136,7 @@ export function PaymentsScreen() {
 
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingBottom: 16 }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16), paddingBottom: 16, paddingHorizontal: 16 }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.surface2 }]}>
                         <Feather name="arrow-left" size={20} color={colors.text} />
@@ -295,7 +297,7 @@ export function PaymentsScreen() {
 const styles = StyleSheet.create({
     body: { padding: 16, paddingBottom: 40, gap: 12 },
     header: {
-        ...S.shadow, paddingTop: 48, paddingBottom: 16 },
+        ...S.shadow, paddingBottom: 16 },
     backBtn: {
         ...S.shadow, width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
     title: { fontSize: 26, fontWeight: '800' },

@@ -6,11 +6,13 @@ import { useTheme } from '../../context/ThemeContext';
 import { tablesApi, type RestaurantTable } from '../../api/tables';
 import { S, FONT } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function TablesScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
     const navigation = useNavigation();
+    const insets = useSafeAreaInsets();
 
     // Screen-level permission guard (BUG-06)
     const isOwner = user?.role === 'Owner';
@@ -83,7 +85,7 @@ export function TablesScreen() {
 
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16) }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.surface2 }]}>
                         <Feather name="arrow-left" size={20} color={colors.text} />
@@ -165,7 +167,7 @@ const styles = StyleSheet.create({
     header: {
         ...S.shadow,
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        paddingTop: 48, paddingHorizontal: 16, paddingBottom: 16,
+        paddingHorizontal: 16, paddingBottom: 16,
         borderBottomWidth: 1,
     },
     title: { fontSize: 24, fontWeight: '800' },

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "branchName": "main",
+  "worktreePath": "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic",
+  "upstream": "origin/main",
+  "mergeBase": "29b08371c2a7a06964696da315e23ab8f2379471",
+  "firstSeenHead": "bf123b9af584db8e112a6d9bf9e2daeba6ceb383",
+  "lastSeenHead": "29b08371c2a7a06964696da315e23ab8f2379471",
+  "lastAnalyzedHead": "29b08371c2a7a06964696da315e23ab8f2379471",
+  "stale": false,
+  "staleReason": null,
+  "staleSince": null,
+  "lifecycleEvent": null,
+  "createdAt": "2026-05-22T17:26:05.444Z",
+  "updatedAt": "2026-05-23T12:17:55.548Z"
+}

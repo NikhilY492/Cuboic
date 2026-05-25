@@ -6,11 +6,13 @@ import { useTheme } from '../../context/ThemeContext';
 import { usersApi, type User } from '../../api/users';
 import { S, FONT } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function StaffScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
     const navigation = useNavigation();
+    const insets = useSafeAreaInsets();
     const [staff, setStaff] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -138,7 +140,7 @@ export function StaffScreen() {
     if (isEditing) {
         return (
             <View style={[S.screen, { backgroundColor: colors.bg }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 16, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: Math.max(insets.top, 16), paddingBottom: 16, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border }}>
                     <TouchableOpacity onPress={() => setIsEditing(false)} style={{ marginRight: 12 }}>
                         <Feather name="arrow-left" size={24} color={colors.text} />
                     </TouchableOpacity>
@@ -229,7 +231,7 @@ export function StaffScreen() {
 
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16) }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.surface2 }]}>
                         <Feather name="arrow-left" size={20} color={colors.text} />
@@ -271,7 +273,7 @@ const styles = StyleSheet.create({
     header: {
         ...S.shadow,
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        paddingTop: 48, paddingHorizontal: 16, paddingBottom: 16,
+        paddingHorizontal: 16, paddingBottom: 16,
         borderBottomWidth: 1,
     },
     title: { fontSize: 24, fontWeight: '800' },

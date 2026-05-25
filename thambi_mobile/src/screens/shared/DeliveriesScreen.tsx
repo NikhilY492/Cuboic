@@ -12,12 +12,14 @@ import { useTheme } from '../../context/ThemeContext';
 import { useSocketEvent } from '../../context/SocketContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { FONT, S } from '../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CreateStop { orderId: string; tableId: string; cabinets: string[]; sequence: number; }
 
 export function DeliveriesScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
+    const insets = useSafeAreaInsets();
     const restaurantId = user?.restaurantId ?? '';
 
     const [tab, setTab] = useState<'active' | 'history'>('active');
@@ -126,7 +128,7 @@ export function DeliveriesScreen() {
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
             {/* Header */}
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16) }]}>
                 <Text style={[styles.title, { color: colors.text }]}>Deliveries</Text>
                 <TouchableOpacity
                     style={[styles.newBtn, { backgroundColor: colors.accent }]}
@@ -301,7 +303,7 @@ const styles = StyleSheet.create({
     header: {
         ...S.shadow,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        padding: 16, paddingTop: 48, borderBottomWidth: 1,
+        padding: 16, borderBottomWidth: 1,
     },
     title: { fontSize: 26, fontWeight: '800' },
     newBtn: {

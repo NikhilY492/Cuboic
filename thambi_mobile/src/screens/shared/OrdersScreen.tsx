@@ -13,6 +13,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { FONT, S, getStatusColor } from '../../theme';
 import * as Speech from 'expo-speech';
 import { Audio } from 'expo-av';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ALL_STATUSES = ['All', 'Pending', 'Confirmed', 'Ready', 'Delivered', 'Cancelled']; 
 
@@ -251,6 +252,7 @@ function OrderCard({
 export function OrdersScreen({ route }: any) {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
+    const insets = useSafeAreaInsets();
     const restaurantId = user?.restaurantId ?? '';
     const statusInitial = route?.params?.statusInitial;
 
@@ -455,7 +457,7 @@ export function OrdersScreen({ route }: any) {
         return (
             <View style={[S.screen, { backgroundColor: colors.bg }]}>
                 {/* Header */}
-                <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+                <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16) }]}>
                     <Pressable style={[styles.backBtn, { backgroundColor: colors.surface2, borderColor: colors.border }]} onPress={() => { setSelectedTable(null); setFilterStatus('All'); }}>
                         <Feather name="arrow-left" size={20} color={colors.accent} />
                     </Pressable>
@@ -468,27 +470,28 @@ export function OrdersScreen({ route }: any) {
                 </View>
 
                 {/* Status Filter */}
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={[styles.tabsContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border, maxHeight: 60 }]}
-                    contentContainerStyle={styles.tabsContent}
-                >
-                    {ALL_STATUSES.map(s => (
-                        <TouchableOpacity
-                            key={s}
-                            style={[
-                                styles.tab, 
-                                { backgroundColor: colors.surface2, borderColor: colors.border },
-                                filterStatus === s && { backgroundColor: colors.accent, borderColor: colors.accent }
-                            ]}
-                            onPress={() => setFilterStatus(s)}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={[styles.tabText, { color: colors.textMuted }, filterStatus === s && { color: '#0f0f13' }]}>{s}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                <View style={[styles.tabsWrapper, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.tabsContent}
+                    >
+                        {ALL_STATUSES.map(s => (
+                            <TouchableOpacity
+                                key={s}
+                                style={[
+                                    styles.tab, 
+                                    { backgroundColor: colors.surface2, borderColor: colors.border },
+                                    filterStatus === s && { backgroundColor: colors.accent, borderColor: colors.accent }
+                                ]}
+                                onPress={() => setFilterStatus(s)}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={[styles.tabText, { color: colors.textMuted }, filterStatus === s && { color: '#0f0f13' }]}>{s}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
 
                 <ScrollView style={{ flex: 1 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}>
                     {sessionIds.length === 0 ? (
@@ -565,7 +568,7 @@ export function OrdersScreen({ route }: any) {
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
             {/* Header */}
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16) }]}>
                 <View>
                     <Text style={[styles.title, { color: colors.text }]}>Orders</Text>
                     <Text style={[styles.sub, { color: colors.textMuted }]}>
@@ -581,27 +584,28 @@ export function OrdersScreen({ route }: any) {
             </View>
 
             {/* Filter Tabs */}
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={[styles.tabsContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-                contentContainerStyle={styles.tabsContent}
-            >
-                {(['All', 'Active', 'Idle'] as const).map(s => (
-                    <TouchableOpacity
-                        key={s}
-                        style={[
-                            styles.tab, 
-                            { backgroundColor: colors.surface2, borderColor: colors.border },
-                            tableFilter === s && { backgroundColor: colors.accent, borderColor: colors.accent }
-                        ]}
-                        onPress={() => setTableFilter(s)}
-                        activeOpacity={0.7}
-                    >
-                        <Text style={[styles.tabText, { color: colors.textMuted }, tableFilter === s && { color: '#0f0f13' }]}>{s}</Text>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
+            <View style={[styles.tabsWrapper, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.tabsContent}
+                >
+                    {(['All', 'Active', 'Idle'] as const).map(s => (
+                        <TouchableOpacity
+                            key={s}
+                            style={[
+                                styles.tab, 
+                                { backgroundColor: colors.surface2, borderColor: colors.border },
+                                tableFilter === s && { backgroundColor: colors.accent, borderColor: colors.accent }
+                            ]}
+                            onPress={() => setTableFilter(s)}
+                            activeOpacity={0.7}
+                        >
+                            <Text style={[styles.tabText, { color: colors.textMuted }, tableFilter === s && { color: '#0f0f13' }]}>{s}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
 
             {tableSummaries.length === 0 ? (
                 <Text style={[styles.empty, { color: colors.textMuted }]}>No tables configured</Text>
@@ -631,7 +635,6 @@ const styles = StyleSheet.create({
     header: {
         ...S.shadow,
         padding: 16,
-        paddingTop: 48,
         borderBottomWidth: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -675,10 +678,12 @@ const styles = StyleSheet.create({
     tableIdle: { fontSize: 12, fontWeight: '500' },
 
     // filter tabs
-    tabsContainer: {
-        ...S.shadow, borderBottomWidth: 1, maxHeight: 80 },
+    tabsWrapper: {
+        borderBottomWidth: 1,
+        ...S.shadow,
+    },
     tabsContent: {
-        paddingHorizontal: 10, paddingVertical: 20, flexDirection: 'row', alignItems: 'center' },
+        paddingHorizontal: 10, paddingVertical: 8, flexDirection: 'row', alignItems: 'center' },
     tab: {
         ...S.shadow,
         paddingHorizontal: 14,

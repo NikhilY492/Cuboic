@@ -9,10 +9,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { S, getStatusColor, FONT } from '../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function RobotsScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
+    const insets = useSafeAreaInsets();
     const restaurantId = user?.restaurantId ?? '';
     const [robots, setRobots] = useState<Robot[]>([]);
     const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export function RobotsScreen() {
 
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, marginBottom: 0 }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingTop: Math.max(insets.top, 16), marginBottom: 0 }]}>
                 <View>
                     <Text style={[styles.title, { color: colors.text }]}>Robot Fleet</Text>
                     <Text style={[styles.sub, { color: colors.textMuted }]}>{online} / {robots.length} online</Text>
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
     body: { padding: 16, paddingBottom: 40 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingTop: 48, marginBottom: 20,
+        paddingBottom: 20,
     },
     title: { fontSize: 26, fontWeight: '800' },
     sub: { fontSize: 13, marginTop: 2 },

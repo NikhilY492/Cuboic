@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './events/events.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { RobotRuntimeModule } from './robot-runtime/robot-runtime.module';
+import { RobotWebRtcModule } from './robot-webrtc/robot-webrtc.module';
 import { HealthModule } from './health/health.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TablesModule } from './tables/tables.module';
@@ -49,6 +50,7 @@ import { join } from 'path';
     EventsModule,
     RestaurantsModule,
     RobotRuntimeModule,
+    RobotWebRtcModule,
     HealthModule,
     ScheduleModule.forRoot(),
     TablesModule,

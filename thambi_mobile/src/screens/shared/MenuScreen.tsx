@@ -12,6 +12,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { FONT, S } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const EMPTY_FORM = {
     name: '',
@@ -28,6 +29,7 @@ export function MenuScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
     const navigation = useNavigation();
+    const insets = useSafeAreaInsets();
     const restaurantId = user?.restaurantId ?? '';
 
     const [items, setItems] = useState<MenuItem[]>([]);
@@ -191,7 +193,7 @@ export function MenuScreen() {
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
             {/* Header */}
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16) }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.surface2 }]}>
                         <Feather name="arrow-left" size={20} color={colors.text} />
@@ -207,37 +209,38 @@ export function MenuScreen() {
             </View>
 
             {/* Category filter tabs */}
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={[styles.tabsContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-                contentContainerStyle={styles.tabsContent}
-            >
-                <TouchableOpacity
-                    style={[styles.tab, { backgroundColor: colors.surface2, borderColor: colors.border }, filterCat === 'all' && { backgroundColor: colors.accent, borderColor: colors.accent }]}
-                    onPress={() => setFilterCat('all')}
-                    activeOpacity={0.7}
+            <View style={[styles.tabsWrapper, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.tabsContent}
                 >
-                    <Text style={[styles.tabText, { color: colors.textMuted }, filterCat === 'all' && { color: '#0f0f13' }]}>
-                        All ({items.length})
-                    </Text>
-                </TouchableOpacity>
-                {categories.map(cat => {
-                    const count = items.filter(i => i.categoryId === cat.id || String(i.categoryId) === cat.id).length;
-                    return (
-                        <TouchableOpacity
-                            key={cat.id}
-                            style={[styles.tab, { backgroundColor: colors.surface2, borderColor: colors.border }, filterCat === cat.id && { backgroundColor: colors.accent, borderColor: colors.accent }]}
-                            onPress={() => setFilterCat(cat.id)}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={[styles.tabText, { color: colors.textMuted }, filterCat === cat.id && { color: '#0f0f13' }]}>
-                                {cat.name} ({count})
-                            </Text>
-                        </TouchableOpacity>
-                    );
-                })}
-            </ScrollView>
+                    <TouchableOpacity
+                        style={[styles.tab, { backgroundColor: colors.surface2, borderColor: colors.border }, filterCat === 'all' && { backgroundColor: colors.accent, borderColor: colors.accent }]}
+                        onPress={() => setFilterCat('all')}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={[styles.tabText, { color: colors.textMuted }, filterCat === 'all' && { color: '#0f0f13' }]}>
+                            All ({items.length})
+                        </Text>
+                    </TouchableOpacity>
+                    {categories.map(cat => {
+                        const count = items.filter(i => i.categoryId === cat.id || String(i.categoryId) === cat.id).length;
+                        return (
+                            <TouchableOpacity
+                                key={cat.id}
+                                style={[styles.tab, { backgroundColor: colors.surface2, borderColor: colors.border }, filterCat === cat.id && { backgroundColor: colors.accent, borderColor: colors.accent }]}
+                                onPress={() => setFilterCat(cat.id)}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={[styles.tabText, { color: colors.textMuted }, filterCat === cat.id && { color: '#0f0f13' }]}>
+                                    {cat.name} ({count})
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </ScrollView>
+            </View>
 
             <FlatList
                 data={visibleItems}
@@ -505,21 +508,27 @@ const styles = StyleSheet.create({
     header: {
         ...S.shadow,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        padding: 16, paddingTop: 48, borderBottomWidth: 1,
+        padding: 16, borderBottomWidth: 1,
     },
     title: { fontSize: 26, fontWeight: '800' },
     sub: { fontSize: 13, marginTop: 2 },
     addBtn: {
-        ...S.shadow, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 10 },
+        ...S.shadow, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 10
+    },
     addBtnText: { color: '#0f0f13', fontWeight: '700', fontSize: 14 },
     backBtn: {
-        ...S.shadow, width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-    tabsContainer: {
-        ...S.shadow, borderBottomWidth: 1 },
+        ...S.shadow, width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center'
+    },
+    tabsWrapper: {
+        borderBottomWidth: 1,
+        ...S.shadow,
+    },
     tabsContent: {
-        paddingHorizontal: 10, paddingVertical: 20, flexDirection: 'row', alignItems: 'center' },
+        paddingHorizontal: 10, paddingVertical: 15, flexDirection: 'row', alignItems: 'center'
+    },
     tab: {
-        ...S.shadow, paddingHorizontal: 14, paddingVertical: 4, borderRadius: 99, borderWidth: 1, marginRight: 8, flexShrink: 0, height: 40, justifyContent: 'center' },
+        ...S.shadow, paddingHorizontal: 14, paddingVertical: 4, borderRadius: 99, borderWidth: 1, marginRight: 8, flexShrink: 0, height: 40, justifyContent: 'center'
+    },
     tabText: { fontSize: 13, fontWeight: '600' },
     list: { padding: 16, gap: 12, paddingBottom: 32 },
     card: {
@@ -527,7 +536,8 @@ const styles = StyleSheet.create({
         borderRadius: 14, borderWidth: 1, padding: 14, gap: 12,
     },
     cardUnavailable: {
-        ...S.shadow, opacity: 0.6 },
+        ...S.shadow, opacity: 0.6
+    },
     cardMain: { flexDirection: 'row', alignItems: 'flex-start' },
     thumb: { width: 56, height: 56, borderRadius: 10 },
     thumbPlaceholder: {
@@ -544,7 +554,8 @@ const styles = StyleSheet.create({
     dot: { width: 8, height: 8, borderRadius: 99 },
     availLabel: { fontSize: 13 },
     editBtn: {
-        ...S.shadow, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8, borderWidth: 1 },
+        ...S.shadow, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8, borderWidth: 1
+    },
     editBtnText: { fontWeight: '700', fontSize: 13 },
     empty: { textAlign: 'center', marginTop: 60, fontSize: 14 },
     // Modal
@@ -570,7 +581,8 @@ const styles = StyleSheet.create({
     },
     btnCancelText: { fontWeight: '700', fontSize: 15 },
     btnSave: {
-        ...S.shadow, flex: 1, borderRadius: 12, padding: 16, alignItems: 'center' },
+        ...S.shadow, flex: 1, borderRadius: 12, padding: 16, alignItems: 'center'
+    },
     btnSaveText: { color: '#0f0f13', fontWeight: '800', fontSize: 15 },
 
     // Image picker

@@ -10,10 +10,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { changePassword, updateProfile } from '../../api/auth';
 import { S } from '../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function ProfileScreen() {
     const { user, logout, updateUser } = useAuth();
     const { toggleTheme, colors, isDark } = useTheme();
+    const insets = useSafeAreaInsets();
 
     // Contact info – initialise from user object (backend)
     const [email, setEmail] = useState(user?.email ?? '');
@@ -28,6 +30,8 @@ export function ProfileScreen() {
     const [loadingPwd, setLoadingPwd] = useState(false);
     const [isPasswordExpanded, setIsPasswordExpanded] = useState(false);
     const [uploading, setUploading] = useState(false);
+    // Local copy so the avatar updates instantly on pick (before upload finishes)
+    const [localImageUrl, setLocalImageUrl] = useState<string | null | undefined>(user?.image_url);
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -44,7 +48,9 @@ export function ProfileScreen() {
         });
 
         if (!result.canceled) {
-            uploadProfilePicture(result.assets[0].uri);
+            const pickedUri = result.assets[0].uri;
+            setLocalImageUrl(pickedUri); // show immediately
+            uploadProfilePicture(pickedUri);
         }
     };
 
@@ -52,24 +58,26 @@ export function ProfileScreen() {
         setUploading(true);
         try {
             const imageUrl = await menuApi.uploadImage(uri);
-            console.log('Uploaded image URL:', imageUrl);
-            const updated = await updateProfile({ image_url: imageUrl });
-            console.log('Updated user profile:', updated);
-            await updateUser({ image_url: updated.image_url });
+            // Update backend and local context with the confirmed URL
+            await updateProfile({ image_url: imageUrl });
+            await updateUser({ image_url: imageUrl });
+            setLocalImageUrl(imageUrl); // ensure local state uses the final CDN URL
             Alert.alert('Success', 'Profile picture updated!');
         } catch (err) {
             console.error('Profile upload error:', err);
+            setLocalImageUrl(user?.image_url); // revert preview on failure
             Alert.alert('Error', 'Failed to upload image');
         } finally {
             setUploading(false);
         }
     };
 
-    // Keep local state in sync if user object changes
+    // Keep local state in sync if user object changes externally
     useEffect(() => {
         setEmail(user?.email ?? '');
         setPhone(user?.phone ?? '');
-    }, [user?.email, user?.phone]);
+        setLocalImageUrl(user?.image_url);
+    }, [user?.email, user?.phone, user?.image_url]);
 
     const saveContactInfo = async () => {
         setSavingContact(true);
@@ -139,13 +147,13 @@ export function ProfileScreen() {
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
             {/* ── Header ─────────────────────────────────────────── */}
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16) }]}>
                 <TouchableOpacity onPress={pickImage} disabled={uploading} activeOpacity={0.8}>
                     <View style={[styles.avatar, { backgroundColor: colors.accent + '22' }]}>
-                        {user?.image_url ? (
+                        {localImageUrl ? (
                             <Image 
-                                key={user.image_url}
-                                source={{ uri: user.image_url }} 
+                                key={localImageUrl}
+                                source={{ uri: localImageUrl }}
                                 style={styles.avatarImage} 
                             />
                         ) : (
@@ -388,7 +396,6 @@ const styles = StyleSheet.create({
     /* Header */
     header: {
         alignItems: 'center',
-        paddingTop: 52,
         paddingBottom: 28,
         paddingHorizontal: 20,
     },

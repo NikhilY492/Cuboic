@@ -3,6 +3,7 @@ import {
     View, Text, ScrollView, StyleSheet, ActivityIndicator,
     TouchableOpacity, RefreshControl, Alert, TextInput,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { ordersApi } from '../../api/orders';
@@ -18,6 +19,7 @@ export function DashboardScreen() {
     const { user } = useAuth();
     const { colors } = useTheme();
     const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
     const restaurantId = user?.restaurantId ?? '';
 
     const [summary, setSummary] = useState({ order_count: 0, total_revenue: 0 });
@@ -178,9 +180,9 @@ export function DashboardScreen() {
     const kpis = allKpis.filter(k => config.includes(k.id));
 
     return (
-        <View style={thematicStyles.screen}>
+        <View style={[thematicStyles.screen, { flex: 1 }]}>
             {/* Header */}
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16 }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingTop: Math.max(insets.top, 16) }]}>
                 <View>
                     <Text style={[styles.greeting, thematicStyles.greeting]}>Welcome back,</Text>
                     <Text style={[styles.restaurantName, thematicStyles.restaurantName]}>{user?.name || 'Administrator'}</Text>
@@ -282,7 +284,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: 48,
         paddingBottom: 24,
     },
     greeting: { fontSize: 16, fontWeight: '600' },

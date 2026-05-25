@@ -5,10 +5,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { S } from '../../theme';
 import { restaurantsApi, Restaurant } from '../../api/restaurants';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function ManagementScreen({ navigation }: any) {
     const { user } = useAuth();
     const { colors } = useTheme();
+    const insets = useSafeAreaInsets();
     const isOwner = user?.role === 'Owner';
     const restaurantId = user?.restaurantId ?? '';
 
@@ -47,7 +49,7 @@ export function ManagementScreen({ navigation }: any) {
 
     return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingTop: 48, paddingBottom: 16, marginBottom: 0 }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingTop: Math.max(insets.top, 16), paddingBottom: 16, marginBottom: 0 }]}>
                 <Text style={[styles.title, { color: colors.text }]}>Management</Text>
                 <Text style={[styles.subtitle, { color: colors.textMuted }]}>Configure and oversee operations</Text>
             </View>
