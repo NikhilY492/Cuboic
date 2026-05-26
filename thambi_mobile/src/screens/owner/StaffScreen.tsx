@@ -110,25 +110,33 @@ export function StaffScreen() {
         }
     };
 
-    const handleDeactivate = async () => {
+    const handleDelete = async () => {
         if (!selectedUser) return;
-        Alert.alert('Deactivate', 'Are you sure?', [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-                text: 'Deactivate', 
-                style: 'destructive',
-                onPress: async () => {
-                    try {
-                        await usersApi.remove(selectedUser.id);
-                        Alert.alert('Success', 'Staff deactivated');
-                        setIsEditing(false);
-                        load();
-                    } catch {
-                        Alert.alert('Error', 'Failed to deactivate staff');
+        if (selectedUser.role === 'Owner') {
+            Alert.alert('Not Allowed', 'You cannot delete the Owner account.');
+            return;
+        }
+        Alert.alert(
+            'Delete Staff Member',
+            `Permanently delete "${selectedUser.name}"? This cannot be undone.`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                    text: 'Delete', 
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await usersApi.remove(selectedUser.id);
+                            Alert.alert('Deleted', `"${selectedUser.name}" has been removed.`);
+                            setIsEditing(false);
+                            load();
+                        } catch {
+                            Alert.alert('Error', 'Failed to delete staff member');
+                        }
                     }
                 }
-            }
-        ]);
+            ]
+        );
     };
 
     if (loading) return (
@@ -218,9 +226,10 @@ export function StaffScreen() {
                         <Text style={[S.btnPrimaryText, { color: '#000' }]}>{selectedUser ? 'Save Changes' : 'Create Staff'}</Text>
                     </TouchableOpacity>
 
-                    {selectedUser && (
-                        <TouchableOpacity style={[styles.deactivateBtn, { backgroundColor: colors.red + '15', borderColor: colors.red + '33' }]} onPress={handleDeactivate}>
-                            <Text style={[styles.deactivateText, { color: colors.red }]}>Deactivate User</Text>
+                    {selectedUser && selectedUser.role !== 'Owner' && (
+                        <TouchableOpacity style={[styles.deleteBtn, { backgroundColor: colors.red + '15', borderColor: colors.red + '33' }]} onPress={handleDelete}>
+                            <Feather name="trash-2" size={16} color={colors.red} style={{ marginRight: 8 }} />
+                            <Text style={[styles.deleteText, { color: colors.red }]}>Delete Staff Member</Text>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -300,7 +309,9 @@ const styles = StyleSheet.create({
         borderWidth: 1, flexDirection: 'row', justifyContent: 'center'
     },
     roleBtnText: { fontWeight: '600' },
-    deactivateBtn: {
-        ...S.shadow, marginTop: 16, padding: 14, alignItems: 'center', borderRadius: 8, borderWidth: 1 },
-    deactivateText: { fontWeight: '700' }
+    deleteBtn: {
+        ...S.shadow, marginTop: 16, padding: 14, alignItems: 'center', borderRadius: 8, borderWidth: 1,
+        flexDirection: 'row', justifyContent: 'center',
+    },
+    deleteText: { fontWeight: '700' }
 });

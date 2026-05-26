@@ -81,10 +81,6 @@ export class UsersService {
     }
 
     async remove(id: string) {
-        // Soft delete user
-        return this.prisma.user.update({
-            where: { id },
-            data: { is_active: false },
-        });
+        return this.prisma.user.delete({ where: { id } });
     }
 }
