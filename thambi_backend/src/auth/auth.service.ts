@@ -19,11 +19,13 @@ export class AuthService {
     }
 
     login(user: any) {
+        // Resolve restaurantId: staff may be linked via an outlet rather than directly
+        const restaurantId = user.restaurantId ?? user.outlet?.restaurantId ?? null;
         const payload = {
             sub: user.id,
             userId: user.user_id,
             role: user.role,
-            restaurantId: user.restaurantId,
+            restaurantId,
         };
         return {
             access_token: this.jwtService.sign(payload),
@@ -32,7 +34,7 @@ export class AuthService {
                 name: user.name,
                 userId: user.user_id,
                 role: user.role,
-                restaurantId: user.restaurantId,
+                restaurantId,
                 email: user.email ?? null,
                 phone: user.phone ?? null,
                 image_url: user.image_url ?? null,

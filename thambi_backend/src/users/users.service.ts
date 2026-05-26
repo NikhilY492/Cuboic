@@ -40,7 +40,10 @@ export class UsersService {
     }
 
     async findByUserId(userId: string) {
-        return this.prisma.user.findUnique({ where: { user_id: userId } });
+        return this.prisma.user.findUnique({
+            where: { user_id: userId },
+            include: { outlet: { select: { restaurantId: true } } },
+        });
     }
 
     async updatePassword(id: string, hash: string) {
