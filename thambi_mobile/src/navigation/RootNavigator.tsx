@@ -144,11 +144,29 @@ function MainTabs() {
                     flex: 1,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    paddingHorizontal: 4,
+                    paddingHorizontal: 0,
                     paddingBottom: 4,
                     overflow: 'hidden',
                     minWidth: 0,
                 },
+                tabBarLabel: ({ color }) => (
+                    <Text 
+                        numberOfLines={1} 
+                        adjustsFontSizeToFit 
+                        minimumFontScale={0.7}
+                        style={{
+                            color,
+                            fontSize: 10,
+                            fontWeight: '600',
+                            textAlign: 'center',
+                            marginTop: 2,
+                            width: '100%',
+                            paddingHorizontal: 2,
+                        }}
+                    >
+                        {route.name}
+                    </Text>
+                ),
                 tabBarIcon: ({ color, size }) => {
                     let iconName: any = 'circle';
                     if (route.name === 'Dashboard') iconName = 'pie-chart';
