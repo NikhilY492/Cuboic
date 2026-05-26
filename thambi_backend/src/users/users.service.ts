@@ -46,6 +46,13 @@ export class UsersService {
         });
     }
 
+    async findById(id: string) {
+        return this.prisma.user.findUnique({
+            where: { id },
+            include: { outlet: { select: { restaurantId: true } } },
+        });
+    }
+
     async updatePassword(id: string, hash: string) {
         return this.prisma.user.update({
             where: { id },

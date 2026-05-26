@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { login as apiLogin } from '../api/auth';
+import { login as apiLogin, getMe } from '../api/auth';
 import type { AuthUser } from '../api/auth';
 
 interface AuthContextType {
@@ -22,7 +22,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         (async () => {
             try {
                 const stored = await SecureStore.getItemAsync('auth_user');
-                if (stored) setUser(JSON.parse(stored));
+                if (stored) {
+                    // Restore cached user immediately so UI isn't blocked
+                    setUser(JSON.parse(stored));
+                    // Then silently refresh from server to fix any stale data (e.g. restaurantId)
+                    try {
+                        const fresh = await getMe();
+                        await SecureStore.setItemAsync('auth_user', JSON.stringify(fresh));
+                        setUser(fresh);
+                    } catch {
+                        // Network unavailable — cached data is fine
+                    }
+                }
             } catch {
                 // ignore
             } finally {

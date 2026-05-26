@@ -19,8 +19,21 @@ export class AuthController {
 
     @UseGuards(JwtAuthGuard)
     @Get('me')
-    me(@Request() req: any) {
-        return req.user;
+    async me(@Request() req: any) {
+        const user = await this.usersService.findById(req.user.sub);
+        if (!user) return req.user; // fallback to JWT payload
+        const restaurantId = user.restaurantId ?? (user as any).outlet?.restaurantId ?? null;
+        return {
+            id: user.id,
+            name: user.name,
+            userId: user.user_id,
+            role: user.role,
+            restaurantId,
+            email: user.email ?? null,
+            phone: user.phone ?? null,
+            image_url: user.image_url ?? null,
+            dashboard_config: (user as any).dashboard_config ?? [],
+        };
     }
 
     @UseGuards(JwtAuthGuard)

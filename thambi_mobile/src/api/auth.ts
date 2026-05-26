@@ -33,6 +33,13 @@ export const login = (payload: LoginPayload) =>
         return r.data;
     });
 
+export const getMe = () =>
+    api.get<AuthUser>('/auth/me').then(r => {
+        const user = r.data;
+        user.restaurant_id = user.restaurantId ?? user.restaurant_id;
+        return user;
+    });
+
 export const changePassword = (payload: any) =>
     api.patch('/auth/change-password', payload).then(r => r.data);
 
