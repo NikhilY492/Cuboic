@@ -5,7 +5,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('Owner')
+@Roles('Staff', 'Owner')
 @Controller('payments')
 export class PaymentsController {
     constructor(private readonly paymentsService: PaymentsService) { }
