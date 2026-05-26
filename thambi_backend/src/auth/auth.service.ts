@@ -38,6 +38,7 @@ export class AuthService {
                 email: user.email ?? null,
                 phone: user.phone ?? null,
                 image_url: user.image_url ?? null,
+                dashboard_config: user.dashboard_config ?? [],
             },
         };
     }
