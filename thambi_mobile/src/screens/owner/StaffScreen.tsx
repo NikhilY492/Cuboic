@@ -127,9 +127,10 @@ export function StaffScreen() {
                     onPress: async () => {
                         try {
                             await usersApi.remove(selectedUser.id);
-                            Alert.alert('Deleted', `"${selectedUser.name}" has been removed.`);
+                            // Optimistically remove from list immediately
+                            setStaff(prev => prev.filter(s => s.id !== selectedUser.id));
                             setIsEditing(false);
-                            load();
+                            Alert.alert('Deleted', `"${selectedUser.name}" has been removed.`);
                         } catch {
                             Alert.alert('Error', 'Failed to delete staff member');
                         }
