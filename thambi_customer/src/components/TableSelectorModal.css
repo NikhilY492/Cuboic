@@ -102,3 +102,28 @@
     transform: none;
     background: var(--accent);
 }
+
+.table-btn--available {
+    border-color: rgba(34, 197, 94, 0.4);
+    color: var(--text);
+}
+
+.table-btn--available:hover {
+    border-color: #22c55e;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.table-btn--occupied {
+    border-color: rgba(239, 68, 68, 0.3);
+    color: rgba(239, 68, 68, 0.6);
+    background: rgba(239, 68, 68, 0.05);
+    cursor: not-allowed;
+}
+
+.table-btn--occupied:hover {
+    border-color: rgba(239, 68, 68, 0.3);
+    color: rgba(239, 68, 68, 0.6);
+    background: rgba(239, 68, 68, 0.05);
+    transform: none;
+}

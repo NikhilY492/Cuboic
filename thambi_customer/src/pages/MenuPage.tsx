@@ -423,7 +423,7 @@ export function MenuPage() {
                 <TableSelectorModal
                     open={tablesOpen}
                     onClose={() => setTablesOpen(false)}
-                    tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway' && !t.is_occupied)}
+                    tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway')}
                     currentTableId={tableId}
                     onSelect={handleTableSelect}
                 />
@@ -462,13 +462,23 @@ export function MenuPage() {
                         {tableLabel && (
                             <button
                                 className="table-tag"
-                                onClick={() => setTablesOpen(true)}
-                                style={{ cursor: 'pointer', border: 'none', fontFamily: 'inherit' }}
+                                onClick={() => {
+                                    if (activeOrders.length === 0) setTablesOpen(true);
+                                }}
+                                disabled={activeOrders.length > 0}
+                                style={{ 
+                                    cursor: activeOrders.length > 0 ? 'not-allowed' : 'pointer', 
+                                    border: 'none', 
+                                    fontFamily: 'inherit',
+                                    opacity: activeOrders.length > 0 ? 0.7 : 1
+                                }}
                             >
                                 {tableLabel}
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '4px' }}>
-                                    <polyline points="6 9 12 15 18 9" />
-                                </svg>
+                                {activeOrders.length === 0 && (
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '4px' }}>
+                                        <polyline points="6 9 12 15 18 9" />
+                                    </svg>
+                                )}
                             </button>
                         )}
                     </div>
@@ -709,7 +719,7 @@ export function MenuPage() {
             <TableSelectorModal
                 open={tablesOpen}
                 onClose={() => setTablesOpen(false)}
-                tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway' && !t.is_occupied)}
+                tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway')}
                 currentTableId={tableId}
                 onSelect={handleTableSelect}
             />

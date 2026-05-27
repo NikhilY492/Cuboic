@@ -3,6 +3,7 @@ import './TableSelectorModal.css';
 interface Table {
     id: string;
     table_number: string;
+    is_occupied?: boolean;
 }
 
 interface TableSelectorModalProps {
@@ -24,18 +25,28 @@ export function TableSelectorModal({ open, onClose, tables, currentTableId, onSe
                     <button className="table-modal__close" onClick={onClose}>✕</button>
                 </div>
                 <div className="table-modal__grid">
-                    {tables.map(table => (
-                        <button
-                            key={table.id}
-                            className={`table-btn ${table.id === currentTableId ? 'table-btn--active' : ''}`}
-                            onClick={() => {
-                                onSelect(table.id);
-                                onClose();
-                            }}
-                        >
-                            Table {table.table_number}
-                        </button>
-                    ))}
+                    {tables.map(table => {
+                        const isOccupied = table.is_occupied;
+                        const isActive = table.id === currentTableId;
+                        let className = `table-btn`;
+                        if (isActive) className += ' table-btn--active';
+                        else if (isOccupied) className += ' table-btn--occupied';
+                        else className += ' table-btn--available';
+
+                        return (
+                            <button
+                                key={table.id}
+                                className={className}
+                                disabled={isOccupied && !isActive}
+                                onClick={() => {
+                                    onSelect(table.id);
+                                    onClose();
+                                }}
+                            >
+                                Table {table.table_number}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
         </div>
