@@ -388,6 +388,11 @@ export class OrdersService {
             await this.prisma.payment.deleteMany({
                 where: { orderId: { in: orderIds } },
             });
+            
+            // Delete associated platform fees
+            await this.prisma.platformFee.deleteMany({
+                where: { orderId: { in: orderIds } },
+            });
 
             // Delete the orders
             const deleted = await this.prisma.order.deleteMany({
