@@ -4,7 +4,11 @@ export declare class AuthService {
     private usersService;
     private jwtService;
     constructor(usersService: UsersService, jwtService: JwtService);
-    validateUser(userId: string, password: string): Promise<{
+    validateUser(userId: string, password: string): Promise<({
+        outlet: {
+            restaurantId: string;
+        } | null;
+    } & {
         id: string;
         name: string;
         is_active: boolean;
@@ -19,7 +23,7 @@ export declare class AuthService {
         phone: string | null;
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
         outletId: string | null;
-    } | null>;
+    }) | null>;
     login(user: any): {
         access_token: string;
         user: {
@@ -31,6 +35,7 @@ export declare class AuthService {
             email: any;
             phone: any;
             image_url: any;
+            dashboard_config: any;
         };
     };
     changePassword(userId: string, oldPass: string, newPass: string): Promise<{

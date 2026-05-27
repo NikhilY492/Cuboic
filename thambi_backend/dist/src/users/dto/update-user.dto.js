@@ -39,7 +39,7 @@ __decorate([
 ], UpdateUserDto.prototype, "password", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsIn)(['Admin', 'Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff']),
+    (0, class_validator_1.IsIn)(['Admin', 'Owner', 'Manager', 'Captain', 'Cashier', 'Waiter', 'Kitchen', 'Staff']),
     __metadata("design:type", String)
 ], UpdateUserDto.prototype, "role", void 0);
 __decorate([

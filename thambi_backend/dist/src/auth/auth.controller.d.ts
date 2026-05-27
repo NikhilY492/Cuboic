@@ -15,9 +15,10 @@ export declare class AuthController {
             email: any;
             phone: any;
             image_url: any;
+            dashboard_config: any;
         };
     };
-    me(req: any): any;
+    me(req: any): Promise<any>;
     changePassword(req: any, body: any): Promise<{
         id: string;
         name: string;

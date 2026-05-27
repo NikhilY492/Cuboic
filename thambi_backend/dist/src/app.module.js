@@ -24,6 +24,7 @@ const auth_module_1 = require("./auth/auth.module");
 const events_module_1 = require("./events/events.module");
 const restaurants_module_1 = require("./restaurants/restaurants.module");
 const robot_runtime_module_1 = require("./robot-runtime/robot-runtime.module");
+const robot_webrtc_module_1 = require("./robot-webrtc/robot-webrtc.module");
 const health_module_1 = require("./health/health.module");
 const schedule_1 = require("@nestjs/schedule");
 const tables_module_1 = require("./tables/tables.module");
@@ -61,6 +62,7 @@ exports.AppModule = AppModule = __decorate([
             events_module_1.EventsModule,
             restaurants_module_1.RestaurantsModule,
             robot_runtime_module_1.RobotRuntimeModule,
+            robot_webrtc_module_1.RobotWebRtcModule,
             health_module_1.HealthModule,
             schedule_1.ScheduleModule.forRoot(),
             tables_module_1.TablesModule,

@@ -28,8 +28,22 @@ let AuthController = class AuthController {
     login(req) {
         return this.authService.login(req.user);
     }
-    me(req) {
-        return req.user;
+    async me(req) {
+        const user = await this.usersService.findById(req.user.sub);
+        if (!user)
+            return req.user;
+        const restaurantId = user.restaurantId ?? user.outlet?.restaurantId ?? null;
+        return {
+            id: user.id,
+            name: user.name,
+            userId: user.user_id,
+            role: user.role,
+            restaurantId,
+            email: user.email ?? null,
+            phone: user.phone ?? null,
+            image_url: user.image_url ?? null,
+            dashboard_config: user.dashboard_config ?? [],
+        };
     }
     changePassword(req, body) {
         return this.authService.changePassword(req.user.userId, body.oldPassword, body.newPassword);
@@ -53,7 +67,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "me", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

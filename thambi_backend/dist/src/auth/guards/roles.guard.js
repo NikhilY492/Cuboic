@@ -26,7 +26,11 @@ let RolesGuard = class RolesGuard {
         if (!requiredRoles || requiredRoles.length === 0)
             return true;
         const { user } = context.switchToHttp().getRequest();
-        return requiredRoles.includes(user?.role);
+        let allowedRoles = [...requiredRoles];
+        if (allowedRoles.includes('Staff')) {
+            allowedRoles = [...allowedRoles, 'Manager', 'Captain', 'Cashier', 'Waiter', 'Kitchen'];
+        }
+        return allowedRoles.includes(user?.role);
     }
 };
 exports.RolesGuard = RolesGuard;

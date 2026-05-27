@@ -7,6 +7,10 @@ export declare class LocalStrategy extends LocalStrategy_base {
     private authService;
     constructor(authService: AuthService);
     validate(userId: string, password: string): Promise<{
+        outlet: {
+            restaurantId: string;
+        } | null;
+    } & {
         id: string;
         name: string;
         is_active: boolean;

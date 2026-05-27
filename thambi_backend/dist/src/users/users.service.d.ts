@@ -32,7 +32,11 @@ export declare class UsersService {
         phone: string | null;
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
     }[]>;
-    findByUserId(userId: string): Promise<{
+    findByUserId(userId: string): Promise<({
+        outlet: {
+            restaurantId: string;
+        } | null;
+    } & {
         id: string;
         name: string;
         is_active: boolean;
@@ -47,7 +51,27 @@ export declare class UsersService {
         phone: string | null;
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
         outletId: string | null;
-    } | null>;
+    }) | null>;
+    findById(id: string): Promise<({
+        outlet: {
+            restaurantId: string;
+        } | null;
+    } & {
+        id: string;
+        name: string;
+        is_active: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string | null;
+        image_url: string | null;
+        user_id: string;
+        password_hash: string;
+        role: import("@prisma/client").$Enums.UserRole;
+        email: string | null;
+        phone: string | null;
+        dashboard_config: import("@prisma/client/runtime/library").JsonValue;
+        outletId: string | null;
+    }) | null>;
     updatePassword(id: string, hash: string): Promise<{
         id: string;
         name: string;

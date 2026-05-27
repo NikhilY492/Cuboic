@@ -2,8 +2,9 @@ import { PrismaService } from '../prisma/prisma.service';
 export declare class RestaurantsService {
     private prisma;
     constructor(prisma: PrismaService);
-    findById(id: string): import("@prisma/client").Prisma.Prisma__RestaurantClient<({
+    findById(id: string): Promise<{
         tables: {
+            is_occupied: boolean;
             id: string;
             is_active: boolean;
             createdAt: Date;
@@ -11,7 +12,6 @@ export declare class RestaurantsService {
             table_number: string;
             restaurantId: string;
         }[];
-    } & {
         id: string;
         name: string;
         description: string | null;
@@ -20,7 +20,7 @@ export declare class RestaurantsService {
         paymentStrategy: import("@prisma/client").$Enums.PaymentStrategy;
         createdAt: Date;
         updatedAt: Date;
-    }) | null, null, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
+    } | null>;
     findTables(restaurantId: string): Promise<{
         id: string;
         is_active: boolean;

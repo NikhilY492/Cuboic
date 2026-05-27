@@ -423,7 +423,7 @@ export function MenuPage() {
                 <TableSelectorModal
                     open={tablesOpen}
                     onClose={() => setTablesOpen(false)}
-                    tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway')}
+                    tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway' && !t.is_occupied)}
                     currentTableId={tableId}
                     onSelect={handleTableSelect}
                 />
@@ -706,11 +706,10 @@ export function MenuPage() {
                 sessionId={dbSessionId || SESSION_ID}
             />
 
-            {/* ── Table selector modal ───────────────────────────── */}
             <TableSelectorModal
                 open={tablesOpen}
                 onClose={() => setTablesOpen(false)}
-                tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway')}
+                tables={availableTables.filter(t => String(t.table_number).toLowerCase() !== 'takeaway' && !t.is_occupied)}
                 currentTableId={tableId}
                 onSelect={handleTableSelect}
             />

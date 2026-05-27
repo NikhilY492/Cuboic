@@ -64,11 +64,12 @@ let AuthService = class AuthService {
         return user;
     }
     login(user) {
+        const restaurantId = user.restaurantId ?? user.outlet?.restaurantId ?? null;
         const payload = {
             sub: user.id,
             userId: user.user_id,
             role: user.role,
-            restaurantId: user.restaurantId,
+            restaurantId,
         };
         return {
             access_token: this.jwtService.sign(payload),
@@ -77,10 +78,11 @@ let AuthService = class AuthService {
                 name: user.name,
                 userId: user.user_id,
                 role: user.role,
-                restaurantId: user.restaurantId,
+                restaurantId,
                 email: user.email ?? null,
                 phone: user.phone ?? null,
                 image_url: user.image_url ?? null,
+                dashboard_config: user.dashboard_config ?? [],
             },
         };
     }

@@ -80,7 +80,16 @@ let UsersService = class UsersService {
         });
     }
     async findByUserId(userId) {
-        return this.prisma.user.findUnique({ where: { user_id: userId } });
+        return this.prisma.user.findUnique({
+            where: { user_id: userId },
+            include: { outlet: { select: { restaurantId: true } } },
+        });
+    }
+    async findById(id) {
+        return this.prisma.user.findUnique({
+            where: { id },
+            include: { outlet: { select: { restaurantId: true } } },
+        });
     }
     async updatePassword(id, hash) {
         return this.prisma.user.update({
@@ -113,10 +122,7 @@ let UsersService = class UsersService {
         });
     }
     async remove(id) {
-        return this.prisma.user.update({
-            where: { id },
-            data: { is_active: false },
-        });
+        return this.prisma.user.delete({ where: { id } });
     }
 };
 exports.UsersService = UsersService;

@@ -17,8 +17,25 @@ let RestaurantsService = class RestaurantsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    findById(id) {
-        return this.prisma.restaurant.findUnique({ where: { id }, include: { tables: true } });
+    async findById(id) {
+        const restaurant = await this.prisma.restaurant.findUnique({ where: { id }, include: { tables: true } });
+        if (!restaurant)
+            return null;
+        const activeOrders = await this.prisma.order.findMany({
+            where: {
+                restaurantId: id,
+                status: { in: ['Pending', 'Confirmed', 'Preparing', 'Ready', 'Assigned'] }
+            },
+            select: { tableId: true }
+        });
+        const occupiedTableIds = new Set(activeOrders.map(o => o.tableId));
+        return {
+            ...restaurant,
+            tables: restaurant.tables.map(t => ({
+                ...t,
+                is_occupied: occupiedTableIds.has(t.id)
+            }))
+        };
     }
     async findTables(restaurantId) {
         let tables = await this.prisma.table.findMany({
