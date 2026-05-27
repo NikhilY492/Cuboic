@@ -28,7 +28,7 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
                 itemId: i.itemId,
                 name: i.name,
                 quantity: i.quantity,
-                unitPrice: i.unit_price
+                unitPrice: i.unitPrice
             })));
             setNotes(order.notes || '');
         } else {
@@ -144,14 +144,14 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
                                 const simulatedItem = {
                                     id: orderItem.itemId,
                                     name: orderItem.name,
-                                    price: orderItem.unit_price
+                                    price: orderItem.unitPrice
                                 };
 
                                 return (
                                     <View key={orderItem.itemId} style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: isSelected ? colors.accent : colors.border }]}>
                                         <View style={styles.itemInfo}>
                                             <Text style={[styles.itemName, { color: colors.text }]}>{orderItem.name}</Text>
-                                            <Text style={[styles.itemPrice, { color: colors.textMuted }]}>₹{orderItem.unit_price}</Text>
+                                            <Text style={[styles.itemPrice, { color: colors.textMuted }]}>₹{orderItem.unitPrice}</Text>
                                         </View>
                                         <View style={styles.counterRow}>
                                             <TouchableOpacity 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View, Text, FlatList, TouchableOpacity, StyleSheet,
-    ActivityIndicator, Alert, ScrollView, Image, KeyboardAvoidingView, Platform
+    ActivityIndicator, Alert, ScrollView, Image, KeyboardAvoidingView, Platform, TextInput
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { menuApi, type MenuItem, type Category } from '../../api/menu';
@@ -51,6 +51,7 @@ export function POSScreen() {
     const [tables, setTables] = useState<RestaurantTable[]>([]);
     const [loading, setLoading] = useState(true);
     
+    const [searchQuery, setSearchQuery] = useState('');
     const [filterCat, setFilterCat] = useState('all');
     const [cart, setCart] = useState<CartItem[]>([]);
     const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
@@ -127,9 +128,11 @@ export function POSScreen() {
         }
     };
 
-    const visibleItems = filterCat === 'all'
-        ? items
-        : items.filter(i => i.categoryId === filterCat || String(i.categoryId) === filterCat);
+    const visibleItems = items.filter(i => {
+        const matchesCat = filterCat === 'all' || i.categoryId === filterCat || String(i.categoryId) === filterCat;
+        const matchesSearch = i.name.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCat && matchesSearch;
+    });
 
     if (loading) return (
         <View style={[S.screen, { backgroundColor: colors.bg }]}>
@@ -165,6 +168,25 @@ export function POSScreen() {
             <View style={{ flex: 1, flexDirection: 'row' }}>
                 {/* Left/Main: Menu Items */}
                 <View style={{ flex: 1 }}>
+                    {/* Search Bar */}
+                    <View style={[styles.searchWrapper, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+                        <View style={[styles.searchInputBox, { backgroundColor: colors.bg }]}>
+                            <Feather name="search" size={18} color={colors.textMuted} />
+                            <TextInput
+                                style={[styles.searchInput, { color: colors.text }]}
+                                placeholder="Search items..."
+                                placeholderTextColor={colors.textMuted}
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                            />
+                            {searchQuery.length > 0 && (
+                                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                                    <Feather name="x" size={18} color={colors.textMuted} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    </View>
+
                     {/* Category Tabs */}
                     <View style={[styles.tabsWrapper, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContent}>
@@ -266,6 +288,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1, marginRight: 8
     },
     tableOptionText: { fontSize: 14, ...FONT.bold },
+    searchWrapper: { padding: 12, borderBottomWidth: 1 },
+    searchInputBox: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, height: 44, borderRadius: 8, gap: 8 },
+    searchInput: { flex: 1, fontSize: 15 },
     tabsWrapper: { borderBottomWidth: 1 },
     tabsContent: { paddingHorizontal: 10, paddingVertical: 12, flexDirection: 'row' },
     tab: {
