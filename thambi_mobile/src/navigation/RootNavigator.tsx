@@ -25,6 +25,7 @@ import { StaffScreen } from '../screens/owner/StaffScreen';
 import { TablesScreen } from '../screens/owner/TablesScreen';
 import { AnalyticsScreen } from '../screens/owner/AnalyticsScreen';
 import { ManagementScreen } from '../screens/owner/ManagementScreen';
+import { AuditsScreen } from '../screens/owner/AuditsScreen';
 import { S } from '../theme';
 
 export type RootStackParamList = {
@@ -51,6 +52,7 @@ type ManageStackParamList = {
     Staff: undefined;
     Tables: undefined;
     Payments: undefined;
+    Audits: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -74,6 +76,7 @@ function ManageStack() {
             <MStack.Screen name="Staff" component={StaffScreen} />
             <MStack.Screen name="Tables" component={TablesScreen} />
             <MStack.Screen name="Payments" component={PaymentsScreen} />
+            <MStack.Screen name="Audits" component={AuditsScreen} />
         </MStack.Navigator>
     );
 }

@@ -12,6 +12,7 @@ export function ManagementScreen({ navigation }: any) {
     const { colors } = useTheme();
     const insets = useSafeAreaInsets();
     const isOwner = user?.role === 'Owner';
+    const isManager = user?.role === 'Manager';
     const restaurantId = user?.restaurantId ?? '';
 
     const [restaurantData, setRestaurantData] = useState<Restaurant | null>(null);
@@ -45,6 +46,7 @@ export function ManagementScreen({ navigation }: any) {
         ...(canManageStaff ? [{ name: 'Staff', icon: 'users', screen: 'Staff', color: '#c084fc', desc: 'Manage your restaurant team' }] : []),
         ...(canManageTables ? [{ name: 'Tables', icon: 'grid', screen: 'Tables', color: '#fbbf24', desc: 'Configure dining areas' }] : []),
         ...(canViewPayments ? [{ name: 'Payments', icon: 'credit-card', screen: 'Payments', color: '#4ade80', desc: 'View transaction history' }] : []),
+        ...(isOwner || isManager ? [{ name: 'Audits', icon: 'activity', screen: 'Audits', color: '#f87171', desc: 'Monitor system activity logs' }] : []),
     ];
 
     return (

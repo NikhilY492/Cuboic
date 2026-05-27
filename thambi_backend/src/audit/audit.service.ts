@@ -22,4 +22,12 @@ export class AuditService {
             this.logger.error(`Failed to create audit log: ${error.message}`);
         }
     }
+
+    async findAll(restaurantId: string) {
+        return this.prisma.auditLog.findMany({
+            where: { restaurantId },
+            orderBy: { createdAt: 'desc' },
+            take: 100, // Limit to recent 100 logs
+        });
+    }
 }
