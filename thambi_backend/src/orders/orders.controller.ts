@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards, Req } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
@@ -71,9 +71,11 @@ export class OrdersController {
         return this.ordersService.updateTable(id, tableId);
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('Staff', 'Owner')
     @Patch(':id/cancel')
-    cancelOrder(@Param('id') id: string) {
-        return this.ordersService.cancelOrder(id);
+    cancelOrder(@Param('id') id: string, @Req() req: any) {
+        return this.ordersService.cancelOrder(id, req.user.sub);
     }
 
     @Patch(':id/confirm')
@@ -84,8 +86,8 @@ export class OrdersController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('Staff', 'Owner')
     @Patch(':id/pay')
-    markAsPaid(@Param('id') id: string) {
-        return this.ordersService.markAsPaid(id);
+    markAsPaid(@Param('id') id: string, @Req() req: any) {
+        return this.ordersService.markAsPaid(id, req.user.sub);
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -93,8 +95,9 @@ export class OrdersController {
     @Patch('mark-paid-bulk')
     markPaidBulk(
         @Query('restaurantId') restaurantId: string,
-        @Body('orderIds') orderIds: string[]
+        @Body('orderIds') orderIds: string[],
+        @Req() req: any
     ) {
-        return this.ordersService.markPaidBulk(restaurantId, orderIds);
+        return this.ordersService.markPaidBulk(restaurantId, orderIds, req.user.sub);
     }
 }

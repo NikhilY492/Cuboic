@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getUnpaidSummary, markPaidBulk } from '../api/orders';
+import { getUnpaidSummary, markPaidBulk, getOrder } from '../api/orders';
 import { getCustomer } from '../utils/auth';
 import './CartDrawer.css'; // Reusing established bottom sheet styles
 
@@ -29,6 +29,7 @@ export function OrdersDrawer({
 }: OrdersDrawerProps) {
     const [unpaid, setUnpaid] = useState<{ count: number; total: number; orderIds: string[] } | null>(null);
     const [settling, setSettling] = useState(false);
+    const [statuses, setStatuses] = useState<Record<string, string>>({});
 
     const fetchUnpaid = () => {
         const customer = getCustomer();
@@ -40,6 +41,14 @@ export function OrdersDrawer({
     useEffect(() => {
         if (open && orders.length > 0) {
             fetchUnpaid();
+            Promise.all(orders.map(o => getOrder(o.id).then(res => ({ id: o.id, status: res.status })).catch(() => null)))
+                .then(results => {
+                    const newStatuses: Record<string, string> = {};
+                    results.forEach(r => {
+                        if (r) newStatuses[r.id] = r.status;
+                    });
+                    setStatuses(newStatuses);
+                });
         }
     }, [open, orders, restaurantId, sessionId]);
 
@@ -120,18 +129,21 @@ export function OrdersDrawer({
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px 24px' }}>
                             {sortedOrders.map((order, index) => {
                                 const localTime = new Date(order.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                const status = statuses[order.id];
+                                const isCancelled = status === 'Cancelled';
                                 return (
-                                    <Link key={order.id} to={`/order/${order.id}`} className="bento-tile" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px' }}>
+                                    <Link key={order.id} to={`/order/${order.id}`} className="bento-tile" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', opacity: isCancelled ? 0.6 : 1, filter: isCancelled ? 'grayscale(1)' : 'none', position: 'relative', overflow: 'hidden' }}>
                                         <div>
-                                            <div style={{ fontWeight: 800, color: 'var(--text)', fontSize: '1rem', marginBottom: '4px' }}>
+                                            <div style={{ fontWeight: 800, color: isCancelled ? 'var(--danger, #dc3545)' : 'var(--text)', fontSize: '1rem', marginBottom: '4px', textDecoration: isCancelled ? 'line-through' : 'none' }}>
                                                 Order #{orders.length - index}
                                             </div>
                                             <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)', fontWeight: 600 }}>
                                                 {localTime} • {order.itemCount} items
+                                                {isCancelled && <span style={{ color: 'var(--danger, #dc3545)', marginLeft: '8px', fontWeight: 800 }}>• Cancelled</span>}
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <span style={{ fontWeight: 800, color: 'var(--text)', fontSize: '1rem' }}>₹{order.total.toFixed(2)}</span>
+                                            <span style={{ fontWeight: 800, color: 'var(--text)', fontSize: '1rem', textDecoration: isCancelled ? 'line-through' : 'none' }}>₹{order.total.toFixed(2)}</span>
                                             <span style={{ fontSize: '1.2rem', color: 'var(--accent)' }}>→</span>
                                         </div>
                                     </Link>

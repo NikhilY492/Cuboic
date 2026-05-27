@@ -414,7 +414,7 @@
       "408": "Community 408",
       "409": "Community 409"
     },
-    "built_from_commit": "7561ffd818c5a4443f9c706cf5a72f1ccaa8fa63"
+    "built_from_commit": "45bd702a96aaaa3167566491370500e8d90fa603"
   },
   "nodes": [
     {
@@ -5057,7 +5057,7 @@
       "label": "AppModule",
       "file_type": "code",
       "source_file": "thambi_backend/src/app.module.ts",
-      "source_location": "L77",
+      "source_location": "L79",
       "community": 259,
       "community_name": "Community 259"
     },
@@ -6560,7 +6560,7 @@
       "label": ".cancelOrder()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.controller.ts",
-      "source_location": "L75",
+      "source_location": "L77",
       "community": 6,
       "community_name": "Community 6"
     },
@@ -6569,7 +6569,7 @@
       "label": ".confirmDelivery()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.controller.ts",
-      "source_location": "L80",
+      "source_location": "L82",
       "community": 6,
       "community_name": "Community 6"
     },
@@ -6578,7 +6578,7 @@
       "label": ".markAsPaid()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.controller.ts",
-      "source_location": "L87",
+      "source_location": "L89",
       "community": 6,
       "community_name": "Community 6"
     },
@@ -6587,7 +6587,7 @@
       "label": ".markPaidBulk()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.controller.ts",
-      "source_location": "L94",
+      "source_location": "L96",
       "community": 6,
       "community_name": "Community 6"
     },
@@ -6605,7 +6605,7 @@
       "label": "OrdersModule",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.module.ts",
-      "source_location": "L14",
+      "source_location": "L15",
       "community": 218,
       "community_name": "Community 218"
     },
@@ -6615,161 +6615,170 @@
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
       "source_location": "L1",
-      "community": 2,
-      "community_name": "Community 2"
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice",
       "label": "OrdersService",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L12",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L14",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_constructor",
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L15",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L17",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_getorcreatesession",
       "label": ".getOrCreateSession()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L22",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L26",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_closesession",
       "label": ".closeSession()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L70",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L74",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_create",
       "label": ".create()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L80",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L84",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_findone",
       "label": ".findOne()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L147",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L151",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_findall",
       "label": ".findAll()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L154",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L158",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_getsummary",
       "label": ".getSummary()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L165",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L169",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_updatestatus",
       "label": ".updateStatus()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L193",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L197",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_updatetable",
       "label": ".updateTable()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L203",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L208",
+      "community": 1,
+      "community_name": "Community 1"
+    },
+    {
+      "id": "orders_orders_service_ordersservice_haspermission",
+      "label": ".hasPermission()",
+      "file_type": "code",
+      "source_file": "thambi_backend/src/orders/orders.service.ts",
+      "source_location": "L219",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_cancelorder",
       "label": ".cancelOrder()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L213",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L234",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_confirmdelivery",
       "label": ".confirmDelivery()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L230",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L259",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_markaspaid",
       "label": ".markAsPaid()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L239",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L269",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_getunpaidsummary",
       "label": ".getUnpaidSummary()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L254",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L291",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_getunpaidgroups",
       "label": ".getUnpaidGroups()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L286",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L323",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_markpaidbulk",
       "label": ".markPaidBulk()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L326",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L363",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "orders_orders_service_ordersservice_cleanupstaleorders",
       "label": ".cleanupStaleOrders()",
       "file_type": "code",
       "source_file": "thambi_backend/src/orders/orders.service.ts",
-      "source_location": "L366",
-      "community": 2,
-      "community_name": "Community 2"
+      "source_location": "L411",
+      "community": 1,
+      "community_name": "Community 1"
     },
     {
       "id": "thambi_backend_src_outlets_dto_create_outlet_dto_ts",
@@ -8864,7 +8873,7 @@
       "label": "fetchUnpaid()",
       "file_type": "code",
       "source_file": "thambi_customer/src/components/OrdersDrawer.tsx",
-      "source_location": "L33",
+      "source_location": "L34",
       "community": 43,
       "community_name": "Community 43"
     },
@@ -8873,7 +8882,7 @@
       "label": "handleSettleAll()",
       "file_type": "code",
       "source_file": "thambi_customer/src/components/OrdersDrawer.tsx",
-      "source_location": "L46",
+      "source_location": "L55",
       "community": 43,
       "community_name": "Community 43"
     },
@@ -10206,8 +10215,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/api/deliveries.ts",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "thambi_mobile_src_api_menu_ts",
@@ -10233,8 +10242,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/api/payments.ts",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "thambi_mobile_src_api_restaurants_ts",
@@ -10269,8 +10278,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/components/KpiCard.tsx",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "thambi_mobile_src_components_statusbadge_tsx",
@@ -10278,8 +10287,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/components/StatusBadge.tsx",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "thambi_mobile_src_context_authcontext_tsx",
@@ -10341,8 +10350,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/context/ThemeContext.tsx",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "context_themecontext_themeprovider",
@@ -10350,8 +10359,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/context/ThemeContext.tsx",
       "source_location": "L19",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "context_themecontext_usetheme",
@@ -10359,8 +10368,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/context/ThemeContext.tsx",
       "source_location": "L60",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "thambi_mobile_src_hooks_usesocket_ts",
@@ -10620,8 +10629,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/screens/shared/DashboardScreen.tsx",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "shared_dashboardscreen_handledrilldown",
@@ -10629,8 +10638,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/screens/shared/DashboardScreen.tsx",
       "source_location": "L92",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "shared_dashboardscreen_handlesettleall",
@@ -10638,8 +10647,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/screens/shared/DashboardScreen.tsx",
       "source_location": "L96",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "shared_dashboardscreen_onrefresh",
@@ -10647,8 +10656,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/screens/shared/DashboardScreen.tsx",
       "source_location": "L118",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "thambi_mobile_src_screens_shared_deliveriesscreen_tsx",
@@ -10872,26 +10881,26 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/screens/shared/PaymentsScreen.tsx",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "shared_paymentsscreen_onrefresh",
       "label": "onRefresh()",
       "file_type": "code",
       "source_file": "thambi_mobile/src/screens/shared/PaymentsScreen.tsx",
-      "source_location": "L61",
-      "community": 1,
-      "community_name": "Community 1"
+      "source_location": "L62",
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "shared_paymentsscreen_handlemarkfeepaid",
       "label": "handleMarkFeePaid()",
       "file_type": "code",
       "source_file": "thambi_mobile/src/screens/shared/PaymentsScreen.tsx",
-      "source_location": "L63",
-      "community": 1,
-      "community_name": "Community 1"
+      "source_location": "L64",
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "thambi_mobile_src_screens_shared_profilescreen_tsx",
@@ -10980,8 +10989,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/screens/shared/RobotsScreen.tsx",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "shared_robotsscreen_onrefresh",
@@ -10989,8 +10998,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/screens/shared/RobotsScreen.tsx",
       "source_location": "L37",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "thambi_mobile_src_screens_staff_createdeliveryscreen_tsx",
@@ -11061,8 +11070,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/theme.ts",
       "source_location": "L1",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "src_theme_getstatuscolor",
@@ -11070,8 +11079,8 @@
       "file_type": "code",
       "source_file": "thambi_mobile/src/theme.ts",
       "source_location": "L110",
-      "community": 1,
-      "community_name": "Community 1"
+      "community": 2,
+      "community_name": "Community 2"
     },
     {
       "id": "thambi_public_eslint_config_js",
@@ -17914,6 +17923,18 @@
     },
     {
       "source": "orders_orders_service_ordersservice",
+      "target": "orders_orders_service_ordersservice_haspermission",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "thambi_backend/src/orders/orders.service.ts",
+      "source_location": "L219",
+      "weight": 1,
+      "_src": "orders_orders_service_ordersservice",
+      "_tgt": "orders_orders_service_ordersservice_haspermission",
+      "confidence_score": 1
+    },
+    {
+      "source": "orders_orders_service_ordersservice",
       "target": "orders_orders_service_ordersservice_cancelorder",
       "relation": "method",
       "confidence": "EXTRACTED",
@@ -18006,6 +18027,42 @@
       "weight": 1,
       "_src": "orders_orders_service_ordersservice_create",
       "_tgt": "orders_orders_service_ordersservice_getorcreatesession",
+      "confidence_score": 1
+    },
+    {
+      "source": "orders_orders_service_ordersservice_cancelorder",
+      "target": "orders_orders_service_ordersservice_haspermission",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "thambi_backend/src/orders/orders.service.ts",
+      "source_location": "L235",
+      "weight": 1,
+      "_src": "orders_orders_service_ordersservice_cancelorder",
+      "_tgt": "orders_orders_service_ordersservice_haspermission",
+      "confidence_score": 1
+    },
+    {
+      "source": "orders_orders_service_ordersservice_markaspaid",
+      "target": "orders_orders_service_ordersservice_haspermission",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "thambi_backend/src/orders/orders.service.ts",
+      "source_location": "L270",
+      "weight": 1,
+      "_src": "orders_orders_service_ordersservice_markaspaid",
+      "_tgt": "orders_orders_service_ordersservice_haspermission",
+      "confidence_score": 1
+    },
+    {
+      "source": "orders_orders_service_ordersservice_markpaidbulk",
+      "target": "orders_orders_service_ordersservice_haspermission",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "thambi_backend/src/orders/orders.service.ts",
+      "source_location": "L366",
+      "weight": 1,
+      "_src": "orders_orders_service_ordersservice_markpaidbulk",
+      "_tgt": "orders_orders_service_ordersservice_haspermission",
       "confidence_score": 1
     },
     {

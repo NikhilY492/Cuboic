@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View, Text, FlatList, StyleSheet, ActivityIndicator,
-    RefreshControl, TouchableOpacity, TextInput, Alert,
+    RefreshControl, TouchableOpacity, TextInput, Alert, ScrollView
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { paymentsApi, platformFeesApi, type Payment, type PlatformFee, type PlatformFeeSummary } from '../../api/payments';
@@ -32,6 +32,7 @@ export function PaymentsScreen() {
     const [fees, setFees] = useState<PlatformFee[]>([]);
     const [feeSummary, setFeeSummary] = useState<PlatformFeeSummary | null>(null);
     const [payingFeeId, setPayingFeeId] = useState<string | null>(null);
+    const [showFees, setShowFees] = useState(false);
 
     const load = useCallback(async () => {
         if (!restaurantId) return;
@@ -172,10 +173,10 @@ export function PaymentsScreen() {
                     {/* ── Amount Payable to Thambi (Owner only) ── */}
                     {isOwner && feeSummary && !user?.name?.toLowerCase().includes('alnaas') && (
                         <View style={[styles.thambiSection, { backgroundColor: colors.surface, borderColor: colors.amber }]}>
-                            <View style={styles.thambiHeader}>
+                            <TouchableOpacity style={styles.thambiHeader} onPress={() => setShowFees(!showFees)} activeOpacity={0.7}>
                                 <Feather name="alert-circle" size={16} color={colors.amber} />
                                 <Text style={[styles.thambiTitle, { color: colors.amber }]}>Amount Payable to Thambi</Text>
-                            </View>
+                            </TouchableOpacity>
                             <Text style={[styles.thambiSubtitle, { color: colors.textMuted }]}>
                                 ₹5 is owed for each order above ₹100
                             </Text>
@@ -193,24 +194,30 @@ export function PaymentsScreen() {
                                 </View>
                             </View>
 
-                            {unpaidFees.length > 0 && (
-                                <>
-                                    <Text style={[styles.feeListLabel, { color: colors.textDim }]}>PENDING FEES</Text>
-                                    {unpaidFees.map(f => <FeeCard key={f.id} item={f} />)}
-                                </>
-                            )}
+                            {showFees && (
+                                <View style={{ maxHeight: 300, marginTop: 12 }}>
+                                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true} style={{ flexGrow: 0 }}>
+                                        {unpaidFees.length > 0 && (
+                                            <>
+                                                <Text style={[styles.feeListLabel, { color: colors.textDim }]}>PENDING FEES</Text>
+                                                {unpaidFees.map(f => <FeeCard key={f.id} item={f} />)}
+                                            </>
+                                        )}
 
-                            {paidFees.length > 0 && (
-                                <>
-                                    <Text style={[styles.feeListLabel, { color: colors.textDim, marginTop: 12 }]}>PAID FEES</Text>
-                                    {paidFees.map(f => <FeeCard key={f.id} item={f} />)}
-                                </>
-                            )}
+                                        {paidFees.length > 0 && (
+                                            <>
+                                                <Text style={[styles.feeListLabel, { color: colors.textDim, marginTop: 12 }]}>PAID FEES</Text>
+                                                {paidFees.map(f => <FeeCard key={f.id} item={f} />)}
+                                            </>
+                                        )}
 
-                            {fees.length === 0 && (
-                                <View style={styles.feeEmpty}>
-                                    <Feather name="check-circle" size={20} color={colors.green} />
-                                    <Text style={[styles.feeEmptyText, { color: colors.textMuted }]}>No fees yet</Text>
+                                        {fees.length === 0 && (
+                                            <View style={styles.feeEmpty}>
+                                                <Feather name="check-circle" size={20} color={colors.green} />
+                                                <Text style={[styles.feeEmptyText, { color: colors.textMuted }]}>No fees yet</Text>
+                                            </View>
+                                        )}
+                                    </ScrollView>
                                 </View>
                             )}
                         </View>

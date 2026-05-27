@@ -7,6 +7,8 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '@prisma/client';
 import { PlatformFeesService } from '../platform-fees/platform-fees.service';
 import { InventoryService } from '../inventory/inventory.service';
+import { AuditService } from '../audit/audit.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class OrdersService {
@@ -17,6 +19,8 @@ export class OrdersService {
         private readonly eventsGateway: EventsGateway,
         private readonly platformFeesService: PlatformFeesService,
         private readonly inventoryService: InventoryService,
+        private readonly auditService: AuditService,
+        private readonly usersService: UsersService,
     ) { }
 
     async getOrCreateSession(restaurantId: string, tableId: string) {
@@ -194,6 +198,7 @@ export class OrdersService {
         const order = await this.prisma.order.update({
             where: { id },
             data: { status: dto.status as OrderStatus },
+            include: { table: true, payment: true, customer: true }
         });
         if (!order) throw new NotFoundException('Order not found');
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
@@ -204,13 +209,34 @@ export class OrdersService {
         const order = await this.prisma.order.update({
             where: { id },
             data: { tableId },
+            include: { table: true, payment: true, customer: true }
         });
         if (!order) throw new NotFoundException('Order not found');
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
     }
 
-    async cancelOrder(id: string) {
+    private async hasPermission(userId: string, permission: string, defaultRoles: string[]): Promise<boolean> {
+        const user = await this.usersService.findById(userId);
+        if (!user) return false;
+        
+        // Owner always has access
+        if (user.role === 'Owner') return true;
+
+        // Check if user has dynamically configured permission
+        const config = user.dashboard_config as string[];
+        if (config && config.includes(permission)) return true;
+
+        // Fallback to default matrix
+        return defaultRoles.includes(user.role);
+    }
+
+    async cancelOrder(id: string, userId: string) {
+        const hasAccess = await this.hasPermission(userId, 'CancelOrders', ['Captain', 'Manager', 'Owner']);
+        if (!hasAccess) {
+            throw new BadRequestException('You do not have permission to cancel orders');
+        }
+
         const existing = await this.prisma.order.findUnique({ where: { id } });
         if (!existing) throw new NotFoundException('Order not found');
 
@@ -222,7 +248,10 @@ export class OrdersService {
         const order = await this.prisma.order.update({
             where: { id },
             data: { status: 'Cancelled' },
+            include: { table: true, payment: true, customer: true }
         });
+        
+        await this.auditService.logAction(order.restaurantId, userId, 'Cancel Order', { orderId: order.id, status: existing.status });
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
     }
@@ -231,12 +260,18 @@ export class OrdersService {
         const order = await this.prisma.order.update({
             where: { id },
             data: { status: 'Delivered' },
+            include: { table: true, payment: true, customer: true }
         });
         if (!order) throw new NotFoundException('Order not found');
         return order;
     }
 
-    async markAsPaid(id: string) {
+    async markAsPaid(id: string, userId: string) {
+        const hasAccess = await this.hasPermission(userId, 'SettlePayments', ['Captain', 'Cashier', 'Manager', 'Owner']);
+        if (!hasAccess) {
+            throw new BadRequestException('You do not have permission to mark orders as paid');
+        }
+
         const order = await this.prisma.order.update({
             where: { id },
             data: {
@@ -247,6 +282,8 @@ export class OrdersService {
             include: { payment: true, table: true, customer: true }
         });
         if (!order) throw new NotFoundException('Order not found');
+        
+        await this.auditService.logAction(order.restaurantId, userId, 'Mark Paid', { orderId: order.id, amount: order.total });
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
     }
@@ -323,8 +360,13 @@ export class OrdersService {
         return Object.values(groups).sort((a, b) => b.lastOrderAt.getTime() - a.lastOrderAt.getTime());
     }
 
-    async markPaidBulk(restaurantId: string, orderIds: string[]) {
+    async markPaidBulk(restaurantId: string, orderIds: string[], userId: string) {
         if (!orderIds || orderIds.length === 0) return { success: true, count: 0 };
+
+        const hasAccess = await this.hasPermission(userId, 'SettlePayments', ['Captain', 'Cashier', 'Manager', 'Owner']);
+        if (!hasAccess) {
+            throw new BadRequestException('You do not have permission to settle payments');
+        }
 
         await this.prisma.payment.updateMany({
             where: {
@@ -339,6 +381,9 @@ export class OrdersService {
             where: { id: { in: orderIds } },
             include: { payment: true, table: true, customer: true }
         });
+
+        const totalAmount = updatedOrders.reduce((sum, o) => sum + o.total, 0);
+        await this.auditService.logAction(restaurantId, userId, 'Settle Payment Bulk', { orderIds, count: updatedOrders.length, totalAmount });
 
         for (const order of updatedOrders) {
             this.eventsGateway.emitToRestaurant(restaurantId, 'order:updated', order);

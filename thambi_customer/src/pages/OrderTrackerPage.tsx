@@ -159,12 +159,12 @@ export function OrderTrackerPage() {
     };
 
     return (
-        <div className="tracker-page fade-in">
+        <div className={`tracker-page fade-in ${isCancelled ? 'tracker-cancelled' : ''}`}>
             <header className="tracker-header">
                 <div className="container">
                     <Link to={`/?r=${order.restaurantId}&t=${typeof order.tableId === 'string' ? order.tableId : order.tableId.id}`} className="tracker-back">← Menu</Link>
                     <p className="tracker-brand">Thambi</p>
-                    {lastUpdated && (
+                    {lastUpdated && !isCancelled && (
                         <span className="tracker-updated">
                             Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
@@ -174,8 +174,8 @@ export function OrderTrackerPage() {
 
             <main className="container tracker-body">
                 {/* Status hero */}
-                <div className="tracker-hero card">
-                    <div className="tracker-hero__status-label">
+                <div className="tracker-hero card" style={{ opacity: isCancelled ? 0.7 : 1, filter: isCancelled ? 'grayscale(1)' : 'none' }}>
+                    <div className="tracker-hero__status-label" style={{ color: isCancelled ? 'var(--danger, #dc3545)' : undefined }}>
                         {isCancelled
                             ? 'Order Cancelled'
                             : order.status === 'Delivered'
@@ -205,12 +205,12 @@ export function OrderTrackerPage() {
                 )}
 
                 {/* Order summary */}
-                <section className="tracker-section card">
+                <section className="tracker-section card" style={{ opacity: isCancelled ? 0.6 : 1, filter: isCancelled ? 'grayscale(1)' : 'none' }}>
                     <h2 className="tracker-section__title">Order Summary</h2>
                     <div className="order-items">
                         {order.items.map((item, i) => (
                             <div key={i} className="order-item">
-                                <span className="order-item__name">{item.quantity}× {item.name}</span>
+                                <span className="order-item__name" style={{ textDecoration: isCancelled ? 'line-through' : 'none' }}>{item.quantity}× {item.name}</span>
                                 <span className="order-item__price">₹{((item.unit_price ?? item.unitPrice ?? 0) * item.quantity).toFixed(2)}</span>
                             </div>
                         ))}
@@ -218,12 +218,12 @@ export function OrderTrackerPage() {
                     <hr className="divider" />
                     <div className="order-totals">
                         <div className="order-total-row order-total-row--grand">
-                            <span>Total</span><span>₹{order.total.toFixed(2)}</span>
+                            <span>Total</span><span style={{ textDecoration: isCancelled ? 'line-through' : 'none' }}>₹{order.total.toFixed(2)}</span>
                         </div>
                     </div>
                 </section>
                 
-                {unpaidSummary && unpaidSummary.total > 0 && (
+                {!isCancelled && unpaidSummary && unpaidSummary.total > 0 && (
                     <section className="tracker-section card unpaid-highlight" style={{ borderColor: 'var(--primary)', borderWidth: '2px', background: 'var(--surface2)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>

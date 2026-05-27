@@ -1,10 +1,10 @@
 # Graph Report - .  (2026-05-27)
 
 ## Corpus Check
-- Large corpus: 579 files · ~11,81,247 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
+- Large corpus: 579 files · ~11,81,704 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
 
 ## Summary
-- 1365 nodes · 1199 edges · 202 communities detected
+- 1366 nodes · 1203 edges · 202 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -12,15 +12,15 @@
 ## Input Scope
 - Requested: auto
 - Resolved: committed (source: default-auto)
-- Included files: 579 · Candidates: 1648
-- Excluded: 0 untracked · 139093 ignored · 9 sensitive · 0 missing committed
+- Included files: 579 · Candidates: 1652
+- Excluded: 2 untracked · 139093 ignored · 9 sensitive · 0 missing committed
 - Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
 
 ## Graph Freshness
-- Built from Git commit: `7561ffd`
+- Built from Git commit: `45bd702`
 - Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
-1. `OrdersService` - 17 edges
+1. `OrdersService` - 18 edges
 2. `OrdersController` - 16 edges
 3. `InventoryService` - 13 edges
 4. `InventoryController` - 12 edges
@@ -36,8 +36,8 @@
 
 ## Communities
 
-### Community 2 - "Community 2"
-Cohesion: 0.12
+### Community 1 - "Community 1"
+Cohesion: 0.13
 Nodes (1): OrdersService
 
 ### Community 3 - "Community 3"
@@ -847,7 +847,7 @@ Nodes (1): UsersModule
 ## Knowledge Gaps
 - **102 isolated node(s):** `Return a shared MediaPlayer for the camera.`, `Create and register a new RTCPeerConnection for a viewer.`, `A viewer has joined our room — initiate the offer.`, `Browser answered our offer — set the remote description.`, `ICE candidate from browser — forward to the correct peer connection.` (+97 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 2`** (1 nodes): `OrdersService`
+- **Thin community `Community 1`** (1 nodes): `OrdersService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 6`** (1 nodes): `OrdersController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -1237,8 +1237,8 @@ _Questions this graph is uniquely positioned to answer:_
   _102 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
-- **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
+- **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.13 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.14 - nodes in this community are weakly interconnected._
 - **Should `Community 5` be split into smaller, more focused modules?**

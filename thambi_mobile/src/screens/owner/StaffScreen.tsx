@@ -30,7 +30,7 @@ export function StaffScreen() {
         ? ['Owner', 'Manager', 'Captain', 'Cashier', 'Waiter', 'Kitchen', 'Staff']
         : ['Manager', 'Captain', 'Cashier', 'Waiter', 'Kitchen', 'Staff'];
     const DASHBOARD_WIDGETS = ['Revenue', 'Orders', 'Pending', 'Preparing', 'Completed', 'Robots'];
-    const PERMISSIONS = ['ManageTables', 'CancelOrders', 'ModifyOrders', 'ManageStaff', 'ViewPayments'];
+    const PERMISSIONS = ['ManageTables', 'CancelOrders', 'ModifyOrders', 'ManageStaff', 'ViewPayments', 'SettlePayments'];
 
     const load = useCallback(async () => {
         if (!user?.restaurantId) return;

@@ -114,6 +114,7 @@ model Restaurant {
   outlets       Outlet[]
   systemAlerts  SystemAlert[]
   tableSessions TableSession[]
+  auditLogs     AuditLog[]
 }
 
 model Table {
@@ -394,4 +395,15 @@ model TableSession {
   @@index([restaurantId])
   @@index([tableId])
   @@index([status])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  restaurantId String
+  userId       String
+  action       String
+  details      Json
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
 }
