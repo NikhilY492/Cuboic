@@ -104,7 +104,7 @@ function buildTableSummaries(orders: Order[], allTables: RestaurantTable[]): Tab
 // ─── sub-components ─────────────────────────────────────────────────────────
 
 function TableCard({ summary, onPress }: { summary: TableSummary; onPress: () => void }) {
-    const { colors } = useTheme();
+    const { colors, isDark } = useTheme();
     const hasActive = summary.activeOrders.length > 0;
     const dotColor = hasActive
         ? getStatusColor(summary.dominantStatus ?? 'Pending', colors)
@@ -141,7 +141,7 @@ function TableCard({ summary, onPress }: { summary: TableSummary; onPress: () =>
             <Animated.View
                 style={[
                     styles.tableCard, 
-                    { backgroundColor: animatedBg, borderColor: hasActive ? dotColor : colors.border },
+                    { backgroundColor: animatedBg, borderColor: hasActive ? dotColor : (isDark ? '#3f3f46' : '#e2e8f0') },
                     !summary.isActive && { opacity: 0.6 }
                 ]}
             >
