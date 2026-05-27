@@ -17,7 +17,7 @@ export class RolesGuard implements CanActivate {
         
         let allowedRoles = [...requiredRoles];
         if (allowedRoles.includes('Staff')) {
-            allowedRoles = [...allowedRoles, 'Manager', 'Cashier', 'Waiter', 'Kitchen'];
+            allowedRoles = [...allowedRoles, 'Manager', 'Captain', 'Cashier', 'Waiter', 'Kitchen'];
         }
 
         return allowedRoles.includes(user?.role);
