@@ -137,10 +137,28 @@ export function OrdersDrawer({
                                             <div style={{ fontWeight: 800, color: isCancelled ? 'var(--danger, #dc3545)' : 'var(--text)', fontSize: '1rem', marginBottom: '4px', textDecoration: isCancelled ? 'line-through' : 'none' }}>
                                                 Order #{orders.length - index}
                                             </div>
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)', fontWeight: 600 }}>
-                                                {localTime} • {order.itemCount} items
-                                                {isCancelled && <span style={{ color: 'var(--danger, #dc3545)', marginLeft: '8px', fontWeight: 800 }}>• Cancelled</span>}
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span>{localTime} • {order.itemCount} items</span>
+                                                {isCancelled && (
+                                                    <span style={{
+                                                        backgroundColor: 'var(--danger, #dc3545)',
+                                                        color: 'white',
+                                                        padding: '2px 6px',
+                                                        borderRadius: '4px',
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: 'bold',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px'
+                                                    }}>
+                                                        CANCELLED
+                                                    </span>
+                                                )}
                                             </div>
+                                            {isCancelled && (
+                                                <div style={{ color: 'var(--danger, #dc3545)', fontSize: '0.75rem', fontWeight: 600, marginTop: '4px' }}>
+                                                    This order was cancelled by staff.
+                                                </div>
+                                            )}
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <span style={{ fontWeight: 800, color: 'var(--text)', fontSize: '1rem', textDecoration: isCancelled ? 'line-through' : 'none' }}>₹{order.total.toFixed(2)}</span>
