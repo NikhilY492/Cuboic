@@ -189,11 +189,33 @@ export function OrderTrackerPage() {
                                 <br />
                                 {getStatusMessage(order.status)}
                             </>
+                        ) : isCancelled ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                <span style={{
+                                    backgroundColor: 'var(--danger, #dc3545)',
+                                    color: 'white',
+                                    padding: '4px 12px',
+                                    borderRadius: '16px',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 'bold',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px'
+                                }}>
+                                    CANCELLED
+                                </span>
+                            </div>
                         ) : (
                             getStatusMessage(order.status)
                         )}
                     </h1>
-                    <p className="tracker-table">Table {tableLabel}</p>
+                    
+                    {isCancelled ? (
+                        <p className="tracker-table" style={{ color: 'var(--danger, #dc3545)', fontWeight: 600, fontSize: '0.9rem', marginTop: '12px' }}>
+                            This order was cancelled by staff.
+                        </p>
+                    ) : (
+                        <p className="tracker-table">Table {tableLabel}</p>
+                    )}
                 </div>
 
                 {/* Timeline — hidden for Cancelled */}
