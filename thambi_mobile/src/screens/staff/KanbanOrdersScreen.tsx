@@ -38,7 +38,21 @@ const NEXT_STATUS: Record<string, string> = {
 
 // ─── Order Card Component ───────────────────────────────────────────────────
 
-function KanbanCard({ item, canModify, onAdvance, onEdit }: { item: Order, canModify: boolean, onAdvance: (o: Order) => void, onEdit: (o: Order) => void }) {
+function KanbanCard({ 
+    item, 
+    canModify, 
+    canCancel,
+    onAdvance, 
+    onEdit,
+    onCancel
+}: { 
+    item: Order; 
+    canModify: boolean; 
+    canCancel: boolean;
+    onAdvance: (o: Order) => void;
+    onEdit: (o: Order) => void;
+    onCancel: (o: Order) => void;
+}) {
     const { colors } = useTheme();
     const indicatorColor = getStatusColor(item.status, colors);
     const tableNum = getTableNum(item);
@@ -107,20 +121,20 @@ function KanbanCard({ item, canModify, onAdvance, onEdit }: { item: Order, canMo
                 </View>
 
                 {/* Action Buttons */}
-                {canModify && (
-                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-                        {!isTerminal && ['Pending', 'Confirmed', 'Preparing'].includes(item.status) && (
-                            <TouchableOpacity 
-                                style={[
-                                    styles.finishBtn, 
-                                    { backgroundColor: colors.surface2, flex: 1, borderColor: colors.border }
-                                ]} 
-                                onPress={() => onEdit(item)}
-                                activeOpacity={0.8}
-                            >
-                                <Text style={[styles.finishBtnText, { color: colors.text }]}>Edit Items</Text>
-                            </TouchableOpacity>
-                        )}
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+                    {canModify && !isTerminal && ['Pending', 'Confirmed', 'Preparing'].includes(item.status) && (
+                        <TouchableOpacity 
+                            style={[
+                                styles.finishBtn, 
+                                { backgroundColor: colors.surface2, flex: 1, borderColor: colors.border }
+                            ]} 
+                            onPress={() => onEdit(item)}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={[styles.finishBtnText, { color: colors.text }]}>Edit Items</Text>
+                        </TouchableOpacity>
+                    )}
+                    {canModify && (
                         <TouchableOpacity 
                             style={[
                                 styles.finishBtn, 
@@ -140,8 +154,17 @@ function KanbanCard({ item, canModify, onAdvance, onEdit }: { item: Order, canMo
                                 {isTerminal ? 'Finished' : (nextState ? `Mark ${nextState}` : 'Finish')}
                             </Text>
                         </TouchableOpacity>
-                    </View>
-                )}
+                    )}
+                    {canCancel && !isTerminal && (
+                        <TouchableOpacity
+                            style={[styles.finishBtn, { paddingHorizontal: 12, flex: 0, justifyContent: 'center', backgroundColor: colors.red + '15', borderColor: colors.red + '55' }]}
+                            onPress={() => onCancel(item)}
+                            activeOpacity={0.8}
+                        >
+                            <Feather name="x" size={16} color={colors.red} />
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
         </View>
     );
@@ -169,6 +192,7 @@ export function KanbanOrdersScreen() {
     const isOwner = user?.role === 'Owner';
     const config = user?.dashboard_config || [];
     const canModifyOrders = isOwner || config.includes('ModifyOrders');
+    const canCancelOrders = isOwner || config.includes('CancelOrders');
 
     useEffect(() => {
         const initVoices = async () => {
@@ -297,6 +321,22 @@ export function KanbanOrdersScreen() {
         }
     };
 
+    const handleCancelOrder = (order: Order) => {
+        Alert.alert('Cancel Order', 'Are you sure you want to cancel this order?', [
+            { text: 'No', style: 'cancel' },
+            {
+                text: 'Yes, Cancel', style: 'destructive', onPress: async () => {
+                    try {
+                        const updated = await ordersApi.updateStatus(order.id, 'Cancelled');
+                        setOrders(prev => prev.map(o => o.id === order.id ? updated : o));
+                    } catch (err) {
+                        Alert.alert('Error', 'Failed to cancel order');
+                    }
+                }
+            },
+        ]);
+    };
+
     const handleEditOrder = (order: Order) => {
         setSelectedOrderForEdit(order);
         setEditModalVisible(true);
@@ -380,9 +420,11 @@ export function KanbanOrdersScreen() {
                         <View key={order.id} style={styles.cardWrapper}>
                             <KanbanCard 
                                 item={order} 
-                                canModify={canModifyOrders} 
+                                canModify={canModifyOrders}
+                                canCancel={canCancelOrders}
                                 onAdvance={handleAdvanceOrder}
                                 onEdit={handleEditOrder}
+                                onCancel={handleCancelOrder}
                             />
                         </View>
                     ))}
