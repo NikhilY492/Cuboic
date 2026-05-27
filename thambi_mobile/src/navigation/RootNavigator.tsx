@@ -166,12 +166,16 @@ function MainTabs() {
                 },
             })}
         >
-            <Tab.Screen name="Dashboard" component={DashboardScreen} />
+            {!isCaptain && (
+                <Tab.Screen name="Dashboard" component={DashboardScreen} />
+            )}
             <Tab.Screen name="Orders" component={isStaff ? KanbanOrdersScreen : OrdersScreen} />
             {isOwner && (
                 <Tab.Screen name="Analytics" component={AnalyticsScreen} />
             )}
-            <Tab.Screen name="Manage" component={ManageStack} />
+            {!isCaptain && (
+                <Tab.Screen name="Manage" component={ManageStack} />
+            )}
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
     );
