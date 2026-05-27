@@ -78,6 +78,18 @@ export class OrdersController {
         return this.ordersService.cancelOrder(id, req.user?.sub);
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('Staff', 'Owner')
+    @Patch(':id/items')
+    updateItems(
+        @Param('id') id: string, 
+        @Body('items') items: Array<{ itemId: string; quantity: number }>, 
+        @Body('notes') notes: string | undefined,
+        @Req() req: any
+    ) {
+        return this.ordersService.updateItems(id, items, req.user.sub, notes);
+    }
+
     @Patch(':id/confirm')
     confirmDelivery(@Param('id') id: string) {
         return this.ordersService.confirmDelivery(id);

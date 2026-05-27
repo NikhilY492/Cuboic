@@ -265,6 +265,97 @@ export class OrdersService {
         return order;
     }
 
+    async updateItems(id: string, newItems: Array<{ itemId: string; quantity: number }>, userId: string, notes?: string) {
+        const hasAccess = await this.hasPermission(userId, 'ModifyOrders', ['Captain', 'Manager', 'Owner']);
+        if (!hasAccess) {
+            throw new BadRequestException('You do not have permission to modify orders');
+        }
+
+        const existing = await this.prisma.order.findUnique({ where: { id } });
+        if (!existing) throw new NotFoundException('Order not found');
+
+        const modifiableStates = ['Pending', 'Confirmed', 'Preparing'];
+        if (!modifiableStates.includes(existing.status)) {
+            throw new BadRequestException(`Order items cannot be modified in state: ${existing.status}`);
+        }
+
+        // Refund existing inventory (if outletId present)
+        const oldItems = Array.isArray(existing.items) ? (existing.items as any[]) : [];
+        if (existing.outletId && oldItems.length > 0) {
+            try {
+                await this.inventoryService.refundForOrder(
+                    existing.outletId,
+                    id,
+                    oldItems.map(i => ({ itemId: i.itemId, quantity: i.quantity }))
+                );
+            } catch (e) {
+                this.logger.warn(`Failed to refund inventory for modified order ${id}: ${e.message}`);
+            }
+        }
+
+        // Fetch prices for new items
+        const itemDocs = await this.prisma.menuItem.findMany({
+            where: { id: { in: newItems.map((i) => i.itemId) } },
+        });
+
+        if (itemDocs.length !== newItems.length) {
+            throw new BadRequestException('One or more menu items not found');
+        }
+
+        const orderItems = newItems.map((i) => {
+            const doc = itemDocs.find((d) => d.id === i.itemId);
+            return { itemId: doc!.id, name: doc!.name, unitPrice: doc!.price, quantity: i.quantity };
+        });
+
+        const subtotal = orderItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+        const tax = 0;
+        const total = parseFloat((subtotal + tax).toFixed(2));
+
+        // Deduct inventory for new items
+        if (existing.outletId && orderItems.length > 0) {
+            try {
+                await this.inventoryService.deductForOrder(
+                    existing.outletId,
+                    id,
+                    orderItems.map(i => ({ itemId: i.itemId, quantity: i.quantity }))
+                );
+            } catch (e) {
+                this.logger.warn(`Failed to deduct inventory for modified order ${id}: ${e.message}`);
+            }
+        }
+
+        // Update Order
+        const order = await this.prisma.order.update({
+            where: { id },
+            data: {
+                items: orderItems,
+                subtotal,
+                tax,
+                total,
+                ...(notes !== undefined ? { notes } : {})
+            },
+            include: { table: true, payment: true, customer: true }
+        });
+
+        // Update Payment if exists
+        if (order.payment) {
+            await this.prisma.payment.update({
+                where: { id: order.payment.id },
+                data: { amount: total }
+            });
+            order.payment.amount = total;
+        }
+
+        await this.auditService.logAction(order.restaurantId, userId, 'Modify Order Items', { 
+            orderId: order.id, 
+            oldTotal: existing.total, 
+            newTotal: total 
+        });
+
+        this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
+        return order;
+    }
+
     async confirmDelivery(id: string) {
         const order = await this.prisma.order.update({
             where: { id },

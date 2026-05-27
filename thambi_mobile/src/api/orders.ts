@@ -10,6 +10,7 @@ export type OrderStatus =
     | 'Cancelled';
 
 export interface OrderItem {
+    itemId: string;
     name: string;
     quantity: number;
     unit_price: number;
@@ -64,6 +65,9 @@ export const ordersApi = {
 
     updateStatus: (id: string, status: string) =>
         api.patch<Order>(`/orders/${id}/status`, { status }).then(r => r.data),
+
+    updateOrderItems: (id: string, items: { itemId: string, quantity: number }[], notes?: string) =>
+        api.patch<Order>(`/orders/${id}/items`, { items, notes }).then(r => r.data),
 
     markAsPaid: (id: string) =>
         api.patch<Order>(`/orders/${id}/pay`).then(r => r.data),

@@ -194,6 +194,56 @@ export class InventoryService {
     this.eventsGateway.emitToRestaurant(outletId, 'inventory:deducted', { orderId });
   }
 
+  // ── Recipe-Driven Refund (called by OrdersService when items are modified/cancelled) ───
+
+  async refundForOrder(
+    outletId: string,
+    orderId: string,
+    items: Array<{ itemId: string; quantity: number }>,
+  ): Promise<void> {
+    // Load all recipes for ordered menu items
+    const recipes = await this.prisma.recipe.findMany({
+      where: { menuItemId: { in: items.map((i) => i.itemId) } },
+      include: { ingredients: { include: { inventoryItem: true } } },
+    });
+
+    // Build refund map: inventoryItemId → total quantity to refund
+    const refunds = new Map<string, { needed: number; outletId: string }>();
+    for (const orderItem of items) {
+      const recipe = recipes.find((r) => r.menuItemId === orderItem.itemId);
+      if (!recipe) continue;
+      for (const ing of recipe.ingredients) {
+        const needed = ing.quantity * orderItem.quantity;
+        const existing = refunds.get(ing.inventoryItemId)?.needed ?? 0;
+        refunds.set(ing.inventoryItemId, { needed: existing + needed, outletId });
+      }
+    }
+
+    if (refunds.size === 0) return;
+
+    // Atomically refund all
+    await this.prisma.$transaction(
+      Array.from(refunds.entries()).flatMap(([invItemId, { needed }]) => [
+        this.prisma.inventoryItem.update({
+          where: { id: invItemId },
+          data: { currentStock: { increment: needed } },
+        }),
+        this.prisma.stockTransaction.create({
+          data: {
+            inventoryItemId: invItemId,
+            outletId,
+            type: 'StockIn',
+            quantity: needed,
+            referenceId: orderId,
+            notes: `Auto-refunded due to order modification ${orderId}`,
+          },
+        }),
+      ]),
+    );
+
+    this.eventsGateway.emitToRestaurant(outletId, 'inventory:refunded', { orderId });
+  }
+
   // ── Check availability for a set of menu items ──────────────────────────
 
   async checkAvailability(

@@ -11,6 +11,7 @@ import { useSocketEvent } from '../../context/SocketContext';
 import * as Speech from 'expo-speech';
 import { S, getStatusColor, FONT } from '../../theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { EditOrderModal } from './EditOrderModal';
 
 function getTableNum(order: Order): string {
     if (order.table?.table_number !== undefined) {
@@ -37,7 +38,7 @@ const NEXT_STATUS: Record<string, string> = {
 
 // ─── Order Card Component ───────────────────────────────────────────────────
 
-function KanbanCard({ item, canModify, onAdvance }: { item: Order, canModify: boolean, onAdvance: (o: Order) => void }) {
+function KanbanCard({ item, canModify, onAdvance, onEdit }: { item: Order, canModify: boolean, onAdvance: (o: Order) => void, onEdit: (o: Order) => void }) {
     const { colors } = useTheme();
     const indicatorColor = getStatusColor(item.status, colors);
     const tableNum = getTableNum(item);
@@ -105,27 +106,41 @@ function KanbanCard({ item, canModify, onAdvance }: { item: Order, canModify: bo
                     ))}
                 </View>
 
-                {/* Finish Button */}
+                {/* Action Buttons */}
                 {canModify && (
-                    <TouchableOpacity 
-                        style={[
-                            styles.finishBtn, 
-                            { backgroundColor: colors.surface2 },
-                            isTerminal && { borderColor: colors.border },
-                            !isTerminal && { borderColor: btnColor }
-                        ]} 
-                        disabled={isTerminal}
-                        onPress={() => onAdvance(item)}
-                        activeOpacity={0.8}
-                    >
-                        <Text style={[
-                            styles.finishBtnText, 
-                            isTerminal && { color: colors.textDim },
-                            !isTerminal && { color: btnColor }
-                        ]}>
-                            {isTerminal ? 'Finished' : (nextState ? `Mark ${nextState}` : 'Finish')}
-                        </Text>
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+                        {!isTerminal && ['Pending', 'Confirmed', 'Preparing'].includes(item.status) && (
+                            <TouchableOpacity 
+                                style={[
+                                    styles.finishBtn, 
+                                    { backgroundColor: colors.surface2, flex: 1, borderColor: colors.border }
+                                ]} 
+                                onPress={() => onEdit(item)}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={[styles.finishBtnText, { color: colors.text }]}>Edit Items</Text>
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity 
+                            style={[
+                                styles.finishBtn, 
+                                { backgroundColor: colors.surface2, flex: 1 },
+                                isTerminal && { borderColor: colors.border },
+                                !isTerminal && { borderColor: btnColor }
+                            ]} 
+                            disabled={isTerminal}
+                            onPress={() => onAdvance(item)}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={[
+                                styles.finishBtnText, 
+                                isTerminal && { color: colors.textDim },
+                                !isTerminal && { color: btnColor }
+                            ]}>
+                                {isTerminal ? 'Finished' : (nextState ? `Mark ${nextState}` : 'Finish')}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 )}
             </View>
         </View>
@@ -147,6 +162,9 @@ export function KanbanOrdersScreen() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [preferredVoice, setPreferredVoice] = useState<string | undefined>(undefined);
+    
+    const [editModalVisible, setEditModalVisible] = useState(false);
+    const [selectedOrderForEdit, setSelectedOrderForEdit] = useState<Order | null>(null);
 
     const isOwner = user?.role === 'Owner';
     const config = user?.dashboard_config || [];
@@ -262,13 +280,32 @@ export function KanbanOrdersScreen() {
         'order:updated': () => loadOrders(),
     });
 
-    const handleAdvance = async (order: Order) => {
-        let next = NEXT_STATUS[order.status];
+    const handleAdvanceOrder = async (order: Order) => {
+        const next = NEXT_STATUS[order.status];
         if (!next) return;
+
         try {
-            await ordersApi.updateStatus(order.id, next);
-            loadOrders();
-        } catch { Alert.alert('Error', 'Failed to update order'); }
+            const updated = await ordersApi.updateStatus(order.id, next);
+            setOrders(prev => prev.map(o => o.id === order.id ? updated : o));
+            
+            // Revert optimistic if needed, but since we await, we just set the real state.
+            // In a production app you'd do optimistic UI. 
+            // For now, this is perfectly fine.
+        } catch (err) {
+            console.error('Failed to update status', err);
+            Alert.alert('Error', 'Failed to update order status');
+        }
+    };
+
+    const handleEditOrder = (order: Order) => {
+        setSelectedOrderForEdit(order);
+        setEditModalVisible(true);
+    };
+
+    const handleOrderSaved = (updatedOrder: Order) => {
+        setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+        setEditModalVisible(false);
+        setSelectedOrderForEdit(null);
     };
 
     if (loading) {
@@ -341,7 +378,12 @@ export function KanbanOrdersScreen() {
                 <View style={styles.grid}>
                     {filteredOrders.map(order => (
                         <View key={order.id} style={styles.cardWrapper}>
-                            <KanbanCard item={order} canModify={canModifyOrders} onAdvance={handleAdvance} />
+                            <KanbanCard 
+                                item={order} 
+                                canModify={canModifyOrders} 
+                                onAdvance={handleAdvanceOrder}
+                                onEdit={handleEditOrder}
+                            />
                         </View>
                     ))}
                 </View>
@@ -351,6 +393,17 @@ export function KanbanOrdersScreen() {
                     </Text>
                 )}
             </ScrollView>
+
+            <EditOrderModal 
+                visible={editModalVisible}
+                order={selectedOrderForEdit}
+                restaurantId={restaurantId}
+                onClose={() => {
+                    setEditModalVisible(false);
+                    setSelectedOrderForEdit(null);
+                }}
+                onSaved={handleOrderSaved}
+            />
         </View>
     );
 }
