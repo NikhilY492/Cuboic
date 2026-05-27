@@ -77,6 +77,7 @@ function MainTabs() {
     const { colors } = useTheme();
     const isOwner = user?.role === 'Owner';
     const isManager = user?.role === 'Manager';
+    const isCaptain = user?.role === 'Captain';
     const isStaff = user?.role === 'Staff';
     const insets = useSafeAreaInsets();
 
@@ -101,7 +102,7 @@ function MainTabs() {
 
     useSocketEvent(user?.restaurantId, {
         callCaptain: (data: any) => {
-            if (isManager) {
+            if (isCaptain) {
                 // Trigger Vibration (Pattern: [Wait, Vibrate, Wait, Vibrate])
                 Vibration.vibrate([0, 500, 200, 500]);
                 

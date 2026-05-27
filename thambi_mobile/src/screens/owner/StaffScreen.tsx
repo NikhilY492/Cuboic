@@ -23,12 +23,12 @@ export function StaffScreen() {
     const [name, setName] = useState('');
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState<'Owner' | 'Manager' | 'Cashier' | 'Waiter' | 'Kitchen' | 'Staff'>('Staff');
+    const [role, setRole] = useState<'Owner' | 'Manager' | 'Captain' | 'Cashier' | 'Waiter' | 'Kitchen' | 'Staff'>('Staff');
     const [dashboardConfig, setDashboardConfig] = useState<string[]>(['Pending', 'Preparing', 'Completed', 'Robots']);
 
     const ALL_ROLES = user?.role === 'Owner' 
-        ? ['Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff']
-        : ['Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff'];
+        ? ['Owner', 'Manager', 'Captain', 'Cashier', 'Waiter', 'Kitchen', 'Staff']
+        : ['Manager', 'Captain', 'Cashier', 'Waiter', 'Kitchen', 'Staff'];
     const DASHBOARD_WIDGETS = ['Revenue', 'Orders', 'Pending', 'Preparing', 'Completed', 'Robots'];
     const PERMISSIONS = ['ManageTables', 'CancelOrders', 'ModifyOrders', 'ManageStaff', 'ViewPayments'];
 

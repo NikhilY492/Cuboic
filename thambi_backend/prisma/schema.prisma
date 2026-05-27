@@ -19,6 +19,7 @@ enum UserRole {
   Admin
   Owner
   Manager
+  Captain
   Cashier
   Waiter
   Kitchen

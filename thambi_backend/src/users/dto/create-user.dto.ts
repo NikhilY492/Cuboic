@@ -13,7 +13,7 @@ export class CreateUserDto {
     @IsNotEmpty()
     password: string;
 
-    @IsIn(['Admin', 'Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen', 'Staff'])
+    @IsIn(['Admin', 'Owner', 'Manager', 'Captain', 'Cashier', 'Waiter', 'Kitchen', 'Staff'])
     role: string;
 
     @IsOptional()

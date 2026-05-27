@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
-type Role = 'Admin' | 'Owner' | 'Manager' | 'Cashier' | 'Waiter' | 'Kitchen' | 'Staff'
+type Role = 'Admin' | 'Owner' | 'Manager' | 'Captain' | 'Cashier' | 'Waiter' | 'Kitchen' | 'Staff'
 
 interface AuthUser {
   userId: string
