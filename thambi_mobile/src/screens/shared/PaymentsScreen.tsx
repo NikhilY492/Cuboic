@@ -174,8 +174,11 @@ export function PaymentsScreen() {
                     {isOwner && feeSummary && !user?.name?.toLowerCase().includes('alnaas') && (
                         <View style={[styles.thambiSection, { backgroundColor: colors.surface, borderColor: colors.amber }]}>
                             <TouchableOpacity style={styles.thambiHeader} onPress={() => setShowFees(!showFees)} activeOpacity={0.7}>
-                                <Feather name="alert-circle" size={16} color={colors.amber} />
-                                <Text style={[styles.thambiTitle, { color: colors.amber }]}>Amount Payable to Thambi</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                    <Feather name="alert-circle" size={16} color={colors.amber} />
+                                    <Text style={[styles.thambiTitle, { color: colors.amber }]}>Amount Payable to Thambi</Text>
+                                </View>
+                                <Feather name={showFees ? "chevron-up" : "chevron-down"} size={20} color={colors.amber} />
                             </TouchableOpacity>
                             <Text style={[styles.thambiSubtitle, { color: colors.textMuted }]}>
                                 ₹5 is owed for each order above ₹100
@@ -195,8 +198,8 @@ export function PaymentsScreen() {
                             </View>
 
                             {showFees && (
-                                <View style={{ maxHeight: 300, marginTop: 12 }}>
-                                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true} style={{ flexGrow: 0 }}>
+                                <View style={{ maxHeight: 250, marginTop: 12, backgroundColor: colors.bg, borderRadius: 8, borderWidth: 1, borderColor: colors.border }}>
+                                    <ScrollView nestedScrollEnabled={true} style={{ flexGrow: 0 }} contentContainerStyle={{ padding: 12 }}>
                                         {unpaidFees.length > 0 && (
                                             <>
                                                 <Text style={[styles.feeListLabel, { color: colors.textDim }]}>PENDING FEES</Text>
@@ -318,7 +321,7 @@ const styles = StyleSheet.create({
         gap: 10,
         marginBottom: 4,
     },
-    thambiHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    thambiHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     thambiTitle: { fontSize: 15, fontWeight: '800' },
     thambiSubtitle: { fontSize: 12, marginTop: -4 },
     thambiKpiRow: { flexDirection: 'row', gap: 10 },
