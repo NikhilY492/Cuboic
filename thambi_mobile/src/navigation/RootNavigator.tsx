@@ -14,6 +14,7 @@ import { DashboardScreen } from '../screens/shared/DashboardScreen';
 import { OrdersScreen } from '../screens/shared/OrdersScreen';
 import { KanbanOrdersScreen } from '../screens/staff/KanbanOrdersScreen';
 import { KitchenScreen } from '../screens/staff/KitchenScreen';
+import { WaiterScreen } from '../screens/staff/WaiterScreen';
 import { MenuScreen } from '../screens/shared/MenuScreen';
 import { DeliveriesScreen } from '../screens/shared/DeliveriesScreen';
 import { RobotsScreen } from '../screens/shared/RobotsScreen';
@@ -209,6 +210,12 @@ export function RootNavigator() {
                         <Stack.Screen
                             name="Main"
                             component={KitchenScreen}
+                            options={{ headerShown: false }}
+                        />
+                    ) : (user.role === 'Waiter' || user.role === 'Staff') ? (
+                        <Stack.Screen
+                            name="Main"
+                            component={WaiterScreen}
                             options={{ headerShown: false }}
                         />
                     ) : (
