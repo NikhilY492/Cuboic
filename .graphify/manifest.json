@@ -967,9 +967,21 @@
     "mtime": 1779869854690.0288,
     "hash": "0e2f87fa7952be666031cabfcb125c1d"
   },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\scripts\\check_users.ts": {
+    "mtime": 1779871011589.007,
+    "hash": "33ef9af11c52ba9c9b7b10ed0d99d681"
+  },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\scripts\\clear_images.ts": {
     "mtime": 1779869689415.1648,
     "hash": "19466b1f00145f86b2c27c1894257577"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\scripts\\reset_owner.ts": {
+    "mtime": 1779871997812.6836,
+    "hash": "27f1331cdb7a0c919d352f9c9651a559"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\scripts\\trim_users.ts": {
+    "mtime": 1779871064948.213,
+    "hash": "9be2692a6277c4dc9936993829c51b67"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\scripts\\update_alnaas_menu.ts": {
     "mtime": 1779868877396.2124,
@@ -1704,8 +1716,8 @@
     "hash": "ef6b8c78de05ef09c2441cc1c80dba55"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_mobile\\src\\screens\\auth\\LoginScreen.tsx": {
-    "mtime": 1775554860111.0222,
-    "hash": "46341d4580325590eac67ba66b906286"
+    "mtime": 1779872345950.0276,
+    "hash": "66eb08d85c1b764d7b95e385dc7a472c"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_mobile\\src\\screens\\owner\\AnalyticsScreen.tsx": {
     "mtime": 1779470474232.3618,
@@ -2028,8 +2040,8 @@
     "hash": "791e1d5452e0b6f28d835c45f8a47a21"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\.graphify\\GRAPH_REPORT.md": {
-    "mtime": 1779870619253.32,
-    "hash": "188d5d5a68d291bf047f91ef7b609b1f"
+    "mtime": 1779872234574.0308,
+    "hash": "399f03dba8305c285ae3770d3f77c160"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\AGENTS.md": {
     "mtime": 1777571298655.6458,

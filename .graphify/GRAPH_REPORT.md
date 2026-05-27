@@ -1,10 +1,10 @@
 # Graph Report - .  (2026-05-27)
 
 ## Corpus Check
-- Large corpus: 576 files · ~11,80,954 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
+- Large corpus: 579 files · ~11,81,247 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
 
 ## Summary
-- 1359 nodes · 1196 edges · 202 communities detected
+- 1365 nodes · 1199 edges · 202 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -12,12 +12,12 @@
 ## Input Scope
 - Requested: auto
 - Resolved: committed (source: default-auto)
-- Included files: 576 · Candidates: 1639
-- Excluded: 3 untracked · 139093 ignored · 9 sensitive · 0 missing committed
+- Included files: 579 · Candidates: 1648
+- Excluded: 0 untracked · 139093 ignored · 9 sensitive · 0 missing committed
 - Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
 
 ## Graph Freshness
-- Built from Git commit: `100ab38`
+- Built from Git commit: `7561ffd`
 - Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
 1. `OrdersService` - 17 edges
@@ -792,55 +792,55 @@ Nodes (1): RobotsModule
 Cohesion: 1
 Nodes (1): RobotsModule
 
-### Community 255 - "Community 255"
+### Community 258 - "Community 258"
 Cohesion: 1
 Nodes (1): AppController
 
-### Community 256 - "Community 256"
-Cohesion: 1
-Nodes (1): AppModule
-
-### Community 257 - "Community 257"
-Cohesion: 1
-Nodes (1): AppModule
-
-### Community 258 - "Community 258"
-Cohesion: 1
-Nodes (1): AppService
-
 ### Community 259 - "Community 259"
 Cohesion: 1
-Nodes (1): JwtStrategy
+Nodes (1): AppModule
 
 ### Community 260 - "Community 260"
 Cohesion: 1
-Nodes (1): LocalStrategy
+Nodes (1): AppModule
 
 ### Community 261 - "Community 261"
 Cohesion: 1
-Nodes (1): TablesModule
+Nodes (1): AppService
 
 ### Community 262 - "Community 262"
 Cohesion: 1
-Nodes (1): TablesModule
+Nodes (1): JwtStrategy
 
 ### Community 263 - "Community 263"
 Cohesion: 1
-Nodes (1): TelemetryModule
+Nodes (1): LocalStrategy
 
 ### Community 264 - "Community 264"
 Cohesion: 1
+Nodes (1): TablesModule
+
+### Community 265 - "Community 265"
+Cohesion: 1
+Nodes (1): TablesModule
+
+### Community 266 - "Community 266"
+Cohesion: 1
 Nodes (1): TelemetryModule
 
-### Community 273 - "Community 273"
+### Community 267 - "Community 267"
+Cohesion: 1
+Nodes (1): TelemetryModule
+
+### Community 276 - "Community 276"
 Cohesion: 1
 Nodes (1): UsersModule
 
-### Community 287 - "Community 287"
+### Community 290 - "Community 290"
 Cohesion: 1
 Nodes (1): UploadModule
 
-### Community 288 - "Community 288"
+### Community 291 - "Community 291"
 Cohesion: 1
 Nodes (1): UsersModule
 
@@ -1203,31 +1203,31 @@ Nodes (1): UsersModule
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 252`** (1 nodes): `RobotsModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 255`** (1 nodes): `AppController`
+- **Thin community `Community 258`** (1 nodes): `AppController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 256`** (1 nodes): `AppModule`
+- **Thin community `Community 259`** (1 nodes): `AppModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 257`** (1 nodes): `AppModule`
+- **Thin community `Community 260`** (1 nodes): `AppModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 258`** (1 nodes): `AppService`
+- **Thin community `Community 261`** (1 nodes): `AppService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 259`** (1 nodes): `JwtStrategy`
+- **Thin community `Community 262`** (1 nodes): `JwtStrategy`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 260`** (1 nodes): `LocalStrategy`
+- **Thin community `Community 263`** (1 nodes): `LocalStrategy`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 261`** (1 nodes): `TablesModule`
+- **Thin community `Community 264`** (1 nodes): `TablesModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 262`** (1 nodes): `TablesModule`
+- **Thin community `Community 265`** (1 nodes): `TablesModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 263`** (1 nodes): `TelemetryModule`
+- **Thin community `Community 266`** (1 nodes): `TelemetryModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 264`** (1 nodes): `TelemetryModule`
+- **Thin community `Community 267`** (1 nodes): `TelemetryModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 273`** (1 nodes): `UsersModule`
+- **Thin community `Community 276`** (1 nodes): `UsersModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 287`** (1 nodes): `UploadModule`
+- **Thin community `Community 290`** (1 nodes): `UploadModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 288`** (1 nodes): `UsersModule`
+- **Thin community `Community 291`** (1 nodes): `UsersModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions

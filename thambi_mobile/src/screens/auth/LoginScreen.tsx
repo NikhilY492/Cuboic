@@ -100,7 +100,7 @@ export function LoginScreen() {
                             <View style={styles.logoArea}>
                                 <View style={[styles.logoRing, { borderColor: colors.accent + '50', backgroundColor: colors.surface2 }]}>
                                     <Image
-                                        source={require('../../../assets/pic1.png')}
+                                        source={require('../../../assets/images/thambi_logo.png')}
                                         style={styles.logoImage}
                                     />
                                 </View>
