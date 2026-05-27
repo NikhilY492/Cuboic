@@ -180,12 +180,12 @@ function MainTabs() {
             {isCashier && (
                 <Tab.Screen name="Payments" component={PaymentsScreen} />
             )}
-            <Tab.Screen name="Orders" component={isStaff ? KanbanOrdersScreen : OrdersScreen} />
+            <Tab.Screen name="Orders" component={(isStaff || isCaptain || isManager) ? KanbanOrdersScreen : OrdersScreen} />
+            {(isCaptain || isManager) && (
+                <Tab.Screen name="New Order" component={POSScreen} />
+            )}
             {isCaptain && (
-                <>
-                    <Tab.Screen name="New Order" component={POSScreen} />
-                    <Tab.Screen name="Menu" component={MenuScreen} />
-                </>
+                <Tab.Screen name="Menu" component={MenuScreen} />
             )}
             {isOwner && (
                 <Tab.Screen name="Analytics" component={AnalyticsScreen} />
