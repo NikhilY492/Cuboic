@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     View, Text, FlatList, TouchableOpacity, StyleSheet,
-    RefreshControl, ActivityIndicator, Alert, ScrollView, Pressable,
+    RefreshControl, ActivityIndicator, Alert, ScrollView, Pressable, Animated,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ordersApi, type Order } from '../../api/orders';
@@ -110,30 +110,55 @@ function TableCard({ summary, onPress }: { summary: TableSummary; onPress: () =>
         ? getStatusColor(summary.dominantStatus ?? 'Pending', colors)
         : colors.textDim;
 
+    const flashAnim = useRef(new Animated.Value(0)).current;
+    const prevStatus = useRef(summary.dominantStatus);
+
+    useEffect(() => {
+        if (prevStatus.current !== summary.dominantStatus && summary.dominantStatus) {
+            prevStatus.current = summary.dominantStatus;
+            flashAnim.setValue(1);
+            Animated.timing(flashAnim, {
+                toValue: 0,
+                duration: 800,
+                useNativeDriver: false,
+            }).start();
+        } else {
+            prevStatus.current = summary.dominantStatus;
+        }
+    }, [summary.dominantStatus, flashAnim]);
+
+    const animatedBg = flashAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [hasActive ? colors.surface2 : colors.surface, dotColor + '55']
+    });
+
     return (
         <TouchableOpacity
-            style={[
-                styles.tableCard, 
-                { backgroundColor: colors.surface, borderColor: colors.border },
-                hasActive && { borderColor: colors.accent + '55', backgroundColor: colors.surface2 },
-                !summary.isActive && { opacity: 0.6 }
-            ]}
+            style={{ flex: 1 }}
             onPress={onPress}
             activeOpacity={0.75}
         >
-            <View style={[styles.tableDot, { backgroundColor: dotColor }]} />
-            <Text style={[styles.tableNum, { color: colors.text }, summary.tableNum.toLowerCase() === 'takeaway' && { fontSize: 18 }]}>
-                {summary.tableNum.toLowerCase() === 'takeaway' ? 'Takeaway' : `T${summary.tableNum}`}
-            </Text>
-            {hasActive ? (
-                <Text style={[styles.tableOrderCount, { color: dotColor }]}>
-                    {summary.activeOrders.length} order{summary.activeOrders.length !== 1 ? 's' : ''}
+            <Animated.View
+                style={[
+                    styles.tableCard, 
+                    { backgroundColor: animatedBg, borderColor: hasActive ? dotColor : colors.border },
+                    !summary.isActive && { opacity: 0.6 }
+                ]}
+            >
+                <View style={[styles.tableDot, { backgroundColor: dotColor }]} />
+                <Text style={[styles.tableNum, { color: colors.text }, summary.tableNum.toLowerCase() === 'takeaway' && { fontSize: 18 }]}>
+                    {summary.tableNum.toLowerCase() === 'takeaway' ? 'Takeaway' : `T${summary.tableNum}`}
                 </Text>
-            ) : !summary.isActive ? (
-                <Text style={[styles.tableIdle, { color: colors.red }]}>Maintenance</Text>
-            ) : (
-                <Text style={[styles.tableIdle, { color: colors.textDim }]}>Idle</Text>
-            )}
+                {hasActive ? (
+                    <Text style={[styles.tableOrderCount, { color: dotColor }]}>
+                        {summary.activeOrders.length} order{summary.activeOrders.length !== 1 ? 's' : ''}
+                    </Text>
+                ) : !summary.isActive ? (
+                    <Text style={[styles.tableIdle, { color: colors.red }]}>Maintenance</Text>
+                ) : (
+                    <Text style={[styles.tableIdle, { color: colors.textDim }]}>Idle</Text>
+                )}
+            </Animated.View>
         </TouchableOpacity>
     );
 }

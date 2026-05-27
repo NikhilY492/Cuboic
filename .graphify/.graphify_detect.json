@@ -583,9 +583,9 @@
     ]
   },
   "total_files": 572,
-  "total_words": 1177890,
+  "total_words": 1177952,
   "needs_graph": true,
-  "warning": "Large corpus: 572 files · ~11,77,890 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.",
+  "warning": "Large corpus: 572 files · ~11,77,952 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.",
   "skipped_sensitive": [
     "Functional Requirements.docx [office conversion requires async - use pipeline]",
     "thambi_backend/create_credentials.ts",
@@ -605,8 +605,8 @@
     "source": "default-auto",
     "root": ".",
     "git_root": ".",
-    "head": "8ea93ebce632f380ccf7530291cf4115ab8492ef",
-    "candidate_count": 1606,
+    "head": "461ba3095daab40db977029c0a8b9da2cbf1fd29",
+    "candidate_count": 1611,
     "included_count": 572,
     "excluded_untracked_count": 0,
     "excluded_ignored_count": 139049,
