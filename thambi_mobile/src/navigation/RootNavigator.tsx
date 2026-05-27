@@ -39,6 +39,7 @@ type MainTabParamList = {
     Orders: undefined;
     'New Order': undefined;
     Menu: undefined;
+    Payments: undefined;
     Analytics: undefined;
     Manage: undefined;
     Profile: undefined;
@@ -84,6 +85,7 @@ function MainTabs() {
     const isManager = user?.role === 'Manager';
     const isCaptain = user?.role === 'Captain';
     const isStaff = user?.role === 'Staff';
+    const isCashier = user?.role === 'Cashier';
     const insets = useSafeAreaInsets();
 
     const [preferredVoice, setPreferredVoice] = React.useState<string | undefined>(undefined);
@@ -163,6 +165,7 @@ function MainTabs() {
                     else if (route.name === 'Orders') iconName = 'list';
                     else if (route.name === 'New Order') iconName = 'plus-circle';
                     else if (route.name === 'Menu') iconName = 'book-open';
+                    else if (route.name === 'Payments') iconName = 'dollar-sign';
                     else if (route.name === 'Analytics') iconName = 'bar-chart-2';
                     else if (route.name === 'Manage') iconName = 'settings';
                     else if (route.name === 'Profile') iconName = 'user';
@@ -171,8 +174,11 @@ function MainTabs() {
                 },
             })}
         >
-            {!isCaptain && (
+            {!isCaptain && !isCashier && (
                 <Tab.Screen name="Dashboard" component={DashboardScreen} />
+            )}
+            {isCashier && (
+                <Tab.Screen name="Payments" component={PaymentsScreen} />
             )}
             <Tab.Screen name="Orders" component={isStaff ? KanbanOrdersScreen : OrdersScreen} />
             {isCaptain && (
@@ -184,7 +190,7 @@ function MainTabs() {
             {isOwner && (
                 <Tab.Screen name="Analytics" component={AnalyticsScreen} />
             )}
-            {!isCaptain && (
+            {!isCaptain && !isCashier && (
                 <Tab.Screen name="Manage" component={ManageStack} />
             )}
             <Tab.Screen name="Profile" component={ProfileScreen} />
