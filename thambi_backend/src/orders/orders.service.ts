@@ -231,18 +231,25 @@ export class OrdersService {
         return defaultRoles.includes(user.role);
     }
 
-    async cancelOrder(id: string, userId: string) {
-        const hasAccess = await this.hasPermission(userId, 'CancelOrders', ['Captain', 'Manager', 'Owner']);
-        if (!hasAccess) {
-            throw new BadRequestException('You do not have permission to cancel orders');
-        }
-
+    async cancelOrder(id: string, userId?: string) {
         const existing = await this.prisma.order.findUnique({ where: { id } });
         if (!existing) throw new NotFoundException('Order not found');
 
-        const cancellableStates = ['Pending', 'Confirmed', 'Preparing'];
-        if (!cancellableStates.includes(existing.status)) {
-            throw new BadRequestException(`Order cannot be cancelled in state: ${existing.status}`);
+        if (userId) {
+            const hasAccess = await this.hasPermission(userId, 'CancelOrders', ['Captain', 'Manager', 'Owner']);
+            if (!hasAccess) {
+                throw new BadRequestException('You do not have permission to cancel orders');
+            }
+
+            const cancellableStates = ['Pending', 'Confirmed', 'Preparing'];
+            if (!cancellableStates.includes(existing.status)) {
+                throw new BadRequestException(`Order cannot be cancelled in state: ${existing.status}`);
+            }
+        } else {
+            // Customer cancellation
+            if (existing.status !== 'Pending') {
+                throw new BadRequestException('Customers can only cancel pending orders');
+            }
         }
 
         const order = await this.prisma.order.update({
@@ -251,7 +258,9 @@ export class OrdersService {
             include: { table: true, payment: true, customer: true }
         });
         
-        await this.auditService.logAction(order.restaurantId, userId, 'Cancel Order', { orderId: order.id, status: existing.status });
+        if (userId) {
+            await this.auditService.logAction(order.restaurantId, userId, 'Cancel Order', { orderId: order.id, status: existing.status });
+        }
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
     }

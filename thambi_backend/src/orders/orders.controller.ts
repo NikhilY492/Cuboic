@@ -3,6 +3,7 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
@@ -71,11 +72,10 @@ export class OrdersController {
         return this.ordersService.updateTable(id, tableId);
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('Staff', 'Owner')
+    @UseGuards(OptionalJwtAuthGuard)
     @Patch(':id/cancel')
     cancelOrder(@Param('id') id: string, @Req() req: any) {
-        return this.ordersService.cancelOrder(id, req.user.sub);
+        return this.ordersService.cancelOrder(id, req.user?.sub);
     }
 
     @Patch(':id/confirm')
