@@ -15,6 +15,7 @@ import { OrdersScreen } from '../screens/shared/OrdersScreen';
 import { KanbanOrdersScreen } from '../screens/staff/KanbanOrdersScreen';
 import { KitchenScreen } from '../screens/staff/KitchenScreen';
 import { WaiterScreen } from '../screens/staff/WaiterScreen';
+import { POSScreen } from '../screens/staff/POSScreen';
 import { MenuScreen } from '../screens/shared/MenuScreen';
 import { DeliveriesScreen } from '../screens/shared/DeliveriesScreen';
 import { RobotsScreen } from '../screens/shared/RobotsScreen';
@@ -36,6 +37,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 type MainTabParamList = {
     Dashboard: undefined;
     Orders: undefined;
+    'New Order': undefined;
+    Menu: undefined;
     Analytics: undefined;
     Manage: undefined;
     Profile: undefined;
@@ -158,6 +161,8 @@ function MainTabs() {
                     let iconName: any = 'circle';
                     if (route.name === 'Dashboard') iconName = 'pie-chart';
                     else if (route.name === 'Orders') iconName = 'list';
+                    else if (route.name === 'New Order') iconName = 'plus-circle';
+                    else if (route.name === 'Menu') iconName = 'book-open';
                     else if (route.name === 'Analytics') iconName = 'bar-chart-2';
                     else if (route.name === 'Manage') iconName = 'settings';
                     else if (route.name === 'Profile') iconName = 'user';
@@ -170,6 +175,12 @@ function MainTabs() {
                 <Tab.Screen name="Dashboard" component={DashboardScreen} />
             )}
             <Tab.Screen name="Orders" component={isStaff ? KanbanOrdersScreen : OrdersScreen} />
+            {isCaptain && (
+                <>
+                    <Tab.Screen name="New Order" component={POSScreen} />
+                    <Tab.Screen name="Menu" component={MenuScreen} />
+                </>
+            )}
             {isOwner && (
                 <Tab.Screen name="Analytics" component={AnalyticsScreen} />
             )}

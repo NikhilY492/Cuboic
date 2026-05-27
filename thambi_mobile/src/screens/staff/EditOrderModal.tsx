@@ -90,6 +90,28 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
         }
     };
 
+    const handleCancelOrder = () => {
+        if (!order) return;
+        Alert.alert('Cancel Order', 'Are you sure you want to completely cancel this order?', [
+            { text: 'No', style: 'cancel' },
+            { 
+                text: 'Yes, Cancel', 
+                style: 'destructive',
+                onPress: async () => {
+                    setSaving(true);
+                    try {
+                        const updated = await ordersApi.updateStatus(order.id, 'Cancelled');
+                        onSaved(updated);
+                    } catch (err: any) {
+                        Alert.alert('Error', err.response?.data?.message || 'Failed to cancel order');
+                    } finally {
+                        setSaving(false);
+                    }
+                }
+            }
+        ]);
+    };
+
     if (!order) return null;
 
     const totalAmount = cart.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
@@ -172,7 +194,7 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
                         <Text style={[styles.totalAmount, { color: colors.accent }]}>₹{totalAmount.toFixed(2)}</Text>
                     </View>
                     <TouchableOpacity 
-                        style={[styles.saveBtn, { backgroundColor: colors.accent }]}
+                        style={[styles.saveBtn, { backgroundColor: colors.accent, marginBottom: 12 }]}
                         onPress={handleSave}
                         disabled={saving}
                     >
@@ -181,6 +203,13 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
                         ) : (
                             <Text style={styles.saveBtnText}>Save Changes</Text>
                         )}
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        style={[styles.cancelOrderBtn, { borderColor: colors.red, borderWidth: 1 }]}
+                        onPress={handleCancelOrder}
+                        disabled={saving}
+                    >
+                        <Text style={[styles.cancelOrderBtnText, { color: colors.red }]}>Cancel Order</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -200,7 +229,7 @@ const styles = StyleSheet.create({
     },
     iconBtn: { padding: 8, marginLeft: -8 },
     title: { fontSize: 18, fontWeight: '700' },
-    scrollContent: { padding: 16, paddingBottom: 100 },
+    scrollContent: { padding: 16, paddingBottom: 160 },
     section: { marginBottom: 24 },
     sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
     input: {
@@ -250,5 +279,11 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: 'center'
     },
-    saveBtnText: { color: 'white', fontSize: 16, fontWeight: '700' }
+    saveBtnText: { color: 'white', fontSize: 16, fontWeight: '700' },
+    cancelOrderBtn: {
+        padding: 16,
+        borderRadius: 12,
+        alignItems: 'center'
+    },
+    cancelOrderBtnText: { fontSize: 16, fontWeight: '700' }
 });

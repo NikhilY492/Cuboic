@@ -52,6 +52,9 @@ export interface OrderSummary {
 }
 
 export const ordersApi = {
+    create: (data: any) =>
+        api.post<Order>('/orders', data).then(r => r.data),
+
     findAll: (restaurantId: string, status?: string) =>
         api.get<Order[]>('/orders', {
             params: { restaurantId, ...(status && status !== 'All' ? { status } : {}) },
