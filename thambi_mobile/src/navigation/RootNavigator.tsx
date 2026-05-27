@@ -101,7 +101,7 @@ function MainTabs() {
 
     useSocketEvent(user?.restaurantId, {
         callCaptain: (data: any) => {
-            if (isOwner || isManager) {
+            if (isManager) {
                 // Trigger Vibration (Pattern: [Wait, Vibrate, Wait, Vibrate])
                 Vibration.vibrate([0, 500, 200, 500]);
                 
