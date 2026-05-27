@@ -10,6 +10,9 @@ export class UsersService {
     constructor(private prisma: PrismaService) { }
 
     async create(dto: CreateUserDto) {
+        dto.userId = dto.userId.trim();
+        dto.name = dto.name.trim();
+        
         const existing = await this.prisma.user.findUnique({ where: { user_id: dto.userId } });
         if (existing) throw new ConflictException('User ID already taken');
 

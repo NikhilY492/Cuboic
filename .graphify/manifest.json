@@ -963,6 +963,22 @@
     "mtime": 1776104871526.055,
     "hash": "b43abe9b1f68bcdda351bda5786bb1f9"
   },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\scripts\\capitalize_menu.ts": {
+    "mtime": 1779869854690.0288,
+    "hash": "0e2f87fa7952be666031cabfcb125c1d"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\scripts\\clear_images.ts": {
+    "mtime": 1779869689415.1648,
+    "hash": "19466b1f00145f86b2c27c1894257577"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\scripts\\update_alnaas_menu.ts": {
+    "mtime": 1779868877396.2124,
+    "hash": "c564eb3fe3f5b90d1fa8187f21014c91"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\scripts\\update_menu_images.ts": {
+    "mtime": 1779869426557.0989,
+    "hash": "b9fb4670f218ab7000d6ca68292f7a33"
+  },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\admin\\admin.controller.ts": {
     "mtime": 1775560712224.0303,
     "hash": "7009961ccdfcb61afeb2230c68df373f"
@@ -1356,8 +1372,8 @@
     "hash": "dfdd5f5916c02f53d9d0643b230d46a6"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\users\\users.service.ts": {
-    "mtime": 1779832314272.0762,
-    "hash": "e246af5ab4bc4827e1afc8c44fb0ed32"
+    "mtime": 1779871054192.673,
+    "hash": "55513087ed30f5a4fb7744a26a0b1bf0"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\sync_outlets.ts": {
     "mtime": 1775136755725.3032,
@@ -1684,8 +1700,8 @@
     "hash": "cb710cd7c5c3548be65904f6d5838ec9"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_mobile\\src\\navigation\\RootNavigator.tsx": {
-    "mtime": 1779859729550.277,
-    "hash": "9450c76a51243b081da9a5813b3208a5"
+    "mtime": 1779871650765.3381,
+    "hash": "ef6b8c78de05ef09c2441cc1c80dba55"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_mobile\\src\\screens\\auth\\LoginScreen.tsx": {
     "mtime": 1775554860111.0222,
@@ -2012,8 +2028,8 @@
     "hash": "791e1d5452e0b6f28d835c45f8a47a21"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\.graphify\\GRAPH_REPORT.md": {
-    "mtime": 1779861006785.2795,
-    "hash": "c7844bf489ebf9e2cc5fcff440538261"
+    "mtime": 1779870619253.32,
+    "hash": "188d5d5a68d291bf047f91ef7b609b1f"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\AGENTS.md": {
     "mtime": 1777571298655.6458,

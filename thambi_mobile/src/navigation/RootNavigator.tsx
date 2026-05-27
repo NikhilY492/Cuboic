@@ -127,42 +127,26 @@ function MainTabs() {
                     backgroundColor: colors.surface,
                     borderTopColor: colors.border,
                     borderTopWidth: 1,
-                    paddingBottom: Math.max(insets.bottom, 14),
+                    paddingBottom: Math.max(insets.bottom, 8),
                     paddingTop: 8,
                     paddingLeft: insets.left,
                     paddingRight: insets.right,
-                    minHeight: 72 + insets.bottom,
+                    height: 60 + Math.max(insets.bottom, 8),
                 },
                 tabBarActiveTintColor: colors.accent,
                 tabBarInactiveTintColor: colors.textDim,
-                tabBarLabelStyle: {
-                    fontSize: 11,
-                    fontWeight: '500',
-                    textAlign: 'center',
-                    flexShrink: 1,
-                },
                 tabBarItemStyle: {
-                    flex: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingHorizontal: 0,
                     paddingBottom: 4,
-                    overflow: 'hidden',
-                    minWidth: 0,
                 },
                 tabBarLabel: ({ color }) => (
                     <Text 
                         numberOfLines={1} 
-                        adjustsFontSizeToFit 
-                        minimumFontScale={0.7}
                         style={{
                             color,
                             fontSize: 10,
                             fontWeight: '600',
                             textAlign: 'center',
-                            marginTop: 2,
-                            width: '100%',
-                            paddingHorizontal: 2,
+                            marginTop: 4,
                         }}
                     >
                         {route.name}
