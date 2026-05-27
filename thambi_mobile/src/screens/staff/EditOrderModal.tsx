@@ -18,22 +18,9 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
     const { colors, isDark } = useTheme();
     const insets = useSafeAreaInsets();
     
-    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-    const [loadingMenu, setLoadingMenu] = useState(false);
-    
     const [cart, setCart] = useState<{ itemId: string; name: string; quantity: number; unitPrice: number }[]>([]);
     const [notes, setNotes] = useState('');
     const [saving, setSaving] = useState(false);
-
-    useEffect(() => {
-        if (visible && restaurantId) {
-            setLoadingMenu(true);
-            menuApi.getAll(restaurantId)
-                .then(items => setMenuItems(items.filter(i => i.is_available)))
-                .catch(err => console.error('Failed to load menu:', err))
-                .finally(() => setLoadingMenu(false));
-        }
-    }, [visible, restaurantId]);
 
     useEffect(() => {
         if (visible && order) {
@@ -50,7 +37,7 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
         }
     }, [visible, order]);
 
-    const handleUpdateQuantity = (item: MenuItem, change: number) => {
+    const handleUpdateQuantity = (item: { id: string; name: string; price: number }, change: number) => {
         setCart(prev => {
             const existing = prev.find(p => p.itemId === item.id);
             if (existing) {
@@ -148,42 +135,44 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
 
                     {/* Menu Items */}
                     <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Modify Items</Text>
-                        {loadingMenu ? (
-                            <ActivityIndicator size="small" color={colors.accent} style={{ marginTop: 20 }} />
-                        ) : (
-                            <View style={styles.menuList}>
-                                {menuItems.map(item => {
-                                    const qty = getQuantity(item.id);
-                                    const isSelected = qty > 0;
-                                    
-                                    return (
-                                        <View key={item.id} style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: isSelected ? colors.accent : colors.border }]}>
-                                            <View style={styles.itemInfo}>
-                                                <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
-                                                <Text style={[styles.itemPrice, { color: colors.textMuted }]}>₹{item.price}</Text>
-                                            </View>
-                                            <View style={styles.counterRow}>
-                                                <TouchableOpacity 
-                                                    style={[styles.counterBtn, { backgroundColor: colors.surface2 }]} 
-                                                    onPress={() => handleUpdateQuantity(item, -1)}
-                                                    disabled={qty === 0}
-                                                >
-                                                    <Feather name="minus" size={16} color={qty === 0 ? colors.border : colors.text} />
-                                                </TouchableOpacity>
-                                                <Text style={[styles.qtyText, { color: colors.text }]}>{qty}</Text>
-                                                <TouchableOpacity 
-                                                    style={[styles.counterBtn, { backgroundColor: colors.surface2 }]} 
-                                                    onPress={() => handleUpdateQuantity(item, 1)}
-                                                >
-                                                    <Feather name="plus" size={16} color={colors.text} />
-                                                </TouchableOpacity>
-                                            </View>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Modify Ordered Items</Text>
+                        <View style={styles.menuList}>
+                            {order.items.map(orderItem => {
+                                const qty = getQuantity(orderItem.itemId);
+                                const isSelected = qty > 0;
+                                
+                                const simulatedItem = {
+                                    id: orderItem.itemId,
+                                    name: orderItem.name,
+                                    price: orderItem.unit_price
+                                };
+
+                                return (
+                                    <View key={orderItem.itemId} style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: isSelected ? colors.accent : colors.border }]}>
+                                        <View style={styles.itemInfo}>
+                                            <Text style={[styles.itemName, { color: colors.text }]}>{orderItem.name}</Text>
+                                            <Text style={[styles.itemPrice, { color: colors.textMuted }]}>₹{orderItem.unit_price}</Text>
                                         </View>
-                                    );
-                                })}
-                            </View>
-                        )}
+                                        <View style={styles.counterRow}>
+                                            <TouchableOpacity 
+                                                style={[styles.counterBtn, { backgroundColor: colors.surface2 }]} 
+                                                onPress={() => handleUpdateQuantity(simulatedItem, -1)}
+                                                disabled={qty === 0}
+                                            >
+                                                <Feather name="minus" size={16} color={qty === 0 ? colors.border : colors.text} />
+                                            </TouchableOpacity>
+                                            <Text style={[styles.qtyText, { color: colors.text }]}>{qty}</Text>
+                                            <TouchableOpacity 
+                                                style={[styles.counterBtn, { backgroundColor: colors.surface2 }]} 
+                                                onPress={() => handleUpdateQuantity(simulatedItem, 1)}
+                                            >
+                                                <Feather name="plus" size={16} color={colors.text} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                );
+                            })}
+                        </View>
                     </View>
                 </ScrollView>
 
