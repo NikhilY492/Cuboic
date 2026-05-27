@@ -29,8 +29,7 @@ function getTableNum(order: Order): string {
 }
 
 const NEXT_STATUS: Record<string, string> = {
-    Confirmed: 'Preparing',
-    Preparing: 'Ready'
+    Confirmed: 'Ready'
 };
 
 function KitchenCard({ 
@@ -51,8 +50,7 @@ function KitchenCard({
 
     const nextState = NEXT_STATUS[item.status];
     let btnColor = nextState ? getStatusColor(nextState, colors) : colors.border;
-    let btnText = nextState ? `Mark ${nextState}` : 'Ready';
-    if (nextState === 'Preparing') btnText = 'Start Cooking';
+    let btnText = nextState ? `Mark ${nextState}` : 'Finished';
     if (nextState === 'Ready') btnText = 'Mark Ready';
 
     return (
@@ -112,7 +110,7 @@ function KitchenCard({
     );
 }
 
-const KITCHEN_COLUMNS = ['Confirmed', 'Preparing', 'Ready'];
+const KITCHEN_COLUMNS = ['Confirmed', 'Ready'];
 
 export function KitchenScreen() {
     const { user, logout } = useAuth();
@@ -159,9 +157,9 @@ export function KitchenScreen() {
     };
 
     const { width } = Dimensions.get('window');
-    // Calculate column width to show ~1.5 columns on mobile for scroll hinting, or use exact width for tablets
     const isTablet = width > 768;
-    const colWidth = isTablet ? 340 : width * 0.85;
+    // On tablet, divide available width (minus padding/gaps) among the columns to use full screen
+    const colWidth = isTablet ? (width - 40) / KITCHEN_COLUMNS.length : width * 0.85;
 
     return (
         <View style={[styles.container, { backgroundColor: colors.bg, paddingTop: insets.top }]}>
@@ -197,7 +195,7 @@ export function KitchenScreen() {
                                 <View style={styles.colTitleWrap}>
                                     <View style={[styles.colDot, { backgroundColor: color }]} />
                                     <Text style={[styles.colTitle, { color }]}>
-                                        {status === 'Confirmed' ? 'New Orders' : status === 'Preparing' ? 'Cooking' : 'Ready'}
+                                        {status === 'Confirmed' ? 'New Orders' : 'Ready'}
                                     </Text>
                                 </View>
                                 <View style={[styles.badge, { backgroundColor: isDark ? colors.surface2 : colors.bg }]}>
