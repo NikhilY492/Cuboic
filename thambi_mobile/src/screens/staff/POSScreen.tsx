@@ -17,6 +17,29 @@ interface CartItem {
     quantity: number;
 }
 
+const POSItem = React.memo(({ item, onAdd, colors }: { item: MenuItem, onAdd: (item: MenuItem) => void, colors: any }) => (
+    <TouchableOpacity 
+        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        onPress={() => onAdd(item)}
+        activeOpacity={0.7}
+    >
+        {item.image_url ? (
+            <Image source={{ uri: item.image_url }} style={styles.thumb} resizeMode="cover" />
+        ) : (
+            <View style={[styles.thumbPlaceholder, { backgroundColor: colors.surface2 }]}>
+                <Feather name="image" size={24} color={colors.textDim} />
+            </View>
+        )}
+        <View style={styles.cardInfo}>
+            <Text style={[styles.itemName, { color: colors.text }]} numberOfLines={2}>{item.name}</Text>
+            <Text style={[styles.price, { color: colors.accent }]}>₹{item.price}</Text>
+        </View>
+        <View style={[styles.addBtn, { backgroundColor: colors.accent }]}>
+            <Feather name="plus" size={16} color="#000" />
+        </View>
+    </TouchableOpacity>
+));
+
 export function POSScreen() {
     const { user } = useAuth();
     const { colors, isDark } = useTheme();
@@ -170,28 +193,11 @@ export function POSScreen() {
                         numColumns={2}
                         contentContainerStyle={styles.list}
                         columnWrapperStyle={{ gap: 12 }}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity 
-                                style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                                onPress={() => handleAddToCart(item)}
-                                activeOpacity={0.7}
-                            >
-                                {item.image_url ? (
-                                    <Image source={{ uri: item.image_url }} style={styles.thumb} resizeMode="cover" />
-                                ) : (
-                                    <View style={[styles.thumbPlaceholder, { backgroundColor: colors.surface2 }]}>
-                                        <Feather name="image" size={24} color={colors.textDim} />
-                                    </View>
-                                )}
-                                <View style={styles.cardInfo}>
-                                    <Text style={[styles.itemName, { color: colors.text }]} numberOfLines={2}>{item.name}</Text>
-                                    <Text style={[styles.price, { color: colors.accent }]}>₹{item.price}</Text>
-                                </View>
-                                <View style={[styles.addBtn, { backgroundColor: colors.accent }]}>
-                                    <Feather name="plus" size={16} color="#000" />
-                                </View>
-                            </TouchableOpacity>
-                        )}
+                        initialNumToRender={10}
+                        maxToRenderPerBatch={10}
+                        windowSize={5}
+                        removeClippedSubviews={Platform.OS === 'android'}
+                        renderItem={({ item }) => <POSItem item={item} onAdd={handleAddToCart} colors={colors} />}
                     />
                 </View>
 

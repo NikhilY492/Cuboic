@@ -24,6 +24,57 @@ const EMPTY_FORM = {
 };
 
 type FormState = typeof EMPTY_FORM;
+const MAX_IMG_SIZE = 5 * 1024 * 1024; // 5MB
+
+const MenuItemComponent = React.memo(({ item, colors, getCategoryName, toggleAvailability, openEditModal, styles }: any) => (
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }, !item.is_available && styles.cardUnavailable]}>
+        <View style={styles.cardMain}>
+            {item.image_url ? (
+                <Image
+                    source={{ uri: item.image_url }}
+                    style={styles.thumb}
+                    resizeMode="cover"
+                />
+            ) : (
+                <View style={[styles.thumbPlaceholder, { backgroundColor: colors.surface2 }]}>
+                    <Feather name="image" size={24} color={colors.textDim} />
+                </View>
+            )}
+            <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+                {item.description && (
+                    <Text style={[styles.itemDesc, { color: colors.textMuted }]} numberOfLines={2}>{item.description}</Text>
+                )}
+                <Text style={[styles.itemCat, { color: colors.textDim }]}>{getCategoryName(item.categoryId)}</Text>
+            </View>
+            <View style={styles.cardRight}>
+                <Text style={[styles.price, { color: colors.accent }]}>₹{item.price.toFixed(0)}</Text>
+            </View>
+        </View>
+
+        <View style={[styles.cardFooter, { borderTopColor: colors.border }]}>
+            <View style={styles.availRow}>
+                <View style={[styles.dot, { backgroundColor: item.is_available ? colors.green : colors.red }]} />
+                <Text style={[styles.availLabel, { color: colors.textMuted }]}>
+                    {item.is_available ? 'Available' : 'Unavailable'}
+                </Text>
+                <Switch
+                    value={item.is_available}
+                    onValueChange={() => toggleAvailability(item)}
+                    trackColor={{ false: colors.border, true: colors.green + '55' }}
+                    thumbColor={item.is_available ? colors.green : colors.textDim}
+                />
+            </View>
+            <TouchableOpacity
+                style={[styles.editBtn, { backgroundColor: colors.surface2, borderColor: colors.border }]}
+                onPress={() => openEditModal(item)}
+                activeOpacity={0.8}
+            >
+                <Text style={[styles.editBtnText, { color: colors.text }]}>Edit</Text>
+            </TouchableOpacity>
+        </View>
+    </View>
+));
 
 export function MenuScreen() {
     const { user } = useAuth();
@@ -246,54 +297,19 @@ export function MenuScreen() {
                 data={visibleItems}
                 keyExtractor={item => item.id}
                 contentContainerStyle={styles.list}
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
+                windowSize={5}
+                removeClippedSubviews={Platform.OS === 'android'}
                 renderItem={({ item }) => (
-                    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }, !item.is_available && styles.cardUnavailable]}>
-                        <View style={styles.cardMain}>
-                            {item.image_url ? (
-                                <Image
-                                    source={{ uri: item.image_url }}
-                                    style={styles.thumb}
-                                    resizeMode="cover"
-                                />
-                            ) : (
-                                <View style={[styles.thumbPlaceholder, { backgroundColor: colors.surface2 }]}>
-                                    <Feather name="image" size={24} color={colors.textDim} />
-                                </View>
-                            )}
-                            <View style={{ flex: 1, marginLeft: 12 }}>
-                                <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
-                                {item.description && (
-                                    <Text style={[styles.itemDesc, { color: colors.textMuted }]} numberOfLines={2}>{item.description}</Text>
-                                )}
-                                <Text style={[styles.itemCat, { color: colors.textDim }]}>{getCategoryName(item.categoryId)}</Text>
-                            </View>
-                            <View style={styles.cardRight}>
-                                <Text style={[styles.price, { color: colors.accent }]}>₹{item.price.toFixed(0)}</Text>
-                            </View>
-                        </View>
-
-                        <View style={[styles.cardFooter, { borderTopColor: colors.border }]}>
-                            <View style={styles.availRow}>
-                                <View style={[styles.dot, { backgroundColor: item.is_available ? colors.green : colors.red }]} />
-                                <Text style={[styles.availLabel, { color: colors.textMuted }]}>
-                                    {item.is_available ? 'Available' : 'Unavailable'}
-                                </Text>
-                                <Switch
-                                    value={item.is_available}
-                                    onValueChange={() => toggleAvailability(item)}
-                                    trackColor={{ false: colors.border, true: colors.green + '55' }}
-                                    thumbColor={item.is_available ? colors.green : colors.textDim}
-                                />
-                            </View>
-                            <TouchableOpacity
-                                style={[styles.editBtn, { backgroundColor: colors.surface2, borderColor: colors.border }]}
-                                onPress={() => openEditModal(item)}
-                                activeOpacity={0.8}
-                            >
-                                <Text style={[styles.editBtnText, { color: colors.text }]}>Edit</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
+                    <MenuItemComponent 
+                        item={item} 
+                        colors={colors} 
+                        getCategoryName={getCategoryName} 
+                        toggleAvailability={toggleAvailability} 
+                        openEditModal={openEditModal} 
+                        styles={styles}
+                    />
                 )}
                 ListEmptyComponent={<Text style={[styles.empty, { color: colors.textMuted }]}>No items found.</Text>}
             />
