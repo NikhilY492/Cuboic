@@ -42,16 +42,20 @@ function KanbanCard({
     item, 
     canModify, 
     canCancel,
+    mergeableCount,
     onAdvance, 
     onEdit,
-    onCancel
+    onCancel,
+    onMerge
 }: { 
     item: Order; 
     canModify: boolean; 
     canCancel: boolean;
+    mergeableCount?: number;
     onAdvance: (o: Order) => void;
     onEdit: (o: Order) => void;
     onCancel: (o: Order) => void;
+    onMerge?: (o: Order) => void;
 }) {
     const { colors } = useTheme();
     const indicatorColor = getStatusColor(item.status, colors);
@@ -134,6 +138,19 @@ function KanbanCard({
                             <Text style={[styles.finishBtnText, { color: colors.text }]}>Edit Items</Text>
                         </TouchableOpacity>
                     )}
+                    {canModify && !isTerminal && mergeableCount && mergeableCount > 0 ? (
+                        <TouchableOpacity 
+                            style={[
+                                styles.finishBtn, 
+                                { backgroundColor: colors.accent + '20', flex: 0, paddingHorizontal: 12, borderColor: colors.accent + '55', borderWidth: 1 }
+                            ]} 
+                            onPress={() => onMerge && onMerge(item)}
+                            activeOpacity={0.8}
+                        >
+                            <Feather name="layers" size={16} color={colors.accent} />
+                            <Text style={[styles.finishBtnText, { color: colors.accent, marginLeft: 6 }]}>+{mergeableCount}</Text>
+                        </TouchableOpacity>
+                    ) : null}
                     {canModify && (
                         <TouchableOpacity 
                             style={[
@@ -215,9 +232,11 @@ export function KanbanOrdersScreen() {
         if (!restaurantId) return;
         try {
             const data = await ordersApi.findAll(restaurantId);
+            // Filter out Delivered and Cancelled orders
+            const activeData = data.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
             // Sort by most recent first
-            data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-            setOrders(data);
+            activeData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            setOrders(activeData);
         } catch { /* Ignore */ }
     }, [restaurantId]);
 
@@ -337,16 +356,43 @@ export function KanbanOrdersScreen() {
         ]);
     };
 
-    const handleEditOrder = (order: Order) => {
+    const handleEditOrder = useCallback((order: Order) => {
         setSelectedOrderForEdit(order);
         setEditModalVisible(true);
-    };
+    }, []);
 
-    const handleOrderSaved = (updatedOrder: Order) => {
+    const handleMergeOrder = useCallback((order: Order) => {
+        // Find other active orders for the same table
+        const otherOrders = orders.filter(o => o.tableId === order.tableId && o.id !== order.id && ['Pending', 'Confirmed', 'Preparing'].includes(o.status));
+        if (otherOrders.length === 0) return;
+
+        Alert.alert(
+            'Merge Table Orders',
+            `Are you sure you want to merge ${otherOrders.length} other open order(s) for this table into Order #${order.id.slice(-5).toUpperCase()}?`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Yes, Merge',
+                    onPress: async () => {
+                        try {
+                            const sourceIds = otherOrders.map(o => o.id);
+                            await ordersApi.mergeOrders(order.id, sourceIds);
+                            loadOrders();
+                        } catch (err: any) {
+                            console.error('Merge error:', err);
+                            Alert.alert('Error', err.response?.data?.message || 'Failed to merge orders');
+                        }
+                    }
+                }
+            ]
+        );
+    }, [orders, loadOrders]);
+
+    const handleOrderSaved = useCallback((updatedOrder: Order) => {
         setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
         setEditModalVisible(false);
         setSelectedOrderForEdit(null);
-    };
+    }, []);
 
     if (loading) {
         return (
@@ -422,9 +468,11 @@ export function KanbanOrdersScreen() {
                                 item={order} 
                                 canModify={canModifyOrders}
                                 canCancel={canCancelOrders}
+                                mergeableCount={orders.filter(o => o.tableId === order.tableId && o.id !== order.id && ['Pending', 'Confirmed', 'Preparing'].includes(o.status)).length}
                                 onAdvance={handleAdvanceOrder}
                                 onEdit={handleEditOrder}
                                 onCancel={handleCancelOrder}
+                                onMerge={handleMergeOrder}
                             />
                         </View>
                     ))}

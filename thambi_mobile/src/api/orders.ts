@@ -72,6 +72,11 @@ export const ordersApi = {
     updateOrderItems: (id: string, items: { itemId: string, quantity: number }[], notes?: string) =>
         api.patch<Order>(`/orders/${id}/items`, { items, notes }).then(r => r.data),
 
+    mergeOrders: async (targetOrderId: string, sourceOrderIds: string[]): Promise<Order> => {
+        const res = await api.post(`/orders/merge`, { targetOrderId, sourceOrderIds });
+        return res.data;
+    },
+
     markAsPaid: (id: string) =>
         api.patch<Order>(`/orders/${id}/pay`).then(r => r.data),
 

@@ -356,6 +356,78 @@ export class OrdersService {
         return order;
     }
 
+    async mergeOrders(targetOrderId: string, sourceOrderIds: string[], userId?: string) {
+        const targetOrder = await this.prisma.order.findUnique({ where: { id: targetOrderId } });
+        if (!targetOrder) throw new NotFoundException('Target order not found');
+
+        const sourceOrders = await this.prisma.order.findMany({
+            where: { id: { in: sourceOrderIds }, restaurantId: targetOrder.restaurantId }
+        });
+
+        if (sourceOrders.length === 0) {
+            throw new BadRequestException('No valid source orders found');
+        }
+
+        const allTargetItems = Array.isArray(targetOrder.items) ? (targetOrder.items as any[]) : [];
+        const mergedItemsMap = new Map<string, any>();
+
+        for (const item of allTargetItems) {
+            mergedItemsMap.set(item.itemId, { ...item });
+        }
+
+        for (const sOrder of sourceOrders) {
+            const sItems = Array.isArray(sOrder.items) ? (sOrder.items as any[]) : [];
+            for (const item of sItems) {
+                if (mergedItemsMap.has(item.itemId)) {
+                    mergedItemsMap.get(item.itemId).quantity += item.quantity;
+                } else {
+                    mergedItemsMap.set(item.itemId, { ...item });
+                }
+            }
+        }
+
+        const mergedItems = Array.from(mergedItemsMap.values());
+        const subtotal = mergedItems.reduce((sum, i) => sum + (i.unitPrice || 0) * (i.quantity || 1), 0);
+        const tax = 0;
+        const total = parseFloat((subtotal + tax).toFixed(2));
+
+        const updatedTarget = await this.prisma.order.update({
+            where: { id: targetOrderId },
+            data: {
+                items: mergedItems,
+                subtotal,
+                tax,
+                total,
+            },
+            include: { table: true, payment: true, customer: true }
+        });
+
+        if (updatedTarget.payment) {
+            await this.prisma.payment.update({
+                where: { id: updatedTarget.payment.id },
+                data: { amount: total }
+            });
+            updatedTarget.payment.amount = total;
+        }
+
+        for (const sOrder of sourceOrders) {
+            await this.prisma.order.update({
+                where: { id: sOrder.id },
+                data: { status: 'Cancelled', notes: `Merged into order ${targetOrderId}` }
+            });
+        }
+
+        if (userId) {
+            await this.auditService.logAction(targetOrder.restaurantId, userId, 'Merge Orders', {
+                targetOrderId,
+                sourceOrderIds
+            });
+        }
+
+        this.eventsGateway.emitToRestaurant(targetOrder.restaurantId, 'order:updated', updatedTarget);
+        return updatedTarget;
+    }
+
     async confirmDelivery(id: string) {
         const order = await this.prisma.order.update({
             where: { id },

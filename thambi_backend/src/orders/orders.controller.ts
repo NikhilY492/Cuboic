@@ -61,6 +61,13 @@ export class OrdersController {
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('Staff', 'Owner', 'Manager', 'Captain')
+    @Post('merge')
+    mergeOrders(@Body() body: { targetOrderId: string; sourceOrderIds: string[] }, @Req() req: any) {
+        return this.ordersService.mergeOrders(body.targetOrderId, body.sourceOrderIds, req.user?.sub);
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('Staff', 'Owner')
     @Patch(':id/status')
     updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
