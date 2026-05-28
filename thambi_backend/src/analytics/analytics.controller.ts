@@ -18,7 +18,12 @@ export class AnalyticsController {
     @Query('endDate') endDate?: string,
     @Query('timeframe') timeframe?: 'daily' | 'weekly' | 'monthly',
   ) {
-    return this.analyticsService.getRevenueTrends(restaurantId, startDate, endDate, timeframe);
+    return this.analyticsService.getRevenueTrends(
+      restaurantId,
+      startDate,
+      endDate,
+      timeframe,
+    );
   }
 
   @Get(':restaurantId/menu')
@@ -28,7 +33,11 @@ export class AnalyticsController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    return this.analyticsService.getMenuAnalytics(restaurantId, startDate, endDate);
+    return this.analyticsService.getMenuAnalytics(
+      restaurantId,
+      startDate,
+      endDate,
+    );
   }
 
   @Get(':restaurantId/customers')
@@ -38,6 +47,10 @@ export class AnalyticsController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    return this.analyticsService.getCustomerInsights(restaurantId, startDate, endDate);
+    return this.analyticsService.getCustomerInsights(
+      restaurantId,
+      startDate,
+      endDate,
+    );
   }
 }

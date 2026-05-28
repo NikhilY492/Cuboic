@@ -43,6 +43,7 @@ export interface Order {
         method: string;
     };
     createdAt: string;
+    version: number;
 }
 
 export interface OrderSummary {
@@ -66,14 +67,14 @@ export const ordersApi = {
     getSummary: (restaurantId: string) =>
         api.get<OrderSummary>('/orders/summary', { params: { restaurantId } }).then(r => r.data),
 
-    updateStatus: (id: string, status: string) =>
-        api.patch<Order>(`/orders/${id}/status`, { status }).then(r => r.data),
+    updateStatus: (id: string, status: string, version?: number) =>
+        api.patch<Order>(`/orders/${id}/status`, { status, version }).then(r => r.data),
 
-    updateOrderItems: (id: string, items: { itemId: string, quantity: number }[], notes?: string) =>
-        api.patch<Order>(`/orders/${id}/items`, { items, notes }).then(r => r.data),
+    updateOrderItems: (id: string, items: { itemId: string, quantity: number }[], notes?: string, version?: number) =>
+        api.patch<Order>(`/orders/${id}/items`, { items, notes, version }).then(r => r.data),
 
-    mergeOrders: async (targetOrderId: string, sourceOrderIds: string[]): Promise<Order> => {
-        const res = await api.post(`/orders/merge`, { targetOrderId, sourceOrderIds });
+    mergeOrders: async (targetOrderId: string, sourceOrderIds: string[], version?: number): Promise<Order> => {
+        const res = await api.post(`/orders/merge`, { targetOrderId, sourceOrderIds, version });
         return res.data;
     },
 

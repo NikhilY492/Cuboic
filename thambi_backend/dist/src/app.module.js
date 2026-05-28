@@ -35,6 +35,7 @@ const outlets_module_1 = require("./outlets/outlets.module");
 const inventory_module_1 = require("./inventory/inventory.module");
 const recipes_module_1 = require("./recipes/recipes.module");
 const admin_module_1 = require("./admin/admin.module");
+const audit_module_1 = require("./audit/audit.module");
 const upload_module_1 = require("./upload/upload.module");
 const serve_static_1 = require("@nestjs/serve-static");
 const path_1 = require("path");
@@ -73,6 +74,7 @@ exports.AppModule = AppModule = __decorate([
             inventory_module_1.InventoryModule,
             recipes_module_1.RecipesModule,
             admin_module_1.AdminModule,
+            audit_module_1.AuditModule,
             upload_module_1.UploadModule,
             serve_static_1.ServeStaticModule.forRoot({
                 rootPath: (0, path_1.join)(process.cwd(), 'uploads'),

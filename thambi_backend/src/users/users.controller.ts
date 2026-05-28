@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -10,25 +20,25 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @Roles('Owner', 'Admin', 'Staff')
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
-    @Post()
-    create(@Body() dto: CreateUserDto) {
-        return this.usersService.create(dto);
-    }
+  @Post()
+  create(@Body() dto: CreateUserDto) {
+    return this.usersService.create(dto);
+  }
 
-    @Get()
-    findAll(@Query('restaurantId') restaurantId: string) {
-        return this.usersService.findAll(restaurantId);
-    }
+  @Get()
+  findAll(@Query('restaurantId') restaurantId: string) {
+    return this.usersService.findAll(restaurantId);
+  }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-        return this.usersService.update(id, dto);
-    }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(id, dto);
+  }
 
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.usersService.remove(id);
-    }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
+  }
 }

@@ -8,15 +8,15 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @Roles('Staff', 'Owner')
 @Controller('robots')
 export class RobotsController {
-    constructor(private readonly robotsService: RobotsService) { }
+  constructor(private readonly robotsService: RobotsService) {}
 
-    @Get()
-    findAll(@Query('restaurantId') restaurantId: string) {
-        return this.robotsService.findAll(restaurantId);
-    }
+  @Get()
+  findAll(@Query('restaurantId') restaurantId: string) {
+    return this.robotsService.findAll(restaurantId);
+  }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.robotsService.findOne(id);
-    }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.robotsService.findOne(id);
+  }
 }

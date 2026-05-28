@@ -10,6 +10,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useSocketEvent } from '../../context/SocketContext';
 import * as Speech from 'expo-speech';
 import { S, getStatusColor, FONT } from '../../theme';
+import { useOptimisticMutation } from '../../hooks/useOptimisticMutation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EditOrderModal } from './EditOrderModal';
 
@@ -323,21 +324,22 @@ export function KanbanOrdersScreen() {
         'order:updated': () => loadOrders(),
     });
 
+    const { execute: optimisticUpdate } = useOptimisticMutation(
+        orders,
+        setOrders,
+        loadOrders
+    );
+
     const handleAdvanceOrder = async (order: Order) => {
         const next = NEXT_STATUS[order.status];
         if (!next) return;
 
-        try {
-            const updated = await ordersApi.updateStatus(order.id, next);
-            setOrders(prev => prev.map(o => o.id === order.id ? updated : o));
-            
-            // Revert optimistic if needed, but since we await, we just set the real state.
-            // In a production app you'd do optimistic UI. 
-            // For now, this is perfectly fine.
-        } catch (err) {
-            console.error('Failed to update status', err);
-            Alert.alert('Error', 'Failed to update order status');
-        }
+        optimisticUpdate(
+            'UPDATE_STATUS',
+            { orderId: order.id, status: next },
+            order.version,
+            (prevOrders) => prevOrders.map(o => o.id === order.id ? { ...o, status: next as any } : o)
+        );
     };
 
     const handleCancelOrder = (order: Order) => {
@@ -345,12 +347,12 @@ export function KanbanOrdersScreen() {
             { text: 'No', style: 'cancel' },
             {
                 text: 'Yes, Cancel', style: 'destructive', onPress: async () => {
-                    try {
-                        const updated = await ordersApi.updateStatus(order.id, 'Cancelled');
-                        setOrders(prev => prev.map(o => o.id === order.id ? updated : o));
-                    } catch (err) {
-                        Alert.alert('Error', 'Failed to cancel order');
-                    }
+                    optimisticUpdate(
+                        'UPDATE_STATUS',
+                        { orderId: order.id, status: 'Cancelled' },
+                        order.version,
+                        (prevOrders) => prevOrders.map(o => o.id === order.id ? { ...o, status: 'Cancelled' } : o)
+                    );
                 }
             },
         ]);
@@ -374,19 +376,25 @@ export function KanbanOrdersScreen() {
                 {
                     text: 'Yes, Merge',
                     onPress: async () => {
-                        try {
-                            const sourceIds = otherOrders.map(o => o.id);
-                            await ordersApi.mergeOrders(order.id, sourceIds);
-                            loadOrders();
-                        } catch (err: any) {
-                            console.error('Merge error:', err);
-                            Alert.alert('Error', err.response?.data?.message || 'Failed to merge orders');
-                        }
+                        const sourceIds = otherOrders.map(o => o.id);
+                        
+                        optimisticUpdate(
+                            'MERGE_ORDERS',
+                            { targetOrderId: order.id, sourceOrderIds: sourceIds },
+                            order.version,
+                            (prevOrders) => {
+                                const sourceItems = otherOrders.flatMap(o => Array.isArray(o.items) ? o.items : []);
+                                const newItems = [...(Array.isArray(order.items) ? order.items : []), ...sourceItems];
+                                return prevOrders
+                                    .filter(o => !sourceIds.includes(o.id))
+                                    .map(o => o.id === order.id ? { ...o, items: newItems } : o);
+                            }
+                        );
                     }
                 }
             ]
         );
-    }, [orders, loadOrders]);
+    }, [orders, optimisticUpdate]);
 
     const handleOrderSaved = useCallback((updatedOrder: Order) => {
         setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));

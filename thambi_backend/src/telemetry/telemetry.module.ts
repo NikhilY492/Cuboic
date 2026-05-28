@@ -3,8 +3,8 @@ import { TelemetryController } from './telemetry.controller';
 import { TelemetryService } from './telemetry.service';
 
 @Module({
-    controllers: [TelemetryController],
-    providers: [TelemetryService],
-    exports: [TelemetryService],
+  controllers: [TelemetryController],
+  providers: [TelemetryService],
+  exports: [TelemetryService],
 })
-export class TelemetryModule { }
+export class TelemetryModule {}

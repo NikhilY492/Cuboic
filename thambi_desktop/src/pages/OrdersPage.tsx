@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { apiClient } from '../api/apiClient'
 import { useAuth } from '../contexts/AuthContext'
 import socket from '../api/socket'
-import { UtensilsCrossed, Clock, CheckCircle, XCircle, ChevronRight, RefreshCw } from 'lucide-react'
+import { UtensilsCrossed, Clock, CheckCircle, XCircle, ChevronRight, RefreshCw, WifiOff } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { useMutationQueue } from '../hooks/useMutationQueue'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Table {
@@ -63,6 +65,62 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(diff / 60)}h ${diff % 60}m ago`
 }
 
+// ── Components ────────────────────────────────────────────────────────────
+function AllOrdersList({ orders, searchQuery, onPrintKOT, onSelectOrder }: any) {
+  const filtered = orders.filter((o: any) => {
+    if (!searchQuery) return true
+    const q = searchQuery.toLowerCase()
+    return o.id.toLowerCase().includes(q) || 
+           o.customer?.name.toLowerCase().includes(q) || 
+           o.customer?.phone.toLowerCase().includes(q)
+  })
+
+  const sorted = [...filtered].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  return (
+    <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-zinc-950">
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className="border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 text-sm">
+            <th className="pb-3 font-medium">Order ID</th>
+            <th className="pb-3 font-medium">Type / Table</th>
+            <th className="pb-3 font-medium">Date & Time</th>
+            <th className="pb-3 font-medium">Status</th>
+            <th className="pb-3 font-medium">Total</th>
+            <th className="pb-3 font-medium text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="text-sm">
+          {sorted.map((order: any) => (
+            <tr key={order.id} className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/20 transition-colors">
+              <td className="py-3 font-mono">#{order.id.slice(-8).toUpperCase()}</td>
+              <td className="py-3">{order.orderType === 'Takeaway' ? 'Takeaway' : `Table ${order.table?.table_number || '?'}`}</td>
+              <td className="py-3 text-zinc-500">{new Date(order.createdAt).toLocaleString()}</td>
+              <td className="py-3">
+                <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_COLOR[order.status] || 'text-zinc-500 bg-zinc-100 dark:bg-zinc-800 border-zinc-200'}`}>
+                  {order.status}
+                </span>
+              </td>
+              <td className="py-3 font-medium">₹{order.total.toFixed(2)}</td>
+              <td className="py-3 text-right">
+                <button onClick={() => onPrintKOT(order)} className="text-accent hover:underline mr-4 text-xs font-medium">Print KOT</button>
+                {order.orderType === 'DineIn' && (
+                    <button onClick={() => onSelectOrder(order)} className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white text-xs font-medium">Inspect</button>
+                )}
+              </td>
+            </tr>
+          ))}
+          {sorted.length === 0 && (
+            <tr>
+              <td colSpan={6} className="py-8 text-center text-zinc-500">No orders found.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────
 export default function OrdersPage() {
   const { user } = useAuth()
@@ -75,8 +133,7 @@ export default function OrdersPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
-  // ── Data fetching ────────────────────────────────────────────────────────
-  const load = useCallback(async () => {
+  const loadData = useCallback(async () => {
     if (!user?.restaurantId) return
     try {
       const [tablesRes, ordersRes] = await Promise.all([
@@ -86,13 +143,6 @@ export default function OrdersPage() {
         })
       ])
       
-      console.log('📡 OrdersPage Data Fetch:', {
-        tablesCount: tablesRes.data.length,
-        ordersCount: ordersRes.data.length,
-        restaurantId: user.restaurantId
-      });
-
-      // Filter tables safely
       const filteredTables = tablesRes.data.filter(t => t.is_active !== false);
       setTables(filteredTables)
       setOrders(ordersRes.data)
@@ -103,6 +153,35 @@ export default function OrdersPage() {
       setLoading(false)
     }
   }, [user?.restaurantId])
+
+  const { enqueue, drain, isOnline, queue } = useMutationQueue(loadData)
+
+  const load = useCallback(async () => {
+      await loadData()
+  }, [loadData])
+
+  const [viewMode, setViewMode] = useState<'floor' | 'list'>('floor')
+  const [printers, setPrinters] = useState<{ name: string, isDefault: boolean }[]>([])
+  const [selectedPrinter, setSelectedPrinter] = useState<string>('')
+
+  useEffect(() => {
+    if (window.ipcRenderer) {
+      window.ipcRenderer.invoke('print:get-printers').then(printersList => {
+        setPrinters(printersList)
+        const saved = localStorage.getItem('thambi_kot_printer')
+        const defaultPrinter = printersList.find((p: any) => p.isDefault)
+        if (saved && printersList.some((p: any) => p.name === saved)) {
+          setSelectedPrinter(saved)
+        } else if (defaultPrinter) {
+          setSelectedPrinter(defaultPrinter.name)
+        } else if (printersList.length > 0) {
+          setSelectedPrinter(printersList[0].name)
+        }
+      })
+    }
+  }, [])
+
+
 
   useEffect(() => { load() }, [load])
 
@@ -140,35 +219,83 @@ export default function OrdersPage() {
   const advanceStatus = async (order: Order) => {
     const next = NEXT_STATUS[order.status]
     if (!next) return
-    setActionLoading(true)
-    try {
-      await apiClient.patch(`/orders/${order.id}/status`, { status: next })
-      await load()
-    } catch (e) { console.error(e) }
-    finally { setActionLoading(false) }
+    
+    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: next } : o))
+    enqueue('UPDATE_STATUS', { orderId: order.id, status: next }, (order as any).version)
+    
+    if (isOnline) drain(loadData)
   }
 
   const cancelOrder = async (order: Order) => {
     if (!confirm('Cancel this order?')) return
-    setActionLoading(true)
-    try {
-      await apiClient.patch(`/orders/${order.id}/status`, { status: 'Cancelled' })
-      setSelectedTable(null)
-      await load()
-    } catch (e) { console.error(e) }
-    finally { setActionLoading(false) }
+    
+    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'Cancelled' } : o))
+    setSelectedTable(null)
+    
+    enqueue('UPDATE_STATUS', { orderId: order.id, status: 'Cancelled' }, (order as any).version)
+    
+    if (isOnline) drain(loadData)
   }
 
-  const settleTable = async (tableId: string, orderIds: string[]) => {
+  const settleTable = async (_tableId: string, orderIds: string[]) => {
     if (!confirm('Settle all unpaid orders for this table?')) return
+    
+    setOrders(prev => prev.map(o => {
+        if (orderIds.includes(o.id)) {
+            return { ...o, payment: { ...o.payment, status: 'Paid' as any, method: o.payment?.method || '' } }
+        }
+        return o
+    }))
+    
+    enqueue('MARK_PAID_BULK', { orderIds, restaurantId: user?.restaurantId })
+    
+    if (isOnline) drain(loadData)
+  }
+
+  const handlePrintKOT = async (order: Order) => {
+    if (!window.ipcRenderer) {
+        toast.error('Printing is only available in the desktop app.')
+        return
+    }
+    if (!selectedPrinter) {
+        toast.error('Please select a printer first from the dropdown.')
+        return
+    }
+
+    const printData = [
+        { type: 'text', value: 'KITCHEN ORDER TICKET', style: 'font-weight: 700; text-align: center; font-size: 22px;' },
+        { type: 'text', value: `Order ID: #${order.id.slice(-8).toUpperCase()}`, style: 'text-align: center; font-size: 14px;' },
+        { type: 'text', value: `Date: ${new Date(order.createdAt).toLocaleString()}`, style: 'text-align: center; font-size: 14px;' },
+        { type: 'text', value: order.orderType === 'Takeaway' ? 'Type: TAKEAWAY' : `Table: ${order.table?.table_number || 'N/A'}`, style: 'font-weight: 700; text-align: center; font-size: 18px; margin-bottom: 10px; margin-top: 5px;' },
+        { type: 'text', value: '--------------------------------', style: 'text-align: center;' }
+    ];
+
+    order.items.forEach(item => {
+        printData.push({
+            type: 'text',
+            value: `${item.quantity} x ${item.name}`,
+            style: 'font-weight: 700; font-size: 16px;'
+        });
+    });
+
+    if (order.notes) {
+        printData.push({ type: 'text', value: '--------------------------------', style: 'text-align: center;' });
+        printData.push({ type: 'text', value: `NOTES: ${order.notes}`, style: 'font-weight: 700; font-size: 14px;' });
+    }
+
+    printData.push({ type: 'text', value: '--------------------------------', style: 'text-align: center;' });
+    printData.push({ type: 'text', value: ' ', style: 'margin-bottom: 20px;' });
+
     setActionLoading(true)
     try {
-      await apiClient.patch('/orders/mark-paid-bulk', { orderIds }, {
-          params: { restaurantId: user?.restaurantId }
-      })
-      await load()
-    } catch (e) { console.error(e) }
-    finally { setActionLoading(false) }
+        const result = await window.ipcRenderer.invoke('print:kot', selectedPrinter, printData)
+        if (!result.success) toast.error(`Failed to print: ${result.error}`)
+        else toast.success('Ticket sent to printer!')
+    } catch (e: any) {
+        toast.error(`Failed to print: ${e.message}`)
+    } finally {
+        setActionLoading(false)
+    }
   }
 
   // ── Summary Stats ────────────────────────────────────────────────────────
@@ -197,12 +324,35 @@ export default function OrdersPage() {
         {/* Header */}
         <div className="px-6 py-4 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between flex-shrink-0 transition-colors duration-300">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Live Floor Plan</h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl font-bold tracking-tight">Orders</h1>
+              <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
+                <button
+                  onClick={() => setViewMode('floor')}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${viewMode === 'floor' ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
+                >Floor Plan</button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${viewMode === 'list' ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
+                >All Orders</button>
+              </div>
+            </div>
             <p className="text-xs text-zinc-500 mt-0.5">
               Updated {timeAgo(lastRefresh.toISOString())}
             </p>
           </div>
           <div className="flex items-center gap-6">
+            {/* Sync Status indicator */}
+            {!isOnline ? (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-red-500 bg-red-500/10 px-3 py-1.5 rounded-full animate-pulse">
+                    <WifiOff size={14} /> Offline ({queue.length} pending)
+                </div>
+            ) : queue.length > 0 ? (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-full animate-pulse">
+                    <RefreshCw size={14} className="animate-spin" /> Syncing {queue.length}...
+                </div>
+            ) : null}
+
             {/* Quick-stat pills */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full text-xs font-medium text-zinc-700 dark:text-zinc-300 transition-colors duration-300">
@@ -219,19 +369,36 @@ export default function OrdersPage() {
               </div>
             </div>
             
-            <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1 transition-colors duration-300">
-              {(['all', 'free', 'occupied'] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    filter === f ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-                  }`}
-                >
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
-                </button>
-              ))}
-            </div>
+            {viewMode === 'floor' && (
+              <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1 transition-colors duration-300">
+                {(['all', 'free', 'occupied'] as const).map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                      filter === f ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {printers.length > 0 && (
+              <select 
+                value={selectedPrinter} 
+                onChange={e => {
+                  setSelectedPrinter(e.target.value)
+                  localStorage.setItem('thambi_kot_printer', e.target.value)
+                }}
+                className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-2 py-1 text-xs text-zinc-600 dark:text-zinc-300 focus:ring-1 focus:ring-accent max-w-[120px]"
+              >
+                {printers.map(p => (
+                  <option key={p.name} value={p.name}>{p.name}</option>
+                ))}
+              </select>
+            )}
 
             <div className="relative">
               <input
@@ -249,16 +416,18 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="px-6 py-2 bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800/50 flex items-center gap-6 text-xs text-zinc-500 flex-shrink-0 transition-colors duration-300">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-accent bg-accent/10 inline-block"></span> Occupied</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 inline-block"></span> Free</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-green-500 bg-green-500/10 inline-block"></span> Order Ready</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-amber-500 bg-amber-500/10 inline-block"></span> Pending</span>
-        </div>
+        {viewMode === 'floor' ? (
+          <>
+            {/* Legend */}
+            <div className="px-6 py-2 bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800/50 flex items-center gap-6 text-xs text-zinc-500 flex-shrink-0 transition-colors duration-300">
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-accent bg-accent/10 inline-block"></span> Occupied</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 inline-block"></span> Free</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-green-500 bg-green-500/10 inline-block"></span> Order Ready</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border-2 border-amber-500 bg-amber-500/10 inline-block"></span> Pending</span>
+            </div>
 
-        {/* Table Grid */}
-        <div className="flex-1 overflow-y-auto p-6">
+            {/* Table Grid */}
+            <div className="flex-1 overflow-y-auto p-6">
           {tables.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-zinc-600">
               <UtensilsCrossed size={48} className="mb-4 opacity-30" />
@@ -358,6 +527,23 @@ export default function OrdersPage() {
             </div>
           )}
         </div>
+      </>
+        ) : (
+          <AllOrdersList 
+            orders={orders} 
+            searchQuery={searchQuery} 
+            onPrintKOT={handlePrintKOT}
+            onSelectOrder={(o: any) => {
+              if (o.tableId) {
+                const table = tables.find(t => t.id === o.tableId)
+                if (table) {
+                  setSelectedTable(table)
+                  setViewMode('floor')
+                }
+              }
+            }}
+          />
+        )}
       </div>
 
       {/* ── RIGHT: Inspector Panel (ONLY RENDER IF SELECTED) ───────────────── */}
@@ -468,6 +654,16 @@ export default function OrdersPage() {
                           Mark as {NEXT_STATUS[selectedOrder.status]}
                         </>
                       )}
+                    </button>
+                  )}
+                  
+                  {selectedOrder && (
+                    <button
+                      onClick={() => handlePrintKOT(selectedOrder)}
+                      disabled={actionLoading}
+                      className="w-full bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
+                    >
+                      Print KOT
                     </button>
                   )}
                   

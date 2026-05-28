@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../api/apiClient'
 import { useAuth } from '../contexts/AuthContext'
+import toast from 'react-hot-toast'
+import { Search } from 'lucide-react'
 
 type OrderType = 'Dine-In' | 'Takeaway' | 'Delivery'
 type MenuItem = { id: string; name: string; price: number; categoryId: string; is_available: boolean }
@@ -12,17 +14,23 @@ export default function POSPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [tables, setTables] = useState<Table[]>([])
+  const [printers, setPrinters] = useState<{ name: string; isDefault: boolean }[]>([])
+  const [selectedPrinter, setSelectedPrinter] = useState<string>('')
   
   const [orderType, setOrderType] = useState<OrderType>('Dine-In')
   const [selectedTableId, setSelectedTableId] = useState('')
   const [activeCategoryId, setActiveCategoryId] = useState('All')
   const [cart, setCart] = useState<{item: MenuItem, qty: number}[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isPlacing, setIsPlacing] = useState(false)
 
   const fetchData = async () => {
     if (!user?.restaurantId) return
     try {
       const [menuRes, catsRes, tablesRes] = await Promise.all([
-        apiClient.get(`/menu?restaurantId=${user.restaurantId}`),
+        // Use admin endpoint to fetch ALL items regardless of availability
+        // so staff can see categories even if some items are temporarily unavailable
+        apiClient.get(`/menu/admin?restaurantId=${user.restaurantId}`),
         apiClient.get(`/categories?restaurantId=${user.restaurantId}`),
         apiClient.get(`/restaurants/${user.restaurantId}/tables`)
       ])
@@ -36,14 +44,37 @@ export default function POSPage() {
 
   useEffect(() => {
     fetchData()
-  }, [user])
+  }, [user?.restaurantId])
 
-  const filteredMenu = menuItems.filter(item => 
-    activeCategoryId === 'All' || item.categoryId === activeCategoryId
-  )
+  // Load saved printer on mount
+  useEffect(() => {
+    if (window.ipcRenderer) {
+      window.ipcRenderer.invoke('print:get-printers').then((printersList: { name: string; isDefault: boolean }[]) => {
+        setPrinters(printersList)
+        const saved = localStorage.getItem('thambi_kot_printer')
+        const defaultPrinter = printersList.find(p => p.isDefault)
+        if (saved && printersList.some(p => p.name === saved)) {
+          setSelectedPrinter(saved)
+        } else if (defaultPrinter) {
+          setSelectedPrinter(defaultPrinter.name)
+        } else if (printersList.length > 0) {
+          setSelectedPrinter(printersList[0].name)
+        }
+      }).catch(console.error)
+    }
+  }, [])
+
+  const filteredMenu = menuItems.filter(item => {
+    const matchesCategory = activeCategoryId === 'All' || item.categoryId === activeCategoryId
+    const matchesSearch = !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
 
   const addToCart = (item: MenuItem) => {
-    if (!item.is_available) return
+    if (!item.is_available) {
+      toast.error(`${item.name} is currently unavailable`)
+      return
+    }
     setCart(prev => {
       const existing = prev.find(c => c.item.id === item.id)
       if (existing) {
@@ -63,20 +94,22 @@ export default function POSPage() {
     }).filter(c => c.qty > 0))
   }
 
+  // No GST — total = subtotal
   const subtotal = cart.reduce((acc, curr) => acc + (curr.item.price * curr.qty), 0)
-  const gst = subtotal * 0.05
-  const total = subtotal + gst
 
   const handleCreateOrder = async () => {
-    if (cart.length === 0) return alert("Cart is empty")
-    if (orderType === 'Dine-In' && !selectedTableId) return alert("Select a table for Dine-In")
+    if (cart.length === 0) { toast.error('Cart is empty'); return }
+    if (orderType === 'Dine-In' && !selectedTableId) { toast.error('Please select a table for Dine-In'); return }
     
+    setIsPlacing(true)
     try {
-      // For Dine-In, use selected table UUID. For Takeaway/Delivery, look for a 'Takeaway' table or use dummy.
-      let tableId = selectedTableId;
+      let tableId = selectedTableId
       if (orderType !== 'Dine-In') {
-        const takeawayTable = tables.find(t => t.table_number.toLowerCase() === 'takeaway' || t.table_number.toLowerCase() === 'delivery');
-        tableId = takeawayTable?.id ?? tables[0]?.id ?? '';
+        const takeawayTable = tables.find(t => 
+          t.table_number.toLowerCase() === 'takeaway' || 
+          t.table_number.toLowerCase() === 'delivery'
+        )
+        tableId = takeawayTable?.id ?? tables[0]?.id ?? ''
       }
 
       const payload = {
@@ -91,19 +124,40 @@ export default function POSPage() {
 
       const { data } = await apiClient.post('/orders', payload)
       
-      // Trigger KOT print in electron
+      toast.success(`Order #${data.id.slice(-6).toUpperCase()} placed!`)
+
+      // Print KOT using the selected printer
       if (window.ipcRenderer) {
-         window.ipcRenderer.invoke('print:kot', 'Default_Printer', [
-           { type: 'text', value: `KOT Order: #${data.id}`, style: 'font-weight: bold; text-align: center;' }
-         ])
+        const printer = selectedPrinter || printers[0]?.name
+        if (!printer) {
+          toast.error('No printer selected. KOT not printed.')
+        } else {
+          const printData = [
+            { type: 'text', value: 'KITCHEN ORDER TICKET', style: 'font-weight: 700; text-align: center; font-size: 22px;' },
+            { type: 'text', value: `Order: #${data.id.slice(-8).toUpperCase()}`, style: 'text-align: center; font-size: 14px;' },
+            { type: 'text', value: `${new Date().toLocaleString()}`, style: 'text-align: center; font-size: 12px;' },
+            { type: 'text', value: orderType === 'Dine-In' ? `Table: ${tables.find(t => t.id === tableId)?.table_number ?? tableId}` : orderType.toUpperCase(), style: 'font-weight: 700; text-align: center; font-size: 18px; margin: 8px 0;' },
+            { type: 'text', value: '--------------------------------', style: 'text-align: center;' },
+            ...cart.map(c => ({ type: 'text', value: `${c.qty} x ${c.item.name}`, style: 'font-weight: 700; font-size: 16px;' })),
+            { type: 'text', value: '--------------------------------', style: 'text-align: center;' },
+            { type: 'text', value: ' ', style: 'margin-bottom: 20px;' },
+          ]
+          const result = await window.ipcRenderer.invoke('print:kot', printer, printData)
+          if (result?.success) {
+            toast.success('KOT sent to printer!')
+          } else {
+            toast.error(`Print failed: ${result?.error ?? 'Unknown error'}`)
+          }
+        }
       }
 
-      alert(`Order Created! ₹${total.toFixed(2)}\nKOT sent to printer.`)
       setCart([])
       setSelectedTableId('')
     } catch (e: any) {
       console.error("Order completion failed", e)
-      alert(e.response?.data?.message || "Order Failed")
+      toast.error(e.response?.data?.message || 'Order failed. Please try again.')
+    } finally {
+      setIsPlacing(false)
     }
   }
 
@@ -113,13 +167,13 @@ export default function POSPage() {
       {/* LEFT PANE: Menu & Categories */}
       <div className="flex-1 flex flex-col border-r border-zinc-200 dark:border-zinc-900">
         
-        {/* Header: Order Type & Meta */}
-        <div className="p-4 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm z-10 transition-colors duration-300">
+        {/* Header: Order Type, Table & Search */}
+        <div className="p-4 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-4 shadow-sm z-10 transition-colors duration-300 flex-wrap">
           <div className="flex bg-zinc-100 dark:bg-zinc-950 rounded-lg p-1 border border-zinc-200 dark:border-zinc-800">
-            {['Dine-In', 'Takeaway', 'Delivery'].map((type) => (
+            {(['Dine-In', 'Takeaway', 'Delivery'] as OrderType[]).map((type) => (
               <button
                 key={type}
-                onClick={() => setOrderType(type as OrderType)}
+                onClick={() => setOrderType(type)}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                   orderType === type 
                     ? 'bg-accent shadow-lg text-white' 
@@ -144,6 +198,29 @@ export default function POSPage() {
               </select>
             </div>
           )}
+
+          {/* Search Bar */}
+          <div className="flex-1 relative max-w-xs ml-auto">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search items..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full bg-zinc-100 dark:bg-zinc-800 border border-transparent focus:border-accent rounded-lg pl-9 pr-4 py-2 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none transition-all"
+            />
+          </div>
+
+          {/* Printer selector */}
+          {printers.length > 0 && (
+            <select 
+              value={selectedPrinter} 
+              onChange={e => { setSelectedPrinter(e.target.value); localStorage.setItem('thambi_kot_printer', e.target.value) }}
+              className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-2 py-2 text-xs text-zinc-600 dark:text-zinc-300 focus:ring-1 focus:ring-accent max-w-[130px]"
+            >
+              {printers.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+            </select>
+          )}
         </div>
 
         <div className="flex flex-1 overflow-hidden">
@@ -159,45 +236,61 @@ export default function POSPage() {
             >
               All Items
             </button>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategoryId(cat.id)}
-                className={`w-full text-left px-4 py-4 text-xs font-semibold uppercase tracking-tighter transition-all border-l-4 ${
-                  activeCategoryId === cat.id 
-                    ? 'border-accent bg-accent/10 text-accent dark:text-accent' 
-                    : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
+            {categories.map(cat => {
+              // Count items in category to detect empty ones
+              const count = menuItems.filter(i => i.categoryId === cat.id).length
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategoryId(cat.id)}
+                  className={`w-full text-left px-4 py-4 text-xs font-semibold uppercase tracking-tighter transition-all border-l-4 ${
+                    activeCategoryId === cat.id 
+                      ? 'border-accent bg-accent/10 text-accent dark:text-accent' 
+                      : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
+                  }`}
+                >
+                  {cat.name}
+                  {count === 0 && <span className="block text-[9px] text-zinc-400 font-normal normal-case">No items</span>}
+                </button>
+              )
+            })}
           </div>
 
           {/* Menu Grid */}
           <div className="flex-1 p-6 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredMenu.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => addToCart(item)}
-                  disabled={!item.is_available}
-                  className={`relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all ${
-                    item.is_available 
-                      ? 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-accent hover:bg-zinc-50 hover:dark:bg-zinc-800 cursor-pointer active:scale-95' 
-                      : 'border-zinc-200 dark:border-zinc-900 bg-zinc-100 dark:bg-zinc-950/50 opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2 min-h-[2.5rem]">
-                    {item.name}
-                  </div>
-                  <div className="mt-auto pt-4 flex items-center justify-between w-full">
-                    <span className="text-accent font-medium">₹{item.price}</span>
-                    {!item.is_available && <span className="text-xs text-red-500 font-medium bg-red-500/10 px-2 py-1 rounded">Out of Stock</span>}
-                  </div>
-                </button>
-              ))}
-            </div>
+            {filteredMenu.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-zinc-400">
+                <Search size={40} className="mb-3 opacity-30" />
+                <p className="font-medium">
+                  {searchQuery ? `No results for "${searchQuery}"` : 'No items in this category'}
+                </p>
+                <p className="text-sm mt-1 text-zinc-500">
+                  {searchQuery ? 'Try a different search term.' : 'Items may be added from the inventory.'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredMenu.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => addToCart(item)}
+                    className={`relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all ${
+                      item.is_available 
+                        ? 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-accent hover:bg-zinc-50 hover:dark:bg-zinc-800 cursor-pointer active:scale-95' 
+                        : 'border-zinc-200 dark:border-zinc-900 bg-zinc-100 dark:bg-zinc-950/50 opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2 min-h-[2.5rem]">
+                      {item.name}
+                    </div>
+                    <div className="mt-auto pt-4 flex items-center justify-between w-full">
+                      <span className="text-accent font-medium">₹{item.price}</span>
+                      {!item.is_available && <span className="text-xs text-red-500 font-medium bg-red-500/10 px-2 py-1 rounded">86'd</span>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -206,7 +299,7 @@ export default function POSPage() {
       <div className="w-96 bg-white dark:bg-zinc-900 flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(0,0,0,0.5)] z-20 relative transition-colors duration-300">
         <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm z-10">
           <h2 className="text-lg font-bold">Current Order</h2>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">{orderType} {selectedTableId ? `• ${tables.find(t => t.id === selectedTableId)?.table_number ?? ''}` : ''}</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">{orderType} {selectedTableId ? `• Table ${tables.find(t => t.id === selectedTableId)?.table_number ?? ''}` : ''}</p>
         </div>
 
         {/* Cart Items */}
@@ -223,7 +316,7 @@ export default function POSPage() {
               <div key={c.item.id} className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-sm truncate">{c.item.name}</h4>
-                  <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">₹{c.item.price} x {c.qty}</p>
+                  <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">₹{c.item.price} × {c.qty}</p>
                 </div>
                 <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 rounded-lg p-1 border border-zinc-200 dark:border-zinc-800">
                   <button onClick={() => updateQty(c.item.id, -1)} className="w-7 h-7 flex items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300">-</button>
@@ -241,33 +334,30 @@ export default function POSPage() {
         {/* Totals & Checkout */}
         <div className="p-4 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 mt-auto transition-colors duration-300">
           <div className="space-y-2 mb-4">
-            <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
-              <span>Subtotal</span>
-              <span>₹{subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
-              <span>GST (5%)</span>
-              <span>₹{gst.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-lg font-bold text-zinc-900 dark:text-white pt-2 border-t border-zinc-200 dark:border-zinc-800 border-dashed">
+            <div className="flex justify-between text-lg font-bold text-zinc-900 dark:text-white pt-2">
               <span>Total</span>
-              <span>₹{total.toFixed(2)}</span>
+              <span>₹{subtotal.toFixed(2)}</span>
             </div>
           </div>
           
           <button 
             onClick={handleCreateOrder}
-            className="w-full bg-accent hover:bg-accent active:bg-accent-dark text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(101,163,13,0.3)] transition-all flex items-center justify-center gap-2"
+            disabled={isPlacing || cart.length === 0}
+            className="w-full bg-accent hover:bg-accent active:bg-accent-dark text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(101,163,13,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            Pay & Print KOT
+            {isPlacing ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Pay & Print KOT
+              </>
+            )}
           </button>
         </div>
-
       </div>
-
     </div>
   )
 }

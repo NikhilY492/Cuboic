@@ -9,4 +9,4 @@ import { EventsModule } from '../events/events.module';
   providers: [RestaurantsService],
   exports: [RestaurantsService],
 })
-export class RestaurantsModule { }
+export class RestaurantsModule {}

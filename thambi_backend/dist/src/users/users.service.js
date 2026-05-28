@@ -52,6 +52,8 @@ let UsersService = class UsersService {
         this.prisma = prisma;
     }
     async create(dto) {
+        dto.userId = dto.userId.trim();
+        dto.name = dto.name.trim();
         const existing = await this.prisma.user.findUnique({ where: { user_id: dto.userId } });
         if (existing)
             throw new common_1.ConflictException('User ID already taken');

@@ -28,7 +28,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: join(process.env.VITE_PUBLIC as string, 'favicon.ico'),
+    icon: join(process.env.VITE_PUBLIC as string, 'logo-thambi.png'),
     webPreferences: {
       preload: join(__dirname, 'preload.mjs'),
     },
@@ -103,6 +103,15 @@ app.whenReady().then(() => {
   })
 
   // --- Printing Handlers ---
+  ipcMain.handle('print:get-printers', async (event) => {
+    try {
+      return await event.sender.getPrintersAsync()
+    } catch (e) {
+      console.error("Failed to get printers", e)
+      return []
+    }
+  })
+
   ipcMain.handle('print:kot', async (_, printerName: string, data: any[]) => {
     try {
       await PosPrinter.print(data, {

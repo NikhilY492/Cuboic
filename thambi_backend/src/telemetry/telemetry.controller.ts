@@ -8,15 +8,21 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @Roles('Staff', 'Owner')
 @Controller('telemetry')
 export class TelemetryController {
-    constructor(private readonly telemetryService: TelemetryService) { }
+  constructor(private readonly telemetryService: TelemetryService) {}
 
-    @Get(':robotId/latest')
-    getLatest(@Param('robotId') robotId: string) {
-        return this.telemetryService.getLatest(robotId);
-    }
+  @Get(':robotId/latest')
+  getLatest(@Param('robotId') robotId: string) {
+    return this.telemetryService.getLatest(robotId);
+  }
 
-    @Get(':robotId/history')
-    getHistory(@Param('robotId') robotId: string, @Query('limit') limit?: string) {
-        return this.telemetryService.getHistory(robotId, limit ? parseInt(limit, 10) : 50);
-    }
+  @Get(':robotId/history')
+  getHistory(
+    @Param('robotId') robotId: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.telemetryService.getHistory(
+      robotId,
+      limit ? parseInt(limit, 10) : 50,
+    );
+  }
 }

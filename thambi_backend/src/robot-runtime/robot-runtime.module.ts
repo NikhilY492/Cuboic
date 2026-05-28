@@ -12,4 +12,4 @@ import { TelemetryModule } from '../telemetry/telemetry.module';
   providers: [RobotRuntimeGateway, RobotRuntimeService],
   exports: [RobotRuntimeService],
 })
-export class RobotRuntimeModule { }
+export class RobotRuntimeModule {}

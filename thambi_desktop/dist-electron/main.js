@@ -218,7 +218,7 @@ function createWindow() {
 	win = new electron.BrowserWindow({
 		width: 1200,
 		height: 800,
-		icon: (0, node_path.join)(process.env.VITE_PUBLIC, "favicon.ico"),
+		icon: (0, node_path.join)(process.env.VITE_PUBLIC, "logo-thambi.png"),
 		webPreferences: { preload: (0, node_path.join)(__dirname, "preload.mjs") }
 	});
 	win.webContents.on("did-finish-load", () => {
@@ -272,6 +272,14 @@ electron.app.whenReady().then(() => {
 	electron.ipcMain.handle("auth:clear-token", () => {
 		if (node_fs.default.existsSync(authPath)) node_fs.default.unlinkSync(authPath);
 		return true;
+	});
+	electron.ipcMain.handle("print:get-printers", async (event) => {
+		try {
+			return await event.sender.getPrintersAsync();
+		} catch (e) {
+			console.error("Failed to get printers", e);
+			return [];
+		}
 	});
 	electron.ipcMain.handle("print:kot", async (_, printerName, data) => {
 		try {

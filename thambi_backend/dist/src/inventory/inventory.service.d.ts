@@ -142,6 +142,10 @@ export declare class InventoryService {
         itemId: string;
         quantity: number;
     }>): Promise<void>;
+    refundForOrder(outletId: string, orderId: string, items: Array<{
+        itemId: string;
+        quantity: number;
+    }>): Promise<void>;
     checkAvailability(outletId: string, items: Array<{
         itemId: string;
         quantity: number;

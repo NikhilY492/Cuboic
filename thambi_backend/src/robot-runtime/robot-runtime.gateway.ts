@@ -17,7 +17,8 @@ import { TelemetryService } from '../telemetry/telemetry.service';
   cors: { origin: '*' },
 })
 export class RobotRuntimeGateway
-  implements OnGatewayConnection, OnGatewayDisconnect {
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -25,7 +26,7 @@ export class RobotRuntimeGateway
     private runtimeService: RobotRuntimeService,
     private robotsService: RobotsService,
     private telemetryService: TelemetryService,
-  ) { }
+  ) {}
 
   // 🔹 When any socket connects
   async handleConnection(client: Socket) {
@@ -115,10 +116,7 @@ export class RobotRuntimeGateway
 
   // 🔹 Optional heartbeat event
   @SubscribeMessage('robot_heartbeat')
-  handleHeartbeat(
-    @MessageBody() data: any,
-    @ConnectedSocket() client: Socket,
-  ) {
+  handleHeartbeat(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
     const { robotId } = data;
 
     const runtimeRobot = this.runtimeService.getRobot(robotId);

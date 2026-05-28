@@ -4,20 +4,21 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-    constructor() {
-        super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
-            secretOrKey: process.env.JWT_SECRET ?? 'thambi-super-secret-key-change-in-prod',
-        });
-    }
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey:
+        process.env.JWT_SECRET ?? 'thambi-super-secret-key-change-in-prod',
+    });
+  }
 
-    validate(payload: any) {
-        return {
-            sub: payload.sub,
-            userId: payload.userId,
-            role: payload.role,
-            restaurantId: payload.restaurantId,
-        };
-    }
+  validate(payload: any) {
+    return {
+      sub: payload.sub,
+      userId: payload.userId,
+      role: payload.role,
+      restaurantId: payload.restaurantId,
+    };
+  }
 }

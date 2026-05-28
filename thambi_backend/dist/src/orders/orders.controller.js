@@ -18,6 +18,7 @@ const orders_service_1 = require("./orders.service");
 const create_order_dto_1 = require("./dto/create-order.dto");
 const update_order_status_dto_1 = require("./dto/update-order-status.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const optional_jwt_auth_guard_1 = require("../auth/guards/optional-jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 let OrdersController = class OrdersController {
@@ -55,17 +56,20 @@ let OrdersController = class OrdersController {
     updateTable(id, tableId) {
         return this.ordersService.updateTable(id, tableId);
     }
-    cancelOrder(id) {
-        return this.ordersService.cancelOrder(id);
+    cancelOrder(id, req) {
+        return this.ordersService.cancelOrder(id, req.user?.sub);
+    }
+    updateItems(id, items, notes, req) {
+        return this.ordersService.updateItems(id, items, req.user.sub, notes);
     }
     confirmDelivery(id) {
         return this.ordersService.confirmDelivery(id);
     }
-    markAsPaid(id) {
-        return this.ordersService.markAsPaid(id);
+    markAsPaid(id, req) {
+        return this.ordersService.markAsPaid(id, req.user.sub);
     }
-    markPaidBulk(restaurantId, orderIds) {
-        return this.ordersService.markPaidBulk(restaurantId, orderIds);
+    markPaidBulk(restaurantId, orderIds, req) {
+        return this.ordersService.markPaidBulk(restaurantId, orderIds, req.user.sub);
     }
 };
 exports.OrdersController = OrdersController;
@@ -153,12 +157,26 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "updateTable", null);
 __decorate([
+    (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
     (0, common_1.Patch)(':id/cancel'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "cancelOrder", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner'),
+    (0, common_1.Patch)(':id/items'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('items')),
+    __param(2, (0, common_1.Body)('notes')),
+    __param(3, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Array, Object, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "updateItems", null);
 __decorate([
     (0, common_1.Patch)(':id/confirm'),
     __param(0, (0, common_1.Param)('id')),
@@ -171,8 +189,9 @@ __decorate([
     (0, roles_decorator_1.Roles)('Staff', 'Owner'),
     (0, common_1.Patch)(':id/pay'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "markAsPaid", null);
 __decorate([
@@ -181,8 +200,9 @@ __decorate([
     (0, common_1.Patch)('mark-paid-bulk'),
     __param(0, (0, common_1.Query)('restaurantId')),
     __param(1, (0, common_1.Body)('orderIds')),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Array]),
+    __metadata("design:paramtypes", [String, Array, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "markPaidBulk", null);
 exports.OrdersController = OrdersController = __decorate([

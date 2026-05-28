@@ -8,19 +8,19 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @Roles('Staff', 'Owner')
 @Controller('payments')
 export class PaymentsController {
-    constructor(private readonly paymentsService: PaymentsService) { }
+  constructor(private readonly paymentsService: PaymentsService) {}
 
-    @Get()
-    findAll(
-        @Query('restaurantId') restaurantId: string,
-        @Query('from') from?: string,
-        @Query('to') to?: string,
-    ) {
-        return this.paymentsService.findAll(restaurantId, from, to);
-    }
+  @Get()
+  findAll(
+    @Query('restaurantId') restaurantId: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    return this.paymentsService.findAll(restaurantId, from, to);
+  }
 
-    @Get('summary')
-    getSummary(@Query('restaurantId') restaurantId: string) {
-        return this.paymentsService.getSummary(restaurantId);
-    }
+  @Get('summary')
+  getSummary(@Query('restaurantId') restaurantId: string) {
+    return this.paymentsService.getSummary(restaurantId);
+  }
 }

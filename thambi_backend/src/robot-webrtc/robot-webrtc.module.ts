@@ -7,8 +7,8 @@ import { RobotRuntimeModule } from '../robot-runtime/robot-runtime.module';
 
 @Module({
   imports: [
-    RobotsModule,          // RobotsService — auth checks for robot + viewer
-    RobotRuntimeModule,    // RobotRuntimeService — online/offline state
+    RobotsModule, // RobotsService — auth checks for robot + viewer
+    RobotRuntimeModule, // RobotRuntimeService — online/offline state
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

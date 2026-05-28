@@ -162,6 +162,42 @@ let InventoryService = class InventoryService {
         ]));
         this.eventsGateway.emitToRestaurant(outletId, 'inventory:deducted', { orderId });
     }
+    async refundForOrder(outletId, orderId, items) {
+        const recipes = await this.prisma.recipe.findMany({
+            where: { menuItemId: { in: items.map((i) => i.itemId) } },
+            include: { ingredients: { include: { inventoryItem: true } } },
+        });
+        const refunds = new Map();
+        for (const orderItem of items) {
+            const recipe = recipes.find((r) => r.menuItemId === orderItem.itemId);
+            if (!recipe)
+                continue;
+            for (const ing of recipe.ingredients) {
+                const needed = ing.quantity * orderItem.quantity;
+                const existing = refunds.get(ing.inventoryItemId)?.needed ?? 0;
+                refunds.set(ing.inventoryItemId, { needed: existing + needed, outletId });
+            }
+        }
+        if (refunds.size === 0)
+            return;
+        await this.prisma.$transaction(Array.from(refunds.entries()).flatMap(([invItemId, { needed }]) => [
+            this.prisma.inventoryItem.update({
+                where: { id: invItemId },
+                data: { currentStock: { increment: needed } },
+            }),
+            this.prisma.stockTransaction.create({
+                data: {
+                    inventoryItemId: invItemId,
+                    outletId,
+                    type: 'StockIn',
+                    quantity: needed,
+                    referenceId: orderId,
+                    notes: `Auto-refunded due to order modification ${orderId}`,
+                },
+            }),
+        ]));
+        this.eventsGateway.emitToRestaurant(outletId, 'inventory:refunded', { orderId });
+    }
     async checkAvailability(outletId, items) {
         const recipes = await this.prisma.recipe.findMany({
             where: { menuItemId: { in: items.map((i) => i.itemId) } },

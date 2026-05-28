@@ -57,6 +57,12 @@ export const menuApi = {
     updateItem: (id: string, payload: UpdateMenuItemPayload) =>
         api.put<MenuItem>(`/menu/${id}`, payload).then(r => r.data),
 
+    bulkUpdate: (restaurantId: string, updates: Array<{ id: string; data: Partial<UpdateMenuItemPayload> }>) =>
+        api.patch(`/menu/bulk`, updates, { params: { restaurantId } }).then(r => r.data),
+
+    toggleAvailability: (id: string, is_available: boolean) =>
+        api.patch<MenuItem>(`/menu/${id}/86`, { is_available }).then(r => r.data),
+
     /** Create a new category for this restaurant */
     createCategory: (restaurantId: string, name: string): Promise<Category> =>
         api.post<Category>('/categories', { restaurantId, name }).then(r => r.data),

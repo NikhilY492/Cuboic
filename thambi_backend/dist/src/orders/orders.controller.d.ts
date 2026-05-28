@@ -166,78 +166,6 @@ export declare class OrdersController {
         customerId: string | null;
     })[]>;
     updateStatus(id: string, dto: UpdateOrderStatusDto): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        restaurantId: string;
-        outletId: string | null;
-        status: import("@prisma/client").$Enums.OrderStatus;
-        customer_session_id: string;
-        orderType: string;
-        items: import("@prisma/client/runtime/library").JsonValue;
-        subtotal: number;
-        tax: number;
-        total: number;
-        notes: string | null;
-        tableId: string;
-        sessionId: string | null;
-        customerId: string | null;
-    }>;
-    updateTable(id: string, tableId: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        restaurantId: string;
-        outletId: string | null;
-        status: import("@prisma/client").$Enums.OrderStatus;
-        customer_session_id: string;
-        orderType: string;
-        items: import("@prisma/client/runtime/library").JsonValue;
-        subtotal: number;
-        tax: number;
-        total: number;
-        notes: string | null;
-        tableId: string;
-        sessionId: string | null;
-        customerId: string | null;
-    }>;
-    cancelOrder(id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        restaurantId: string;
-        outletId: string | null;
-        status: import("@prisma/client").$Enums.OrderStatus;
-        customer_session_id: string;
-        orderType: string;
-        items: import("@prisma/client/runtime/library").JsonValue;
-        subtotal: number;
-        tax: number;
-        total: number;
-        notes: string | null;
-        tableId: string;
-        sessionId: string | null;
-        customerId: string | null;
-    }>;
-    confirmDelivery(id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        restaurantId: string;
-        outletId: string | null;
-        status: import("@prisma/client").$Enums.OrderStatus;
-        customer_session_id: string;
-        orderType: string;
-        items: import("@prisma/client/runtime/library").JsonValue;
-        subtotal: number;
-        tax: number;
-        total: number;
-        notes: string | null;
-        tableId: string;
-        sessionId: string | null;
-        customerId: string | null;
-    }>;
-    markAsPaid(id: string): Promise<{
         table: {
             id: string;
             is_active: boolean;
@@ -281,7 +209,230 @@ export declare class OrdersController {
         sessionId: string | null;
         customerId: string | null;
     }>;
-    markPaidBulk(restaurantId: string, orderIds: string[]): Promise<{
+    updateTable(id: string, tableId: string): Promise<{
+        table: {
+            id: string;
+            is_active: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            table_number: string;
+            restaurantId: string;
+        };
+        customer: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string;
+        } | null;
+        payment: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            amount: number;
+            orderId: string;
+            method: string;
+            transaction_id: string | null;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
+        customer_session_id: string;
+        orderType: string;
+        items: import("@prisma/client/runtime/library").JsonValue;
+        subtotal: number;
+        tax: number;
+        total: number;
+        notes: string | null;
+        tableId: string;
+        sessionId: string | null;
+        customerId: string | null;
+    }>;
+    cancelOrder(id: string, req: any): Promise<{
+        table: {
+            id: string;
+            is_active: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            table_number: string;
+            restaurantId: string;
+        };
+        customer: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string;
+        } | null;
+        payment: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            amount: number;
+            orderId: string;
+            method: string;
+            transaction_id: string | null;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
+        customer_session_id: string;
+        orderType: string;
+        items: import("@prisma/client/runtime/library").JsonValue;
+        subtotal: number;
+        tax: number;
+        total: number;
+        notes: string | null;
+        tableId: string;
+        sessionId: string | null;
+        customerId: string | null;
+    }>;
+    updateItems(id: string, items: Array<{
+        itemId: string;
+        quantity: number;
+    }>, notes: string | undefined, req: any): Promise<{
+        table: {
+            id: string;
+            is_active: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            table_number: string;
+            restaurantId: string;
+        };
+        customer: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string;
+        } | null;
+        payment: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            amount: number;
+            orderId: string;
+            method: string;
+            transaction_id: string | null;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
+        customer_session_id: string;
+        orderType: string;
+        items: import("@prisma/client/runtime/library").JsonValue;
+        subtotal: number;
+        tax: number;
+        total: number;
+        notes: string | null;
+        tableId: string;
+        sessionId: string | null;
+        customerId: string | null;
+    }>;
+    confirmDelivery(id: string): Promise<{
+        table: {
+            id: string;
+            is_active: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            table_number: string;
+            restaurantId: string;
+        };
+        customer: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string;
+        } | null;
+        payment: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            amount: number;
+            orderId: string;
+            method: string;
+            transaction_id: string | null;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
+        customer_session_id: string;
+        orderType: string;
+        items: import("@prisma/client/runtime/library").JsonValue;
+        subtotal: number;
+        tax: number;
+        total: number;
+        notes: string | null;
+        tableId: string;
+        sessionId: string | null;
+        customerId: string | null;
+    }>;
+    markAsPaid(id: string, req: any): Promise<{
+        table: {
+            id: string;
+            is_active: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            table_number: string;
+            restaurantId: string;
+        };
+        customer: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string;
+        } | null;
+        payment: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            amount: number;
+            orderId: string;
+            method: string;
+            transaction_id: string | null;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
+        customer_session_id: string;
+        orderType: string;
+        items: import("@prisma/client/runtime/library").JsonValue;
+        subtotal: number;
+        tax: number;
+        total: number;
+        notes: string | null;
+        tableId: string;
+        sessionId: string | null;
+        customerId: string | null;
+    }>;
+    markPaidBulk(restaurantId: string, orderIds: string[], req: any): Promise<{
         success: boolean;
         count: number;
     }>;

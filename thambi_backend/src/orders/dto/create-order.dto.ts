@@ -1,51 +1,59 @@
-import { IsString, IsNotEmpty, IsArray, ValidateNested, IsInt, Min, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsArray,
+  ValidateNested,
+  IsInt,
+  Min,
+  IsOptional,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class OrderItemDto {
-    @IsString()
-    @IsNotEmpty()
-    itemId: string;
+  @IsString()
+  @IsNotEmpty()
+  itemId: string;
 
-    @IsInt()
-    @Min(1)
-    quantity: number;
+  @IsInt()
+  @Min(1)
+  quantity: number;
 }
 
 export class CreateOrderDto {
-    @IsString()
-    @IsNotEmpty()
-    restaurantId: string;
+  @IsString()
+  @IsNotEmpty()
+  restaurantId: string;
 
-    @IsString()
-    @IsOptional()
-    outletId?: string;
+  @IsString()
+  @IsOptional()
+  outletId?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    tableId: string;
+  @IsString()
+  @IsNotEmpty()
+  tableId: string;
 
-    @IsString()
-    @IsNotEmpty()
-    customerSessionId: string;
+  @IsString()
+  @IsNotEmpty()
+  customerSessionId: string;
 
-    @IsString()
-    @IsOptional()
-    customerId?: string;
+  @IsString()
+  @IsOptional()
+  customerId?: string;
 
-    @IsString()
-    @IsOptional()
-    orderType?: string; // DineIn | Takeaway | Delivery
+  @IsString()
+  @IsOptional()
+  orderType?: string; // DineIn | Takeaway | Delivery
 
-    @IsString()
-    @IsOptional()
-    notes?: string;
+  @IsString()
+  @IsOptional()
+  notes?: string;
 
-    @IsString()
-    @IsOptional()
-    paymentStatus?: string;
+  @IsString()
+  @IsOptional()
+  paymentStatus?: string;
 
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => OrderItemDto)
-    items: OrderItemDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
 }

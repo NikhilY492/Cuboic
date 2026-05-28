@@ -17,17 +17,23 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const events_gateway_1 = require("../events/events.gateway");
 const platform_fees_service_1 = require("../platform-fees/platform-fees.service");
 const inventory_service_1 = require("../inventory/inventory.service");
+const audit_service_1 = require("../audit/audit.service");
+const users_service_1 = require("../users/users.service");
 let OrdersService = OrdersService_1 = class OrdersService {
     prisma;
     eventsGateway;
     platformFeesService;
     inventoryService;
+    auditService;
+    usersService;
     logger = new common_1.Logger(OrdersService_1.name);
-    constructor(prisma, eventsGateway, platformFeesService, inventoryService) {
+    constructor(prisma, eventsGateway, platformFeesService, inventoryService, auditService, usersService) {
         this.prisma = prisma;
         this.eventsGateway = eventsGateway;
         this.platformFeesService = platformFeesService;
         this.inventoryService = inventoryService;
+        this.auditService = auditService;
+        this.usersService = usersService;
     }
     async getOrCreateSession(restaurantId, tableId) {
         let session = await this.prisma.tableSession.findFirst({
@@ -174,6 +180,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
         const order = await this.prisma.order.update({
             where: { id },
             data: { status: dto.status },
+            include: { table: true, payment: true, customer: true }
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
@@ -184,23 +191,118 @@ let OrdersService = OrdersService_1 = class OrdersService {
         const order = await this.prisma.order.update({
             where: { id },
             data: { tableId },
+            include: { table: true, payment: true, customer: true }
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
     }
-    async cancelOrder(id) {
+    async hasPermission(userId, permission, defaultRoles) {
+        const user = await this.usersService.findById(userId);
+        if (!user)
+            return false;
+        if (user.role === 'Owner')
+            return true;
+        const config = user.dashboard_config;
+        if (config && config.includes(permission))
+            return true;
+        return defaultRoles.includes(user.role);
+    }
+    async cancelOrder(id, userId) {
         const existing = await this.prisma.order.findUnique({ where: { id } });
         if (!existing)
             throw new common_1.NotFoundException('Order not found');
-        const cancellableStates = ['Pending', 'Confirmed', 'Preparing'];
-        if (!cancellableStates.includes(existing.status)) {
-            throw new common_1.BadRequestException(`Order cannot be cancelled in state: ${existing.status}`);
+        if (userId) {
+            const hasAccess = await this.hasPermission(userId, 'CancelOrders', ['Captain', 'Manager', 'Owner']);
+            if (!hasAccess) {
+                throw new common_1.BadRequestException('You do not have permission to cancel orders');
+            }
+            const cancellableStates = ['Pending', 'Confirmed', 'Preparing'];
+            if (!cancellableStates.includes(existing.status)) {
+                throw new common_1.BadRequestException(`Order cannot be cancelled in state: ${existing.status}`);
+            }
+        }
+        else {
+            if (existing.status !== 'Pending') {
+                throw new common_1.BadRequestException('Customers can only cancel pending orders');
+            }
         }
         const order = await this.prisma.order.update({
             where: { id },
             data: { status: 'Cancelled' },
+            include: { table: true, payment: true, customer: true }
+        });
+        if (userId) {
+            await this.auditService.logAction(order.restaurantId, userId, 'Cancel Order', { orderId: order.id, status: existing.status });
+        }
+        this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
+        return order;
+    }
+    async updateItems(id, newItems, userId, notes) {
+        const hasAccess = await this.hasPermission(userId, 'ModifyOrders', ['Captain', 'Manager', 'Owner']);
+        if (!hasAccess) {
+            throw new common_1.BadRequestException('You do not have permission to modify orders');
+        }
+        const existing = await this.prisma.order.findUnique({ where: { id } });
+        if (!existing)
+            throw new common_1.NotFoundException('Order not found');
+        const modifiableStates = ['Pending', 'Confirmed', 'Preparing'];
+        if (!modifiableStates.includes(existing.status)) {
+            throw new common_1.BadRequestException(`Order items cannot be modified in state: ${existing.status}`);
+        }
+        const oldItems = Array.isArray(existing.items) ? existing.items : [];
+        if (existing.outletId && oldItems.length > 0) {
+            try {
+                await this.inventoryService.refundForOrder(existing.outletId, id, oldItems.map(i => ({ itemId: i.itemId, quantity: i.quantity })));
+            }
+            catch (e) {
+                this.logger.warn(`Failed to refund inventory for modified order ${id}: ${e.message}`);
+            }
+        }
+        const itemDocs = await this.prisma.menuItem.findMany({
+            where: { id: { in: newItems.map((i) => i.itemId) } },
+        });
+        if (itemDocs.length !== newItems.length) {
+            throw new common_1.BadRequestException('One or more menu items not found');
+        }
+        const orderItems = newItems.map((i) => {
+            const doc = itemDocs.find((d) => d.id === i.itemId);
+            return { itemId: doc.id, name: doc.name, unitPrice: doc.price, quantity: i.quantity };
+        });
+        const subtotal = orderItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+        const tax = 0;
+        const total = parseFloat((subtotal + tax).toFixed(2));
+        if (existing.outletId && orderItems.length > 0) {
+            try {
+                await this.inventoryService.deductForOrder(existing.outletId, id, orderItems.map(i => ({ itemId: i.itemId, quantity: i.quantity })));
+            }
+            catch (e) {
+                this.logger.warn(`Failed to deduct inventory for modified order ${id}: ${e.message}`);
+            }
+        }
+        const order = await this.prisma.order.update({
+            where: { id },
+            data: {
+                items: orderItems,
+                subtotal,
+                tax,
+                total,
+                ...(notes !== undefined ? { notes } : {})
+            },
+            include: { table: true, payment: true, customer: true }
+        });
+        if (order.payment) {
+            await this.prisma.payment.update({
+                where: { id: order.payment.id },
+                data: { amount: total }
+            });
+            order.payment.amount = total;
+        }
+        await this.auditService.logAction(order.restaurantId, userId, 'Modify Order Items', {
+            orderId: order.id,
+            oldTotal: existing.total,
+            newTotal: total
         });
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
@@ -209,12 +311,17 @@ let OrdersService = OrdersService_1 = class OrdersService {
         const order = await this.prisma.order.update({
             where: { id },
             data: { status: 'Delivered' },
+            include: { table: true, payment: true, customer: true }
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         return order;
     }
-    async markAsPaid(id) {
+    async markAsPaid(id, userId) {
+        const hasAccess = await this.hasPermission(userId, 'SettlePayments', ['Captain', 'Cashier', 'Manager', 'Owner']);
+        if (!hasAccess) {
+            throw new common_1.BadRequestException('You do not have permission to mark orders as paid');
+        }
         const order = await this.prisma.order.update({
             where: { id },
             data: {
@@ -226,6 +333,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
+        await this.auditService.logAction(order.restaurantId, userId, 'Mark Paid', { orderId: order.id, amount: order.total });
         this.eventsGateway.emitToRestaurant(order.restaurantId, 'order:updated', order);
         return order;
     }
@@ -293,9 +401,13 @@ let OrdersService = OrdersService_1 = class OrdersService {
         }
         return Object.values(groups).sort((a, b) => b.lastOrderAt.getTime() - a.lastOrderAt.getTime());
     }
-    async markPaidBulk(restaurantId, orderIds) {
+    async markPaidBulk(restaurantId, orderIds, userId) {
         if (!orderIds || orderIds.length === 0)
             return { success: true, count: 0 };
+        const hasAccess = await this.hasPermission(userId, 'SettlePayments', ['Captain', 'Cashier', 'Manager', 'Owner']);
+        if (!hasAccess) {
+            throw new common_1.BadRequestException('You do not have permission to settle payments');
+        }
         await this.prisma.payment.updateMany({
             where: {
                 orderId: { in: orderIds },
@@ -307,6 +419,8 @@ let OrdersService = OrdersService_1 = class OrdersService {
             where: { id: { in: orderIds } },
             include: { payment: true, table: true, customer: true }
         });
+        const totalAmount = updatedOrders.reduce((sum, o) => sum + o.total, 0);
+        await this.auditService.logAction(restaurantId, userId, 'Settle Payment Bulk', { orderIds, count: updatedOrders.length, totalAmount });
         for (const order of updatedOrders) {
             this.eventsGateway.emitToRestaurant(restaurantId, 'order:updated', order);
         }
@@ -344,6 +458,9 @@ let OrdersService = OrdersService_1 = class OrdersService {
             await this.prisma.payment.deleteMany({
                 where: { orderId: { in: orderIds } },
             });
+            await this.prisma.platformFee.deleteMany({
+                where: { orderId: { in: orderIds } },
+            });
             const deleted = await this.prisma.order.deleteMany({
                 where: { id: { in: orderIds } },
             });
@@ -377,6 +494,8 @@ exports.OrdersService = OrdersService = OrdersService_1 = __decorate([
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         events_gateway_1.EventsGateway,
         platform_fees_service_1.PlatformFeesService,
-        inventory_service_1.InventoryService])
+        inventory_service_1.InventoryService,
+        audit_service_1.AuditService,
+        users_service_1.UsersService])
 ], OrdersService);
 //# sourceMappingURL=orders.service.js.map

@@ -8,16 +8,17 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-    imports: [
-        UsersModule,
-        PassportModule,
-        JwtModule.register({
-            secret: process.env.JWT_SECRET ?? 'thambi-super-secret-key-change-in-prod',
-            signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as any },
-        }),
-    ],
-    providers: [AuthService, LocalStrategy, JwtStrategy],
-    controllers: [AuthController],
-    exports: [AuthService],
+  imports: [
+    UsersModule,
+    PassportModule,
+    JwtModule.register({
+      secret:
+        process.env.JWT_SECRET ?? 'thambi-super-secret-key-change-in-prod',
+      signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as any },
+    }),
+  ],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
+  controllers: [AuthController],
+  exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

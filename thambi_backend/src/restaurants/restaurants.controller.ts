@@ -14,7 +14,7 @@ export class RestaurantsController {
   constructor(
     private readonly restaurantsService: RestaurantsService,
     private readonly eventsGateway: EventsGateway,
-  ) { }
+  ) {}
 
   // GET /restaurants
   @Get()
@@ -43,7 +43,7 @@ export class RestaurantsController {
   // POST /restaurants
   @Post()
   async create(@Body() body: any) {
-    console.log("BODY:", body);
+    console.log('BODY:', body);
     return this.restaurantsService.create(body);
   }
 
@@ -55,12 +55,15 @@ export class RestaurantsController {
 
   // POST /restaurants/:id/call-captain
   @Post(':id/call-captain')
-  async callCaptain(@Param('id') id: string, @Body() body: { tableId?: string, tableName?: string }) {
+  async callCaptain(
+    @Param('id') id: string,
+    @Body() body: { tableId?: string; tableName?: string },
+  ) {
     this.eventsGateway.emitToRestaurant(id, 'callCaptain', {
       tableId: body.tableId,
       tableName: body.tableName,
       timestamp: new Date().toISOString(),
-      message: `Customer at ${body.tableName || 'a table'} needs the Captain!`
+      message: `Customer at ${body.tableName || 'a table'} needs the Captain!`,
     });
     return { success: true };
   }

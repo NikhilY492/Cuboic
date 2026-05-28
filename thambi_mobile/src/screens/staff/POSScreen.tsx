@@ -9,6 +9,7 @@ import { tablesApi, type RestaurantTable } from '../../api/tables';
 import { ordersApi } from '../../api/orders';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useSocketEvent } from '../../context/SocketContext';
 import { FONT, S } from '../../theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,26 +18,35 @@ interface CartItem {
     quantity: number;
 }
 
-const POSItem = React.memo(({ item, onAdd, colors }: { item: MenuItem, onAdd: (item: MenuItem) => void, colors: any }) => (
+const POSItem = React.memo(({ item, onAdd, onLongPress, colors }: { item: MenuItem, onAdd: (item: MenuItem) => void, onLongPress: (item: MenuItem) => void, colors: any }) => (
     <TouchableOpacity 
-        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }, !item.is_available && { opacity: 0.5 }]}
         onPress={() => onAdd(item)}
+        onLongPress={() => onLongPress(item)}
         activeOpacity={0.7}
+        disabled={!item.is_available}
     >
         {item.image_url ? (
-            <Image source={{ uri: item.image_url }} style={styles.thumb} resizeMode="cover" />
+            <Image source={{ uri: item.image_url }} style={[styles.thumb, !item.is_available && { opacity: 0.5 }]} resizeMode="cover" />
         ) : (
             <View style={[styles.thumbPlaceholder, { backgroundColor: colors.surface2 }]}>
                 <Feather name="image" size={24} color={colors.textDim} />
             </View>
         )}
         <View style={styles.cardInfo}>
-            <Text style={[styles.itemName, { color: colors.text }]} numberOfLines={2}>{item.name}</Text>
+            <Text style={[styles.itemName, { color: colors.text }, !item.is_available && { textDecorationLine: 'line-through' }]} numberOfLines={2}>{item.name}</Text>
             <Text style={[styles.price, { color: colors.accent }]}>₹{item.price}</Text>
         </View>
-        <View style={[styles.addBtn, { backgroundColor: colors.accent }]}>
-            <Feather name="plus" size={16} color="#000" />
-        </View>
+        {item.is_available && (
+            <View style={[styles.addBtn, { backgroundColor: colors.accent }]}>
+                <Feather name="plus" size={16} color="#000" />
+            </View>
+        )}
+        {!item.is_available && (
+            <View style={{ position: 'absolute', top: 8, right: 8, backgroundColor: colors.red, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>86'd</Text>
+            </View>
+        )}
     </TouchableOpacity>
 ));
 
@@ -65,7 +75,7 @@ export function POSScreen() {
                 menuApi.getCategories(restaurantId),
                 tablesApi.findAll(restaurantId),
             ]);
-            setItems(itemsData.filter(i => i.is_available)); // Only show available items
+            setItems(itemsData); // Show all items including 86'd
             setCategories(catsData);
             setTables(tablesData.filter(t => t.is_active));
         } catch {
@@ -74,6 +84,15 @@ export function POSScreen() {
     }, [restaurantId]);
 
     useEffect(() => { loadData().finally(() => setLoading(false)); }, [loadData]);
+
+    useSocketEvent(restaurantId, {
+        'menuItem86d': (data: { itemId: string, is_available: boolean }) => {
+            setItems(prev => prev.map(i => i.id === data.itemId ? { ...i, is_available: data.is_available } : i));
+            if (!data.is_available) {
+                handleRemoveFromCartAll(data.itemId);
+            }
+        }
+    });
 
     const handleAddToCart = (menuItem: MenuItem) => {
         setCart(prev => {
@@ -94,6 +113,35 @@ export function POSScreen() {
             return prev.filter(c => c.item.id !== itemId);
         });
     };
+
+    const handleRemoveFromCartAll = useCallback((itemId: string) => {
+        setCart(prev => prev.filter(c => c.item.id !== itemId));
+    }, []);
+
+    const handleLongPress = useCallback((item: MenuItem) => {
+        Alert.alert(
+            item.is_available ? '86 Item?' : 'Restore Item?',
+            `Are you sure you want to ${item.is_available ? '86 (mark unavailable)' : 'restore'} ${item.name}?`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                    text: item.is_available ? 'Yes, 86 it' : 'Yes, Restore',
+                    style: item.is_available ? 'destructive' : 'default',
+                    onPress: async () => {
+                        try {
+                            const updated = await menuApi.toggleAvailability(item.id, !item.is_available);
+                            setItems(prev => prev.map(i => i.id === item.id ? updated : i));
+                            if (item.is_available) {
+                                handleRemoveFromCartAll(item.id);
+                            }
+                        } catch (err) {
+                            Alert.alert('Error', 'Failed to update item availability');
+                        }
+                    }
+                }
+            ]
+        );
+    }, [handleRemoveFromCartAll]);
 
     const cartTotal = cart.reduce((sum, c) => sum + (c.item.price * c.quantity), 0);
     const cartCount = cart.reduce((sum, c) => sum + c.quantity, 0);
@@ -219,7 +267,7 @@ export function POSScreen() {
                         maxToRenderPerBatch={10}
                         windowSize={5}
                         removeClippedSubviews={Platform.OS === 'android'}
-                        renderItem={({ item }) => <POSItem item={item} onAdd={handleAddToCart} colors={colors} />}
+                        renderItem={({ item }) => <POSItem item={item} onAdd={handleAddToCart} onLongPress={handleLongPress} colors={colors} />}
                     />
                 </View>
 

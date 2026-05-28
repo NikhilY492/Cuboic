@@ -3,10 +3,10 @@ import { Server } from 'socket.io';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class EventsGateway {
-    @WebSocketServer()
-    server: Server;
+  @WebSocketServer()
+  server: Server;
 
-    emitToRestaurant(restaurantId: string, event: string, data: any) {
-        this.server.emit(`${event}:${restaurantId}`, data);
-    }
+  emitToRestaurant(restaurantId: string, event: string, data: any) {
+    this.server.emit(`${event}:${restaurantId}`, data);
+  }
 }

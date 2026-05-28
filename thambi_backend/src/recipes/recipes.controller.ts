@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { UpsertRecipeDto } from './dto/upsert-recipe.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -24,7 +33,10 @@ export class RecipesController {
   }
 
   @Put('menu-item/:menuItemId')
-  update(@Param('menuItemId') menuItemId: string, @Body() dto: UpsertRecipeDto) {
+  update(
+    @Param('menuItemId') menuItemId: string,
+    @Body() dto: UpsertRecipeDto,
+  ) {
     return this.recipesService.upsert({ ...dto, menuItemId });
   }
 

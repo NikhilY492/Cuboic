@@ -11,7 +11,6 @@ export default function ProvisionPage() {
   const [userId, setUserId] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [outletId, setOutletId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -29,19 +28,20 @@ export default function ProvisionPage() {
 
       const token = res.data.access_token
 
-      if (!outletId) {
-          throw new Error("Outlet ID is required for Terminal Provisioning")
-      }
-      
-      // 2. Use AuthContext to store and update state
-      await login(token, outletId)
+      // 2. Derive outletId from the JWT payload (set by backend)
+      const payloadBase64 = token.split('.')[1]
+      const decoded = JSON.parse(atob(payloadBase64))
+      const derivedOutletId = decoded.outletId || ''
 
-      // 3. Navigate to dashboard
+      // 3. Use AuthContext to store and update state
+      await login(token, derivedOutletId)
+
+      // 4. Navigate to dashboard
       navigate('/dashboard')
 
     } catch (err: any) {
       console.error(err)
-      setError(err.response?.data?.message || err.message || 'Provisioning failed.')
+      setError(err.response?.data?.message || err.message || 'Login failed.')
     } finally {
       setLoading(false)
     }
@@ -57,8 +57,8 @@ export default function ProvisionPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold font-sans tracking-tight">Provision Terminal</h2>
-          <p className="text-zinc-500 dark:text-zinc-400 mt-2 text-sm">Target a specific outlet for this POS machine.</p>
+          <h2 className="text-2xl font-bold font-sans tracking-tight">T Manager</h2>
+          <p className="text-zinc-500 dark:text-zinc-400 mt-2 text-sm">Sign in to your account to continue.</p>
         </div>
 
         {error && (
@@ -68,18 +68,6 @@ export default function ProvisionPage() {
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Outlet ID</label>
-            <input 
-              type="text" 
-              value={outletId}
-              onChange={(e) => setOutletId(e.target.value)}
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-accent focus:ring-1 focus:ring-accent rounded-lg px-4 py-2.5 text-zinc-900 dark:text-white outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-              placeholder="e.g., clyz..."
-              required
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Username / Staff ID</label>
             <input 
@@ -126,7 +114,7 @@ export default function ProvisionPage() {
             disabled={loading}
             className="w-full bg-accent hover:bg-accent active:bg-accent-dark text-white font-medium py-2.5 rounded-lg transition-colors mt-6 disabled:opacity-50"
           >
-            {loading ? 'Provisioning...' : 'Provision & Connect'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 

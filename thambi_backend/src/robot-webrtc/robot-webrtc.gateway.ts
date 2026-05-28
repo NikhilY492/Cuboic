@@ -166,7 +166,9 @@ export class RobotWebRtcGateway
     client.emit('webrtc:joined', { robotId, role: 'viewer' });
 
     // Tell the robot a viewer is ready so it can initiate the offer
-    client.to(robotId).emit('webrtc:viewer_ready', { viewerSocketId: client.id });
+    client
+      .to(robotId)
+      .emit('webrtc:viewer_ready', { viewerSocketId: client.id });
   }
 
   // ─── SDP Offer (Robot → Browser) ─────────────────────────────────────────
@@ -191,7 +193,11 @@ export class RobotWebRtcGateway
 
     console.log(`[WebRTC] Relaying offer from robot ${peer.robotId}`);
 
-    const payload = { robotId: peer.robotId, sdp: data.sdp, fromSocketId: client.id };
+    const payload = {
+      robotId: peer.robotId,
+      sdp: data.sdp,
+      fromSocketId: client.id,
+    };
 
     if (data.targetSocketId) {
       this.server.to(data.targetSocketId).emit('webrtc:offer', payload);
@@ -212,7 +218,9 @@ export class RobotWebRtcGateway
   ) {
     const peer = this.peers.get(client.id);
     if (!peer || peer.role !== 'viewer') {
-      console.warn(`[WebRTC] webrtc:answer from non-viewer socket ${client.id}`);
+      console.warn(
+        `[WebRTC] webrtc:answer from non-viewer socket ${client.id}`,
+      );
       return;
     }
 

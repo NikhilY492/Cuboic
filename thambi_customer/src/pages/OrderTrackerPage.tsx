@@ -7,6 +7,8 @@ import { StatusTimeline } from '../components/StatusTimeline';
 import { ConfirmCancelModal } from '../components/ConfirmCancelModal';
 import { getCustomer } from '../utils/auth';
 import { getSessionId } from '../utils/session';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './OrderTrackerPage.css';
 
 const TERMINAL = new Set<Order['status']>(['Delivered', 'Cancelled']);
@@ -158,6 +160,45 @@ export function OrderTrackerPage() {
         }
     };
 
+    const handleDownloadBill = () => {
+        if (!order) return;
+        
+        const doc = new jsPDF();
+        
+        // Header
+        doc.setFontSize(22);
+        doc.text("THAMBI", 105, 20, { align: "center" });
+        doc.setFontSize(10);
+        doc.text(`Order ID: ${order.id}`, 105, 30, { align: "center" });
+        doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`, 105, 36, { align: "center" });
+        
+        // Table
+        const tableData = order.items.map(item => [
+            item.name,
+            item.quantity.toString(),
+            `Rs. ${(item.unit_price ?? item.unitPrice ?? 0).toFixed(2)}`,
+            `Rs. ${((item.unit_price ?? item.unitPrice ?? 0) * item.quantity).toFixed(2)}`
+        ]);
+        
+        autoTable(doc, {
+            startY: 45,
+            head: [['Item', 'Qty', 'Price', 'Total']],
+            body: tableData,
+            theme: 'striped',
+            headStyles: { fillColor: [33, 33, 33] }
+        });
+        
+        // Footer Totals
+        const finalY = (doc as any).lastAutoTable.finalY + 10;
+        doc.setFontSize(12);
+        doc.text(`Subtotal: Rs. ${order.subtotal.toFixed(2)}`, 140, finalY);
+        doc.text(`Tax: Rs. ${order.tax.toFixed(2)}`, 140, finalY + 8);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Grand Total: Rs. ${order.total.toFixed(2)}`, 140, finalY + 16);
+        
+        doc.save(`Thambi_Bill_${order.id.slice(-8).toUpperCase()}.pdf`);
+    };
+
     return (
         <div className={`tracker-page fade-in ${isCancelled ? 'tracker-cancelled' : ''}`}>
             <header className="tracker-header">
@@ -274,8 +315,15 @@ export function OrderTrackerPage() {
 
                 <p className="tracker-note">Order ID: <code>{order.id}</code></p>
 
-                {canCancel && (
-                    <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                <div style={{ marginTop: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <button
+                        className="btn btn-outline"
+                        style={{ width: '100%' }}
+                        onClick={handleDownloadBill}
+                    >
+                        Download Bill (PDF)
+                    </button>
+                    {canCancel && (
                         <button
                             className="btn btn-outline"
                             style={{ borderColor: 'var(--danger, #dc3545)', color: 'var(--danger, #dc3545)', width: '100%' }}
@@ -283,8 +331,8 @@ export function OrderTrackerPage() {
                         >
                             Cancel Order
                         </button>
-                    </div>
-                )}
+                    )}
+                </div>
             </main>
 
             <ConfirmCancelModal

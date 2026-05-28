@@ -10,6 +10,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useSocketEvent } from '../../context/SocketContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getStatusColor, FONT } from '../../theme';
+import { useOptimisticMutation } from '../../hooks/useOptimisticMutation';
 
 function getTableNum(order: Order): string {
     if (order.table?.table_number !== undefined) {
@@ -138,15 +139,22 @@ export function KitchenScreen() {
         'order:updated': () => loadOrders(),
     });
 
+    const { execute: optimisticUpdateStatus } = useOptimisticMutation(
+        orders,
+        setOrders,
+        loadOrders
+    );
+
     const handleAdvanceOrder = async (order: Order) => {
         const next = NEXT_STATUS[order.status];
         if (!next) return;
-        try {
-            const updated = await ordersApi.updateStatus(order.id, next);
-            setOrders(prev => prev.map(o => o.id === order.id ? updated : o));
-        } catch (err) {
-            Alert.alert('Error', 'Failed to update order status');
-        }
+        
+        optimisticUpdateStatus(
+            'UPDATE_STATUS',
+            { orderId: order.id, status: next },
+            order.version,
+            (prevOrders) => prevOrders.map(o => o.id === order.id ? { ...o, status: next as any } : o)
+        );
     };
 
     const handleLogout = () => {

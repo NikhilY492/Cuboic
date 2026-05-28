@@ -3,8 +3,8 @@ import { View, Text, Modal, StyleSheet, TouchableOpacity, ScrollView, ActivityIn
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { Order, ordersApi } from '../../api/orders';
-import { menuApi, MenuItem } from '../../api/menu';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useMutationQueue } from '../../hooks/useMutationQueue';
 
 interface EditOrderModalProps {
     visible: boolean;
@@ -21,6 +21,7 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
     const [cart, setCart] = useState<{ itemId: string; name: string; quantity: number; unitPrice: number }[]>([]);
     const [notes, setNotes] = useState('');
     const [saving, setSaving] = useState(false);
+    const { enqueue, drain, isOnline } = useMutationQueue();
 
     useEffect(() => {
         if (visible && order) {
@@ -65,16 +66,23 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
         }
 
         setSaving(true);
-        try {
-            const payload = cart.map(c => ({ itemId: c.itemId, quantity: c.quantity }));
-            const updated = await ordersApi.updateOrderItems(order.id, payload, notes);
-            onSaved(updated);
-        } catch (err: any) {
-            console.error('Save error:', err);
-            Alert.alert('Error', err.response?.data?.message || 'Failed to update order items');
-        } finally {
-            setSaving(false);
+        const payloadItems = cart.map(c => ({ itemId: c.itemId, quantity: c.quantity }));
+        const payload = { orderId: order.id, items: payloadItems, notes };
+        
+        const optimisticOrder: Order = {
+            ...order,
+            items: cart.map(c => ({ itemId: c.itemId, name: c.name, quantity: c.quantity, unitPrice: c.unitPrice })),
+            notes,
+        };
+
+        enqueue('UPDATE_ITEMS', payload, order.version);
+        onSaved(optimisticOrder);
+        
+        if (isOnline) {
+            drain().catch(() => {});
         }
+        
+        setSaving(false);
     };
 
     const handleCancelOrder = () => {
@@ -86,14 +94,14 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
                 style: 'destructive',
                 onPress: async () => {
                     setSaving(true);
-                    try {
-                        const updated = await ordersApi.updateStatus(order.id, 'Cancelled');
-                        onSaved(updated);
-                    } catch (err: any) {
-                        Alert.alert('Error', err.response?.data?.message || 'Failed to cancel order');
-                    } finally {
-                        setSaving(false);
+                    const optimisticOrder: Order = { ...order, status: 'Cancelled' as any };
+                    enqueue('UPDATE_STATUS', { orderId: order.id, status: 'Cancelled' }, order.version);
+                    onSaved(optimisticOrder);
+                    
+                    if (isOnline) {
+                        drain().catch(() => {});
                     }
+                    setSaving(false);
                 }
             }
         ]);

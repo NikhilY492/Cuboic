@@ -13,6 +13,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { FONT, S } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSocketEvent } from '../../context/SocketContext';
 
 const EMPTY_FORM = {
     name: '',
@@ -158,12 +159,20 @@ export function MenuScreen() {
 
     useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
 
+    useSocketEvent(restaurantId, {
+        'menuItem86d': (data: { itemId: string, is_available: boolean }) => {
+            setItems(prev => prev.map(i => i.id === data.itemId ? { ...i, is_available: data.is_available } : i));
+        }
+    });
+
     const toggleAvailability = async (item: MenuItem) => {
         try {
-            await menuApi.updateItem(item.id, { is_available: !item.is_available });
+            await menuApi.toggleAvailability(item.id, !item.is_available);
             setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_available: !item.is_available } : i));
-        } catch {
-            Alert.alert('Error', 'Could not update availability');
+        } catch (e: any) {
+            const msg = e?.response?.data?.message || e?.message || 'Could not update availability';
+            console.error('[MenuScreen] toggleAvailability error:', e?.response?.status, msg);
+            Alert.alert('Permission Error', `${msg} (${e?.response?.status ?? 'network'})`);
         }
     };
 

@@ -1,5 +1,13 @@
 import {
-  Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
@@ -33,7 +41,10 @@ export class InventoryController {
   }
 
   @Patch('items/:id')
-  update(@Param('id') id: string, @Body() body: Partial<CreateInventoryItemDto>) {
+  update(
+    @Param('id') id: string,
+    @Body() body: Partial<CreateInventoryItemDto>,
+  ) {
     return this.inventoryService.update(id, body);
   }
 
@@ -43,7 +54,10 @@ export class InventoryController {
   }
 
   @Patch('items/bulk')
-  bulkUpdate(@Query('outletId') outletId: string, @Body() body: Array<{ id: string; data: Partial<CreateInventoryItemDto> }>) {
+  bulkUpdate(
+    @Query('outletId') outletId: string,
+    @Body() body: Array<{ id: string; data: Partial<CreateInventoryItemDto> }>,
+  ) {
     return this.inventoryService.bulkUpdate(outletId, body);
   }
 
@@ -61,7 +75,11 @@ export class InventoryController {
   // ── Availability Check ───────────────────────────────────────────────────
   @Post('check-availability')
   checkAvailability(
-    @Body() body: { outletId: string; items: Array<{ itemId: string; quantity: number }> },
+    @Body()
+    body: {
+      outletId: string;
+      items: Array<{ itemId: string; quantity: number }>;
+    },
   ) {
     return this.inventoryService.checkAvailability(body.outletId, body.items);
   }

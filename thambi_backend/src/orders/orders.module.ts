@@ -8,10 +8,15 @@ import { AuditModule } from '../audit/audit.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-    imports: [EventsModule, PlatformFeesModule, InventoryModule, AuditModule, UsersModule],
-    controllers: [OrdersController],
-    providers: [OrdersService],
-    exports: [OrdersService],
+  imports: [
+    EventsModule,
+    PlatformFeesModule,
+    InventoryModule,
+    AuditModule,
+    UsersModule,
+  ],
+  controllers: [OrdersController],
+  providers: [OrdersService],
+  exports: [OrdersService],
 })
-export class OrdersModule { }
-
+export class OrdersModule {}

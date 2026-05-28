@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EventsGateway } from '../events/events.gateway';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
@@ -25,7 +29,9 @@ export class InventoryService {
   }
 
   async findLowStock(outletId: string) {
-    const items = await this.prisma.inventoryItem.findMany({ where: { outletId } });
+    const items = await this.prisma.inventoryItem.findMany({
+      where: { outletId },
+    });
     return items.filter((i) => i.currentStock <= i.reorderLevel);
   }
 
@@ -50,7 +56,10 @@ export class InventoryService {
     return this.prisma.inventoryItem.delete({ where: { id } });
   }
 
-  async bulkUpdate(outletId: string, updates: Array<{ id: string; data: Partial<CreateInventoryItemDto> }>) {
+  async bulkUpdate(
+    outletId: string,
+    updates: Array<{ id: string; data: Partial<CreateInventoryItemDto> }>,
+  ) {
     const results = await this.prisma.$transaction(
       updates.map((u) =>
         this.prisma.inventoryItem.update({
@@ -59,7 +68,9 @@ export class InventoryService {
         }),
       ),
     );
-    this.eventsGateway.emitToRestaurant(outletId, 'inventory:bulk-updated', { count: results.length });
+    this.eventsGateway.emitToRestaurant(outletId, 'inventory:bulk-updated', {
+      count: results.length,
+    });
     return results;
   }
 
@@ -76,7 +87,10 @@ export class InventoryService {
     if (dto.costPerUnit !== undefined && dto.costPerUnit > 0) {
       const totalExistingValue = item.currentStock * item.costPerUnit;
       const incomingValue = dto.quantity * dto.costPerUnit;
-      newCost = newStock > 0 ? (totalExistingValue + incomingValue) / newStock : dto.costPerUnit;
+      newCost =
+        newStock > 0
+          ? (totalExistingValue + incomingValue) / newStock
+          : dto.costPerUnit;
     }
 
     const [updated] = await this.prisma.$transaction([
@@ -97,7 +111,11 @@ export class InventoryService {
       }),
     ]);
 
-    this.eventsGateway.emitToRestaurant(item.outletId, 'inventory:updated', updated);
+    this.eventsGateway.emitToRestaurant(
+      item.outletId,
+      'inventory:updated',
+      updated,
+    );
     return updated;
   }
 
@@ -125,7 +143,11 @@ export class InventoryService {
       }),
     ]);
 
-    this.eventsGateway.emitToRestaurant(item.outletId, 'inventory:updated', updated);
+    this.eventsGateway.emitToRestaurant(
+      item.outletId,
+      'inventory:updated',
+      updated,
+    );
     return updated;
   }
 
@@ -150,7 +172,10 @@ export class InventoryService {
       for (const ing of recipe.ingredients) {
         const needed = ing.quantity * orderItem.quantity;
         const existing = deductions.get(ing.inventoryItemId)?.needed ?? 0;
-        deductions.set(ing.inventoryItemId, { needed: existing + needed, outletId });
+        deductions.set(ing.inventoryItemId, {
+          needed: existing + needed,
+          outletId,
+        });
       }
     }
 
@@ -191,7 +216,9 @@ export class InventoryService {
       ]),
     );
 
-    this.eventsGateway.emitToRestaurant(outletId, 'inventory:deducted', { orderId });
+    this.eventsGateway.emitToRestaurant(outletId, 'inventory:deducted', {
+      orderId,
+    });
   }
 
   // ── Recipe-Driven Refund (called by OrdersService when items are modified/cancelled) ───
@@ -215,7 +242,10 @@ export class InventoryService {
       for (const ing of recipe.ingredients) {
         const needed = ing.quantity * orderItem.quantity;
         const existing = refunds.get(ing.inventoryItemId)?.needed ?? 0;
-        refunds.set(ing.inventoryItemId, { needed: existing + needed, outletId });
+        refunds.set(ing.inventoryItemId, {
+          needed: existing + needed,
+          outletId,
+        });
       }
     }
 
@@ -241,7 +271,9 @@ export class InventoryService {
       ]),
     );
 
-    this.eventsGateway.emitToRestaurant(outletId, 'inventory:refunded', { orderId });
+    this.eventsGateway.emitToRestaurant(outletId, 'inventory:refunded', {
+      orderId,
+    });
   }
 
   // ── Check availability for a set of menu items ──────────────────────────
@@ -262,7 +294,8 @@ export class InventoryService {
       if (!recipe) continue;
       for (const ing of recipe.ingredients) {
         const needed = ing.quantity * orderItem.quantity;
-        const avail = ing.inventoryItem.currentStock - ing.inventoryItem.reservedStock;
+        const avail =
+          ing.inventoryItem.currentStock - ing.inventoryItem.reservedStock;
         if (avail < needed) {
           unavailable.push(ing.inventoryItem.name);
         }
