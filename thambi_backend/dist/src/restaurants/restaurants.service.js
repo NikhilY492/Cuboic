@@ -18,37 +18,42 @@ let RestaurantsService = class RestaurantsService {
         this.prisma = prisma;
     }
     async findById(id) {
-        const restaurant = await this.prisma.restaurant.findUnique({ where: { id }, include: { tables: true } });
+        const restaurant = await this.prisma.restaurant.findUnique({
+            where: { id },
+            include: { tables: true },
+        });
         if (!restaurant)
             return null;
         const activeOrders = await this.prisma.order.findMany({
             where: {
                 restaurantId: id,
-                status: { in: ['Pending', 'Confirmed', 'Preparing', 'Ready', 'Assigned'] }
+                status: {
+                    in: ['Pending', 'Confirmed', 'Preparing', 'Ready', 'Assigned'],
+                },
             },
-            select: { tableId: true }
+            select: { tableId: true },
         });
-        const occupiedTableIds = new Set(activeOrders.map(o => o.tableId));
+        const occupiedTableIds = new Set(activeOrders.map((o) => o.tableId));
         return {
             ...restaurant,
-            tables: restaurant.tables.map(t => ({
+            tables: restaurant.tables.map((t) => ({
                 ...t,
-                is_occupied: occupiedTableIds.has(t.id)
-            }))
+                is_occupied: occupiedTableIds.has(t.id),
+            })),
         };
     }
     async findTables(restaurantId) {
-        let tables = await this.prisma.table.findMany({
+        const tables = await this.prisma.table.findMany({
             where: { restaurantId },
         });
-        const hasTakeaway = tables.some(t => t.table_number.toLowerCase() === 'takeaway');
+        const hasTakeaway = tables.some((t) => t.table_number.toLowerCase() === 'takeaway');
         if (!hasTakeaway) {
             const takeawayTable = await this.prisma.table.create({
                 data: {
                     restaurantId,
                     table_number: 'Takeaway',
-                    is_active: true
-                }
+                    is_active: true,
+                },
             });
             tables.push(takeawayTable);
         }

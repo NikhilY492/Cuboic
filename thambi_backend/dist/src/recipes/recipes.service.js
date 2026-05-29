@@ -18,13 +18,19 @@ let RecipesService = class RecipesService {
         this.prisma = prisma;
     }
     async upsert(dto) {
-        const menuItem = await this.prisma.menuItem.findUnique({ where: { id: dto.menuItemId } });
+        const menuItem = await this.prisma.menuItem.findUnique({
+            where: { id: dto.menuItemId },
+        });
         if (!menuItem)
             throw new common_1.NotFoundException('Menu item not found');
         return this.prisma.$transaction(async (tx) => {
-            const existing = await tx.recipe.findUnique({ where: { menuItemId: dto.menuItemId } });
+            const existing = await tx.recipe.findUnique({
+                where: { menuItemId: dto.menuItemId },
+            });
             if (existing) {
-                await tx.recipeIngredient.deleteMany({ where: { recipeId: existing.id } });
+                await tx.recipeIngredient.deleteMany({
+                    where: { recipeId: existing.id },
+                });
                 await tx.recipe.delete({ where: { id: existing.id } });
             }
             return tx.recipe.create({
@@ -57,15 +63,23 @@ let RecipesService = class RecipesService {
         return this.prisma.recipe.findMany({
             include: {
                 menuItem: { select: { id: true, name: true, price: true } },
-                ingredients: { include: { inventoryItem: { select: { id: true, name: true, unit: true } } } },
+                ingredients: {
+                    include: {
+                        inventoryItem: { select: { id: true, name: true, unit: true } },
+                    },
+                },
             },
         });
     }
     async remove(menuItemId) {
-        const recipe = await this.prisma.recipe.findUnique({ where: { menuItemId } });
+        const recipe = await this.prisma.recipe.findUnique({
+            where: { menuItemId },
+        });
         if (!recipe)
             throw new common_1.NotFoundException('Recipe not found');
-        await this.prisma.recipeIngredient.deleteMany({ where: { recipeId: recipe.id } });
+        await this.prisma.recipeIngredient.deleteMany({
+            where: { recipeId: recipe.id },
+        });
         return this.prisma.recipe.delete({ where: { id: recipe.id } });
     }
 };

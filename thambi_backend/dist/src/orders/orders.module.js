@@ -20,7 +20,13 @@ let OrdersModule = class OrdersModule {
 exports.OrdersModule = OrdersModule;
 exports.OrdersModule = OrdersModule = __decorate([
     (0, common_1.Module)({
-        imports: [events_module_1.EventsModule, platform_fees_module_1.PlatformFeesModule, inventory_module_1.InventoryModule, audit_module_1.AuditModule, users_module_1.UsersModule],
+        imports: [
+            events_module_1.EventsModule,
+            platform_fees_module_1.PlatformFeesModule,
+            inventory_module_1.InventoryModule,
+            audit_module_1.AuditModule,
+            users_module_1.UsersModule,
+        ],
         controllers: [orders_controller_1.OrdersController],
         providers: [orders_service_1.OrdersService],
         exports: [orders_service_1.OrdersService],

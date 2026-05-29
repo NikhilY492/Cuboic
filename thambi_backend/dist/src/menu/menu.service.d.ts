@@ -1,9 +1,13 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
 import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
+import { EventsGateway } from '../events/events.gateway';
+import { AuditService } from '../audit/audit.service';
 export declare class MenuService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private eventsGateway;
+    private auditService;
+    constructor(prisma: PrismaService, eventsGateway: EventsGateway, auditService: AuditService);
     getMenu(restaurantId: string, tableId?: string, categoryId?: string): Promise<{
         id: string;
         name: string;
@@ -73,6 +77,19 @@ export declare class MenuService {
         categoryId: string;
     }[]>;
     deleteItem(id: string): Promise<{
+        id: string;
+        name: string;
+        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        display_order: number;
+        price: number;
+        image_url: string | null;
+        is_available: boolean;
+        categoryId: string;
+    }>;
+    toggleAvailability(id: string, is_available: boolean, userId: string): Promise<{
         id: string;
         name: string;
         description: string | null;

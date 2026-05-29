@@ -41,6 +41,9 @@ let MenuController = class MenuController {
     bulkUpdate(restaurantId, body) {
         return this.menuService.bulkUpdate(restaurantId, body);
     }
+    toggleAvailability(id, is_available, req) {
+        return this.menuService.toggleAvailability(id, is_available, req.user.sub);
+    }
 };
 exports.MenuController = MenuController;
 __decorate([
@@ -88,6 +91,17 @@ __decorate([
     __metadata("design:paramtypes", [String, Array]),
     __metadata("design:returntype", void 0)
 ], MenuController.prototype, "bulkUpdate", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Owner', 'Manager', 'Captain'),
+    (0, common_1.Patch)(':id/86'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('is_available')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Boolean, Object]),
+    __metadata("design:returntype", void 0)
+], MenuController.prototype, "toggleAvailability", null);
 exports.MenuController = MenuController = __decorate([
     (0, common_1.Controller)('menu'),
     __metadata("design:paramtypes", [menu_service_1.MenuService])

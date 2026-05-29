@@ -17,6 +17,7 @@ export declare class PaymentsService {
             tax: number;
             total: number;
             notes: string | null;
+            version: number;
             tableId: string;
             sessionId: string | null;
             customerId: string | null;

@@ -23,7 +23,7 @@ let CategoriesService = class CategoriesService {
             orderBy: { display_order: 'asc' },
         });
     }
-    async create({ restaurantId, name, display_order }) {
+    async create({ restaurantId, name, display_order, }) {
         const count = await this.prisma.category.count({ where: { restaurantId } });
         return this.prisma.category.create({
             data: {

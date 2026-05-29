@@ -26,29 +26,35 @@ export class OrdersController {
     return this.ordersService.create(dto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Get('summary')
-  getSummary(@Query('restaurantId') restaurantId: string) {
-    return this.ordersService.getSummary(restaurantId);
+  getSummary(@Req() req: any) {
+    return this.ordersService.getSummary(req.user.restaurantId);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Get('unpaid-summary')
   getUnpaidSummary(
-    @Query('restaurantId') restaurantId: string,
+    @Req() req: any,
     @Query('customerId') customerId?: string,
     @Query('sessionId') sessionId?: string,
     @Query('phone') phone?: string,
   ) {
     return this.ordersService.getUnpaidSummary(
-      restaurantId,
+      req.user.restaurantId,
       customerId,
       sessionId,
       phone,
     );
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Get('unpaid-groups')
-  getUnpaidGroups(@Query('restaurantId') restaurantId: string) {
-    return this.ordersService.getUnpaidGroups(restaurantId);
+  getUnpaidGroups(@Req() req: any) {
+    return this.ordersService.getUnpaidGroups(req.user.restaurantId);
   }
 
   @Get('check-session')
@@ -72,13 +78,13 @@ export class OrdersController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('Staff', 'Owner')
+  @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Get()
   findAll(
-    @Query('restaurantId') restaurantId: string,
+    @Req() req: any,
     @Query('status') status?: string,
   ) {
-    return this.ordersService.findAll(restaurantId, status);
+    return this.ordersService.findAll(req.user.restaurantId, status);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -104,6 +110,8 @@ export class OrdersController {
     return this.ordersService.updateStatus(id, dto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Patch(':id/table')
   updateTable(@Param('id') id: string, @Body('tableId') tableId: string) {
     return this.ordersService.updateTable(id, tableId);
@@ -138,9 +146,21 @@ export class OrdersController {
     );
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Patch(':id/confirm')
   confirmDelivery(@Param('id') id: string) {
     return this.ordersService.confirmDelivery(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Staff', 'Owner', 'Waiter')
+  @Patch(':id/deliver-items')
+  deliverItems(
+    @Param('id') id: string,
+    @Body('itemIds') itemIds: string[],
+  ) {
+    return this.ordersService.markItemsDelivered(id, itemIds);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -151,15 +171,14 @@ export class OrdersController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('Staff', 'Owner')
+  @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Patch('mark-paid-bulk')
   markPaidBulk(
-    @Query('restaurantId') restaurantId: string,
     @Body('orderIds') orderIds: string[],
     @Req() req: any,
   ) {
     return this.ordersService.markPaidBulk(
-      restaurantId,
+      req.user.restaurantId,
       orderIds,
       req.user.sub,
     );

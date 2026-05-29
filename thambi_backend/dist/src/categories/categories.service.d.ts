@@ -11,7 +11,7 @@ export declare class CategoriesService {
         restaurantId: string;
         display_order: number;
     }[]>;
-    create({ restaurantId, name, display_order }: {
+    create({ restaurantId, name, display_order, }: {
         restaurantId: string;
         name: string;
         display_order?: number;

@@ -28,8 +28,8 @@ let UsersController = class UsersController {
     create(dto) {
         return this.usersService.create(dto);
     }
-    findAll(restaurantId) {
-        return this.usersService.findAll(restaurantId);
+    findAll(req) {
+        return this.usersService.findAll(req.user.restaurantId);
     }
     update(id, dto) {
         return this.usersService.update(id, dto);
@@ -48,9 +48,9 @@ __decorate([
 ], UsersController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findAll", null);
 __decorate([

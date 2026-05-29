@@ -14,6 +14,9 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RestaurantsController = void 0;
 const common_1 = require("@nestjs/common");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const roles_guard_1 = require("../auth/guards/roles.guard");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const events_gateway_1 = require("../events/events.gateway");
 const restaurants_service_1 = require("./restaurants.service");
 let RestaurantsController = class RestaurantsController {
@@ -37,7 +40,7 @@ let RestaurantsController = class RestaurantsController {
         return restaurant;
     }
     async create(body) {
-        console.log("BODY:", body);
+        console.log('BODY:', body);
         return this.restaurantsService.create(body);
     }
     async update(id, body) {
@@ -48,7 +51,7 @@ let RestaurantsController = class RestaurantsController {
             tableId: body.tableId,
             tableName: body.tableName,
             timestamp: new Date().toISOString(),
-            message: `Customer at ${body.tableName || 'a table'} needs the Captain!`
+            message: `Customer at ${body.tableName || 'a table'} needs the Captain!`,
         });
         return { success: true };
     }
@@ -75,6 +78,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], RestaurantsController.prototype, "getById", null);
 __decorate([
+    (0, roles_decorator_1.Roles)('Owner', 'Admin'),
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -82,6 +86,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], RestaurantsController.prototype, "create", null);
 __decorate([
+    (0, roles_decorator_1.Roles)('Owner', 'Admin'),
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -98,6 +103,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], RestaurantsController.prototype, "callCaptain", null);
 exports.RestaurantsController = RestaurantsController = __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, common_1.Controller)('restaurants'),
     __metadata("design:paramtypes", [restaurants_service_1.RestaurantsService,
         events_gateway_1.EventsGateway])

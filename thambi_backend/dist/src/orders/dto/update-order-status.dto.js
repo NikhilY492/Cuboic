@@ -13,11 +13,24 @@ exports.UpdateOrderStatusDto = void 0;
 const class_validator_1 = require("class-validator");
 class UpdateOrderStatusDto {
     status;
+    version;
 }
 exports.UpdateOrderStatusDto = UpdateOrderStatusDto;
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsIn)(['Confirmed', 'Preparing', 'Ready', 'Assigned', 'Delivered', 'Cancelled']),
+    (0, class_validator_1.IsIn)([
+        'Confirmed',
+        'Preparing',
+        'Ready',
+        'Assigned',
+        'Delivered',
+        'Cancelled',
+    ]),
     __metadata("design:type", String)
 ], UpdateOrderStatusDto.prototype, "status", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateOrderStatusDto.prototype, "version", void 0);
 //# sourceMappingURL=update-order-status.dto.js.map

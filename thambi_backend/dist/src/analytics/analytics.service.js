@@ -18,7 +18,9 @@ let AnalyticsService = class AnalyticsService {
         this.prisma = prisma;
     }
     async getRevenueTrends(restaurantId, startDate, endDate, timeframe = 'daily') {
-        const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const start = startDate
+            ? new Date(startDate)
+            : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const end = endDate ? new Date(endDate) : new Date();
         const orders = await this.prisma.order.findMany({
             where: {
@@ -36,7 +38,7 @@ let AnalyticsService = class AnalyticsService {
         const orderVolume = orders.length;
         const averageOrderValue = orderVolume > 0 ? totalRevenue / orderVolume : 0;
         const peakHoursCount = new Array(24).fill(0);
-        orders.forEach(order => {
+        orders.forEach((order) => {
             peakHoursCount[order.createdAt.getHours()]++;
         });
         const trends = [];
@@ -60,7 +62,9 @@ let AnalyticsService = class AnalyticsService {
         };
     }
     async getMenuAnalytics(restaurantId, startDate, endDate) {
-        const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const start = startDate
+            ? new Date(startDate)
+            : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const end = endDate ? new Date(endDate) : new Date();
         const orders = await this.prisma.order.findMany({
             where: {
@@ -71,15 +75,20 @@ let AnalyticsService = class AnalyticsService {
             select: { items: true },
         });
         const itemStats = {};
-        orders.forEach(order => {
+        orders.forEach((order) => {
             const items = order.items;
             if (Array.isArray(items)) {
-                items.forEach(item => {
+                items.forEach((item) => {
                     if (!itemStats[item.item_id]) {
-                        itemStats[item.item_id] = { name: item.name, quantity: 0, revenue: 0 };
+                        itemStats[item.item_id] = {
+                            name: item.name,
+                            quantity: 0,
+                            revenue: 0,
+                        };
                     }
                     itemStats[item.item_id].quantity += item.quantity || 1;
-                    itemStats[item.item_id].revenue += (item.quantity || 1) * (item.unit_price || 0);
+                    itemStats[item.item_id].revenue +=
+                        (item.quantity || 1) * (item.unit_price || 0);
                 });
             }
         });
@@ -92,12 +101,16 @@ let AnalyticsService = class AnalyticsService {
         let totalMenuVolume = 0;
         let totalMenuRevenue = 0;
         for (const [id, stats] of Object.entries(itemStats)) {
-            const catalogItem = catalogItems.find(c => c.id === id);
+            const catalogItem = catalogItems.find((c) => c.id === id);
             if (catalogItem) {
                 stats.categoryId = catalogItem.categoryId;
                 const catName = catalogItem.category?.name || 'Unknown';
                 if (!categoryStats[catalogItem.categoryId]) {
-                    categoryStats[catalogItem.categoryId] = { name: catName, revenue: 0, volume: 0 };
+                    categoryStats[catalogItem.categoryId] = {
+                        name: catName,
+                        revenue: 0,
+                        volume: 0,
+                    };
                 }
                 categoryStats[catalogItem.categoryId].revenue += stats.revenue;
                 categoryStats[catalogItem.categoryId].volume += stats.quantity;
@@ -106,9 +119,13 @@ let AnalyticsService = class AnalyticsService {
             totalMenuRevenue += stats.revenue;
             popularItems.push({ id, ...stats });
         }
-        const avgVolume = popularItems.length ? totalMenuVolume / popularItems.length : 0;
-        const avgRevenue = popularItems.length ? totalMenuRevenue / popularItems.length : 0;
-        const categorizedItems = popularItems.map(item => {
+        const avgVolume = popularItems.length
+            ? totalMenuVolume / popularItems.length
+            : 0;
+        const avgRevenue = popularItems.length
+            ? totalMenuRevenue / popularItems.length
+            : 0;
+        const categorizedItems = popularItems.map((item) => {
             let type = 'Dog';
             if (item.quantity >= avgVolume && item.revenue >= avgRevenue)
                 type = 'Star';
@@ -120,11 +137,15 @@ let AnalyticsService = class AnalyticsService {
         });
         return {
             popularItems: categorizedItems.sort((a, b) => b.quantity - a.quantity),
-            categoryPerformance: Object.entries(categoryStats).map(([id, stats]) => ({ id, ...stats })).sort((a, b) => b.revenue - a.revenue),
+            categoryPerformance: Object.entries(categoryStats)
+                .map(([id, stats]) => ({ id, ...stats }))
+                .sort((a, b) => b.revenue - a.revenue),
         };
     }
     async getCustomerInsights(restaurantId, startDate, endDate) {
-        const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const start = startDate
+            ? new Date(startDate)
+            : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const end = endDate ? new Date(endDate) : new Date();
         const orders = await this.prisma.order.findMany({
             where: {
@@ -136,7 +157,7 @@ let AnalyticsService = class AnalyticsService {
             include: { customer: true },
         });
         const spenders = {};
-        orders.forEach(order => {
+        orders.forEach((order) => {
             const cid = order.customerId;
             if (!cid)
                 return;
@@ -152,22 +173,24 @@ let AnalyticsService = class AnalyticsService {
             spenders[cid].totalSpent += order.total;
             spenders[cid].orderCount++;
         });
-        const topSpenders = Object.values(spenders).sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 10);
+        const topSpenders = Object.values(spenders)
+            .sort((a, b) => b.totalSpent - a.totalSpent)
+            .slice(0, 10);
         const allCustomerIds = Object.keys(spenders);
         const pastOrdersForTheseCustomers = await this.prisma.order.findMany({
             where: {
                 restaurantId,
                 customerId: { in: allCustomerIds },
                 createdAt: { lt: start },
-                status: { not: 'Cancelled' }
+                status: { not: 'Cancelled' },
             },
             select: { customerId: true },
-            distinct: ['customerId']
+            distinct: ['customerId'],
         });
-        const returningCustomerIds = new Set(pastOrdersForTheseCustomers.map(o => o.customerId));
+        const returningCustomerIds = new Set(pastOrdersForTheseCustomers.map((o) => o.customerId));
         let newCustomers = 0;
         let returningCustomers = 0;
-        allCustomerIds.forEach(cid => {
+        allCustomerIds.forEach((cid) => {
             if (returningCustomerIds.has(cid))
                 returningCustomers++;
             else

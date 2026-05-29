@@ -5,6 +5,7 @@ import socket from '../api/socket'
 import { UtensilsCrossed, Clock, CheckCircle, XCircle, ChevronRight, RefreshCw, WifiOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useMutationQueue } from '../hooks/useMutationQueue'
+import { printKOT, type Order } from '../utils/printKOT'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Table {
@@ -13,30 +14,6 @@ interface Table {
   is_active: boolean
 }
 
-interface OrderItem {
-  name: string
-  quantity: number
-  unitPrice: number
-}
-
-interface Order {
-  id: string
-  tableId: string
-  table?: { id: string; table_number: string }
-  customer?: { name: string; phone: string }
-  orderType: string
-  items: OrderItem[]
-  notes?: string
-  subtotal: number
-  tax: number
-  total: number
-  status: string
-  payment?: {
-    status: string
-    method: string
-  }
-  createdAt: string
-}
 
 const ACTIVE_STATUSES = ['Pending', 'Confirmed', 'Preparing', 'Ready', 'Assigned']
 
@@ -104,9 +81,7 @@ function AllOrdersList({ orders, searchQuery, onPrintKOT, onSelectOrder }: any) 
               <td className="py-3 font-medium">₹{order.total.toFixed(2)}</td>
               <td className="py-3 text-right">
                 <button onClick={() => onPrintKOT(order)} className="text-accent hover:underline mr-4 text-xs font-medium">Print KOT</button>
-                {order.orderType === 'DineIn' && (
-                    <button onClick={() => onSelectOrder(order)} className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white text-xs font-medium">Inspect</button>
-                )}
+                <button onClick={() => onSelectOrder(order)} className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white text-xs font-medium">Inspect</button>
               </td>
             </tr>
           ))}
@@ -127,6 +102,7 @@ export default function OrdersPage() {
   const [tables, setTables]           = useState<Table[]>([])
   const [orders, setOrders]           = useState<Order[]>([])
   const [selectedTable, setSelectedTable] = useState<Table | null>(null)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [filter, setFilter]           = useState<'all' | 'free' | 'occupied'>('all')
   const [searchQuery, setSearchQuery]    = useState('')
   const [loading, setLoading]         = useState(true)
@@ -163,6 +139,9 @@ export default function OrdersPage() {
   const [viewMode, setViewMode] = useState<'floor' | 'list'>('floor')
   const [printers, setPrinters] = useState<{ name: string, isDefault: boolean }[]>([])
   const [selectedPrinter, setSelectedPrinter] = useState<string>('')
+  const [autoPrint, setAutoPrint] = useState<boolean>(
+    localStorage.getItem('thambi_auto_print_kot') === 'true'
+  )
 
   useEffect(() => {
     if (window.ipcRenderer) {
@@ -203,7 +182,7 @@ export default function OrdersPage() {
   // Map table_id → its most recent active order
   const activeOrderByTableId = new Map<string, Order>()
   orders.forEach(o => {
-    if (ACTIVE_STATUSES.includes(o.status) && o.orderType === 'DineIn') {
+    if (ACTIVE_STATUSES.includes(o.status) && o.tableId) {
       const existing = activeOrderByTableId.get(o.tableId)
       if (!existing || new Date(o.createdAt) > new Date(existing.createdAt)) {
         activeOrderByTableId.set(o.tableId, o)
@@ -211,9 +190,9 @@ export default function OrdersPage() {
     }
   })
 
-  const selectedOrder = selectedTable
-    ? activeOrderByTableId.get(selectedTable.id) ?? null
-    : null
+  const selectedOrder = selectedOrderId
+    ? orders.find(o => o.id === selectedOrderId) ?? null
+    : (selectedTable ? activeOrderByTableId.get(selectedTable.id) ?? null : null)
 
   // ── Actions ─────────────────────────────────────────────────────────────
   const advanceStatus = async (order: Order) => {
@@ -231,6 +210,7 @@ export default function OrdersPage() {
     
     setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'Cancelled' } : o))
     setSelectedTable(null)
+    setSelectedOrderId(null)
     
     enqueue('UPDATE_STATUS', { orderId: order.id, status: 'Cancelled' }, (order as any).version)
     
@@ -253,48 +233,14 @@ export default function OrdersPage() {
   }
 
   const handlePrintKOT = async (order: Order) => {
-    if (!window.ipcRenderer) {
-        toast.error('Printing is only available in the desktop app.')
-        return
-    }
-    if (!selectedPrinter) {
-        toast.error('Please select a printer first from the dropdown.')
-        return
-    }
-
-    const printData = [
-        { type: 'text', value: 'KITCHEN ORDER TICKET', style: 'font-weight: 700; text-align: center; font-size: 22px;' },
-        { type: 'text', value: `Order ID: #${order.id.slice(-8).toUpperCase()}`, style: 'text-align: center; font-size: 14px;' },
-        { type: 'text', value: `Date: ${new Date(order.createdAt).toLocaleString()}`, style: 'text-align: center; font-size: 14px;' },
-        { type: 'text', value: order.orderType === 'Takeaway' ? 'Type: TAKEAWAY' : `Table: ${order.table?.table_number || 'N/A'}`, style: 'font-weight: 700; text-align: center; font-size: 18px; margin-bottom: 10px; margin-top: 5px;' },
-        { type: 'text', value: '--------------------------------', style: 'text-align: center;' }
-    ];
-
-    order.items.forEach(item => {
-        printData.push({
-            type: 'text',
-            value: `${item.quantity} x ${item.name}`,
-            style: 'font-weight: 700; font-size: 16px;'
-        });
-    });
-
-    if (order.notes) {
-        printData.push({ type: 'text', value: '--------------------------------', style: 'text-align: center;' });
-        printData.push({ type: 'text', value: `NOTES: ${order.notes}`, style: 'font-weight: 700; font-size: 14px;' });
-    }
-
-    printData.push({ type: 'text', value: '--------------------------------', style: 'text-align: center;' });
-    printData.push({ type: 'text', value: ' ', style: 'margin-bottom: 20px;' });
-
-    setActionLoading(true)
     try {
-        const result = await window.ipcRenderer.invoke('print:kot', selectedPrinter, printData)
-        if (!result.success) toast.error(`Failed to print: ${result.error}`)
-        else toast.success('Ticket sent to printer!')
+      setActionLoading(true)
+      await printKOT(order, selectedPrinter)
+      toast.success('Ticket sent to printer!')
     } catch (e: any) {
-        toast.error(`Failed to print: ${e.message}`)
+      toast.error(e.message || 'Failed to print')
     } finally {
-        setActionLoading(false)
+      setActionLoading(false)
     }
   }
 
@@ -386,18 +332,32 @@ export default function OrdersPage() {
             )}
             
             {printers.length > 0 && (
-              <select 
-                value={selectedPrinter} 
-                onChange={e => {
-                  setSelectedPrinter(e.target.value)
-                  localStorage.setItem('thambi_kot_printer', e.target.value)
-                }}
-                className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-2 py-1 text-xs text-zinc-600 dark:text-zinc-300 focus:ring-1 focus:ring-accent max-w-[120px]"
-              >
-                {printers.map(p => (
-                  <option key={p.name} value={p.name}>{p.name}</option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <select 
+                  value={selectedPrinter} 
+                  onChange={e => {
+                    setSelectedPrinter(e.target.value)
+                    localStorage.setItem('thambi_kot_printer', e.target.value)
+                  }}
+                  className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-2 py-1 text-xs text-zinc-600 dark:text-zinc-300 focus:ring-1 focus:ring-accent max-w-[120px]"
+                >
+                  {printers.map(p => (
+                    <option key={p.name} value={p.name}>{p.name}</option>
+                  ))}
+                </select>
+                <label className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={autoPrint}
+                    onChange={(e) => {
+                      setAutoPrint(e.target.checked)
+                      localStorage.setItem('thambi_auto_print_kot', e.target.checked ? 'true' : 'false')
+                    }}
+                    className="rounded border-zinc-300 text-accent focus:ring-accent w-3 h-3"
+                  />
+                  Auto-print
+                </label>
+              </div>
             )}
 
             <div className="relative">
@@ -498,7 +458,15 @@ export default function OrdersPage() {
                 return (
                   <button
                     key={table.id}
-                    onClick={() => setSelectedTable(isSelected ? null : table)}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedTable(null)
+                        setSelectedOrderId(null)
+                      } else {
+                        setSelectedTable(table)
+                        setSelectedOrderId(activeOrder ? activeOrder.id : null)
+                      }
+                    }}
                     className={`relative flex flex-col items-center justify-center aspect-square rounded-2xl border-2 transition-all cursor-pointer ${borderClass} ${bgClass}`}
                   >
                     <div className={`w-2.5 h-2.5 rounded-full mb-2 ${dotColor}`} />
@@ -538,6 +506,7 @@ export default function OrdersPage() {
                 const table = tables.find(t => t.id === o.tableId)
                 if (table) {
                   setSelectedTable(table)
+                  setSelectedOrderId(o.id)
                   setViewMode('floor')
                 }
               }
@@ -640,7 +609,7 @@ export default function OrdersPage() {
 
                 {/* Action Buttons */}
                 <div className="space-y-2">
-                  {NEXT_STATUS[selectedOrder.status] && (
+                  {NEXT_STATUS[selectedOrder.status] && selectedOrder.orderType === 'Takeaway' && (NEXT_STATUS[selectedOrder.status] !== 'Ready' || user?.role === 'Kitchen') && (
                     <button
                       onClick={() => advanceStatus(selectedOrder)}
                       disabled={actionLoading}

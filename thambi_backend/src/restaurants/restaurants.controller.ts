@@ -6,9 +6,15 @@ import {
   Body,
   Param,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { EventsGateway } from '../events/events.gateway';
 import { RestaurantsService } from './restaurants.service';
+
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('restaurants')
 export class RestaurantsController {
   constructor(
@@ -41,6 +47,7 @@ export class RestaurantsController {
   }
 
   // POST /restaurants
+  @Roles('Owner', 'Admin')
   @Post()
   async create(@Body() body: any) {
     console.log('BODY:', body);
@@ -48,6 +55,7 @@ export class RestaurantsController {
   }
 
   // PATCH /restaurants/:id
+  @Roles('Owner', 'Admin')
   @Patch(':id')
   async update(@Param('id') id: string, @Body() body: any) {
     return this.restaurantsService.update(id, body);

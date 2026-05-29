@@ -26,7 +26,7 @@ let CustomersService = class CustomersService {
     }
     async findAll() {
         return this.prisma.customer.findMany({
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
         });
     }
     async register(phone, name) {

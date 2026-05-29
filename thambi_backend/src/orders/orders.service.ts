@@ -245,13 +245,22 @@ export class OrdersService {
     }
 
     async updateStatus(id: string, dto: UpdateOrderStatusDto) {
-        await this.checkVersion(id, dto.version);
+        const existing = await this.checkVersion(id, dto.version);
         const order = await this.prisma.order.update({
             where: { id },
             data: { status: dto.status as OrderStatus, version: { increment: 1 } },
             include: { table: true, payment: true, customer: true },
         });
         if (!order) throw new NotFoundException('Order not found');
+
+        if (existing.status !== 'Confirmed' && dto.status === 'Confirmed') {
+            this.eventsGateway.emitToRestaurant(
+                order.restaurantId,
+                'order:print_kot',
+                order,
+            );
+        }
+
         this.eventsGateway.emitToRestaurant(
             order.restaurantId,
             'order:updated',
@@ -580,6 +589,41 @@ export class OrdersService {
             updatedTarget,
         );
         return updatedTarget;
+    }
+
+    async markItemsDelivered(id: string, itemIds: string[]) {
+        const order = await this.prisma.order.findUnique({ where: { id } });
+        if (!order) throw new NotFoundException('Order not found');
+
+        const items = Array.isArray(order.items) ? (order.items as any[]) : [];
+        let allDelivered = true;
+
+        const updatedItems = items.map((item: any) => {
+            const isMatch = itemIds.includes(item.itemId);
+            const isDelivered = item.isDelivered || isMatch;
+            if (!isDelivered) allDelivered = false;
+            return { ...item, isDelivered };
+        });
+
+        const newStatus = allDelivered ? 'Delivered' : order.status;
+
+        const updatedOrder = await this.prisma.order.update({
+            where: { id },
+            data: {
+                items: updatedItems,
+                status: newStatus as OrderStatus,
+                version: { increment: 1 },
+            },
+            include: { table: true, payment: true, customer: true },
+        });
+
+        this.eventsGateway.emitToRestaurant(
+            updatedOrder.restaurantId,
+            'order:updated',
+            updatedOrder,
+        );
+
+        return updatedOrder;
     }
 
     async confirmDelivery(id: string) {

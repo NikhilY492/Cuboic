@@ -30,7 +30,9 @@ let InventoryService = class InventoryService {
         });
     }
     async findLowStock(outletId) {
-        const items = await this.prisma.inventoryItem.findMany({ where: { outletId } });
+        const items = await this.prisma.inventoryItem.findMany({
+            where: { outletId },
+        });
         return items.filter((i) => i.currentStock <= i.reorderLevel);
     }
     async findOne(id) {
@@ -59,7 +61,9 @@ let InventoryService = class InventoryService {
             where: { id: u.id, outletId },
             data: u.data,
         })));
-        this.eventsGateway.emitToRestaurant(outletId, 'inventory:bulk-updated', { count: results.length });
+        this.eventsGateway.emitToRestaurant(outletId, 'inventory:bulk-updated', {
+            count: results.length,
+        });
         return results;
     }
     async stockIn(id, dto) {
@@ -71,7 +75,10 @@ let InventoryService = class InventoryService {
         if (dto.costPerUnit !== undefined && dto.costPerUnit > 0) {
             const totalExistingValue = item.currentStock * item.costPerUnit;
             const incomingValue = dto.quantity * dto.costPerUnit;
-            newCost = newStock > 0 ? (totalExistingValue + incomingValue) / newStock : dto.costPerUnit;
+            newCost =
+                newStock > 0
+                    ? (totalExistingValue + incomingValue) / newStock
+                    : dto.costPerUnit;
         }
         const [updated] = await this.prisma.$transaction([
             this.prisma.inventoryItem.update({
@@ -129,7 +136,10 @@ let InventoryService = class InventoryService {
             for (const ing of recipe.ingredients) {
                 const needed = ing.quantity * orderItem.quantity;
                 const existing = deductions.get(ing.inventoryItemId)?.needed ?? 0;
-                deductions.set(ing.inventoryItemId, { needed: existing + needed, outletId });
+                deductions.set(ing.inventoryItemId, {
+                    needed: existing + needed,
+                    outletId,
+                });
             }
         }
         if (deductions.size === 0)
@@ -160,7 +170,9 @@ let InventoryService = class InventoryService {
                 },
             }),
         ]));
-        this.eventsGateway.emitToRestaurant(outletId, 'inventory:deducted', { orderId });
+        this.eventsGateway.emitToRestaurant(outletId, 'inventory:deducted', {
+            orderId,
+        });
     }
     async refundForOrder(outletId, orderId, items) {
         const recipes = await this.prisma.recipe.findMany({
@@ -175,7 +187,10 @@ let InventoryService = class InventoryService {
             for (const ing of recipe.ingredients) {
                 const needed = ing.quantity * orderItem.quantity;
                 const existing = refunds.get(ing.inventoryItemId)?.needed ?? 0;
-                refunds.set(ing.inventoryItemId, { needed: existing + needed, outletId });
+                refunds.set(ing.inventoryItemId, {
+                    needed: existing + needed,
+                    outletId,
+                });
             }
         }
         if (refunds.size === 0)
@@ -196,7 +211,9 @@ let InventoryService = class InventoryService {
                 },
             }),
         ]));
-        this.eventsGateway.emitToRestaurant(outletId, 'inventory:refunded', { orderId });
+        this.eventsGateway.emitToRestaurant(outletId, 'inventory:refunded', {
+            orderId,
+        });
     }
     async checkAvailability(outletId, items) {
         const recipes = await this.prisma.recipe.findMany({

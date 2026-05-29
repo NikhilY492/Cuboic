@@ -73,4 +73,17 @@ export declare class MenuController {
         is_available: boolean;
         categoryId: string;
     }[]>;
+    toggleAvailability(id: string, is_available: boolean, req: any): Promise<{
+        id: string;
+        name: string;
+        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        display_order: number;
+        price: number;
+        image_url: string | null;
+        is_available: boolean;
+        categoryId: string;
+    }>;
 }

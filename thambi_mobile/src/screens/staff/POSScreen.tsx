@@ -128,14 +128,19 @@ export function POSScreen() {
                     text: item.is_available ? 'Yes, 86 it' : 'Yes, Restore',
                     style: item.is_available ? 'destructive' : 'default',
                     onPress: async () => {
+                        // Optimistic update
+                        setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_available: !item.is_available } : i));
+                        if (item.is_available) {
+                            handleRemoveFromCartAll(item.id);
+                        }
+
                         try {
-                            const updated = await menuApi.toggleAvailability(item.id, !item.is_available);
-                            setItems(prev => prev.map(i => i.id === item.id ? updated : i));
-                            if (item.is_available) {
-                                handleRemoveFromCartAll(item.id);
-                            }
-                        } catch (err) {
-                            Alert.alert('Error', 'Failed to update item availability');
+                            await menuApi.toggleAvailability(item.id, !item.is_available);
+                        } catch (err: any) {
+                            // Revert on error
+                            setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_available: item.is_available } : i));
+                            const msg = err?.response?.data?.message || 'Failed to update item availability';
+                            Alert.alert('Error', msg);
                         }
                     }
                 }

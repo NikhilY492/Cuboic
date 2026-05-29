@@ -1,10 +1,10 @@
-# Graph Report - .  (2026-05-28)
+# Graph Report - .  (2026-05-29)
 
 ## Corpus Check
-- Large corpus: 589 files · ~11,92,011 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
+- Large corpus: 433 files · ~11,67,947 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
 
 ## Summary
-- 1415 nodes · 1279 edges · 206 communities detected
+- 1426 nodes · 1294 edges · 207 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -12,16 +12,16 @@
 ## Input Scope
 - Requested: auto
 - Resolved: committed (source: default-auto)
-- Included files: 589 · Candidates: 1670
-- Excluded: 80 untracked · 144111 ignored · 9 sensitive · 0 missing committed
+- Included files: 433 · Candidates: 1836
+- Excluded: 59 untracked · 144255 ignored · 9 sensitive · 244 missing committed
 - Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
 
 ## Graph Freshness
-- Built from Git commit: `1890100`
+- Built from Git commit: `2fafe2d`
 - Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
-1. `OrdersService` - 21 edges
-2. `OrdersController` - 18 edges
+1. `OrdersService` - 22 edges
+2. `OrdersController` - 19 edges
 3. `InventoryService` - 14 edges
 4. `InventoryController` - 12 edges
 5. `RobotWebRtcGateway` - 10 edges
@@ -36,19 +36,19 @@
 
 ## Communities
 
-### Community 1 - "Community 1"
+### Community 2 - "Community 2"
 Cohesion: 0.13
 Nodes (1): OrdersService
 
 ### Community 3 - "Community 3"
-Cohesion: 0.11
+Cohesion: 0.1
 Nodes (1): OrdersController
 
-### Community 4 - "Community 4"
+### Community 5 - "Community 5"
 Cohesion: 0.14
 Nodes (7): goToCheckout(), handleAuthSuccess(), handleCheckoutInit(), handleOrderTypeSelect(), handleTableSelect(), proceedWithAuth(), proceedWithTableMove()
 
-### Community 5 - "Community 5"
+### Community 6 - "Community 6"
 Cohesion: 0.15
 Nodes (16): cleanup_peer(), connect(), create_peer_connection(), disconnect(), get_player(), main(), on_answer(), on_auth_failed() (+8 more)
 
@@ -60,7 +60,7 @@ Nodes (1): InventoryService
 Cohesion: 0.15
 Nodes (2): pickImage(), uploadProfilePicture()
 
-### Community 14 - "Community 14"
+### Community 12 - "Community 12"
 Cohesion: 0.15
 Nodes (1): InventoryController
 
@@ -78,57 +78,61 @@ Nodes (1): useSocket()
 
 ### Community 21 - "Community 21"
 Cohesion: 0.2
-Nodes (1): MenuService
+Nodes (1): useMutationQueue()
 
 ### Community 22 - "Community 22"
-Cohesion: 0.24
-Nodes (2): getDateRange(), localDate()
+Cohesion: 0.2
+Nodes (1): MenuService
 
 ### Community 24 - "Community 24"
 Cohesion: 0.22
 Nodes (1): AdminService
 
 ### Community 25 - "Community 25"
+Cohesion: 0.31
+Nodes (2): getDateRange(), localDate()
+
+### Community 27 - "Community 27"
 Cohesion: 0.36
 Nodes (5): a(), c(), i(), o(), s()
 
-### Community 26 - "Community 26"
+### Community 28 - "Community 28"
 Cohesion: 0.22
 Nodes (1): MenuController
 
-### Community 27 - "Community 27"
+### Community 29 - "Community 29"
 Cohesion: 0.25
 Nodes (2): getDateRange(), localDate()
 
-### Community 28 - "Community 28"
+### Community 30 - "Community 30"
 Cohesion: 0.22
 Nodes (1): App()
 
-### Community 29 - "Community 29"
+### Community 31 - "Community 31"
 Cohesion: 0.22
 Nodes (1): RestaurantsController
 
-### Community 30 - "Community 30"
+### Community 32 - "Community 32"
 Cohesion: 0.22
 Nodes (1): RobotsService
 
-### Community 31 - "Community 31"
+### Community 33 - "Community 33"
 Cohesion: 0.25
 Nodes (2): closeModal(), handleSave()
 
-### Community 32 - "Community 32"
+### Community 34 - "Community 34"
 Cohesion: 0.25
 Nodes (2): buildTableSummaries(), getTableNum()
 
-### Community 34 - "Community 34"
+### Community 36 - "Community 36"
 Cohesion: 0.25
 Nodes (1): AdminController
 
-### Community 36 - "Community 36"
+### Community 38 - "Community 38"
 Cohesion: 0.43
 Nodes (7): adopt(), fulfilled(), generateSecretKey(), rejected(), seed(), step(), verb()
 
-### Community 38 - "Community 38"
+### Community 39 - "Community 39"
 Cohesion: 0.39
 Nodes (5): fetchInventory(), handleAddItem(), handleAdjust(), handleDeleteItem(), handleStockIn()
 
@@ -160,19 +164,19 @@ Nodes (2): CategoriesController, CreateCategoryDto
 Cohesion: 0.38
 Nodes (4): fetchUnpaid(), handleSettleAll(), getCustomer(), setCustomer()
 
-### Community 47 - "Community 47"
+### Community 48 - "Community 48"
 Cohesion: 0.29
 Nodes (1): DeliveriesController
 
-### Community 48 - "Community 48"
+### Community 49 - "Community 49"
 Cohesion: 0.29
 Nodes (1): DeliveriesService
 
-### Community 49 - "Community 49"
+### Community 50 - "Community 50"
 Cohesion: 0.29
 Nodes (1): OutletsController
 
-### Community 50 - "Community 50"
+### Community 51 - "Community 51"
 Cohesion: 0.29
 Nodes (1): OutletsService
 
@@ -188,47 +192,47 @@ Nodes (1): RecipesService
 Cohesion: 0.29
 Nodes (1): RobotRuntimeService
 
-### Community 56 - "Community 56"
+### Community 57 - "Community 57"
 Cohesion: 0.29
 Nodes (1): UsersController
 
-### Community 60 - "Community 60"
+### Community 61 - "Community 61"
 Cohesion: 0.33
 Nodes (1): AnalyticsController
 
-### Community 61 - "Community 61"
+### Community 62 - "Community 62"
 Cohesion: 0.33
 Nodes (1): AnalyticsService
 
-### Community 62 - "Community 62"
+### Community 63 - "Community 63"
 Cohesion: 0.4
 Nodes (1): AuthService
 
-### Community 64 - "Community 64"
+### Community 65 - "Community 65"
 Cohesion: 0.33
 Nodes (1): CustomersController
 
-### Community 65 - "Community 65"
+### Community 66 - "Community 66"
 Cohesion: 0.33
 Nodes (1): CustomersService
 
-### Community 66 - "Community 66"
+### Community 67 - "Community 67"
 Cohesion: 0.53
 Nodes (4): invoke(), off(), on(), send()
 
-### Community 67 - "Community 67"
+### Community 68 - "Community 68"
 Cohesion: 0.33
 Nodes (1): PlatformFeesController
 
-### Community 68 - "Community 68"
+### Community 69 - "Community 69"
 Cohesion: 0.33
 Nodes (1): TelemetryService
 
-### Community 70 - "Community 70"
+### Community 71 - "Community 71"
 Cohesion: 0.4
 Nodes (1): AuditService
 
-### Community 71 - "Community 71"
+### Community 72 - "Community 72"
 Cohesion: 0.4
 Nodes (1): CategoriesService
 
@@ -863,7 +867,7 @@ Nodes (1): UsersModule
 ## Knowledge Gaps
 - **103 isolated node(s):** `Return a shared MediaPlayer for the camera.`, `Create and register a new RTCPeerConnection for a viewer.`, `A viewer has joined our room — initiate the offer.`, `Browser answered our offer — set the remote description.`, `ICE candidate from browser — forward to the correct peer connection.` (+98 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 1`** (1 nodes): `OrdersService`
+- **Thin community `Community 2`** (1 nodes): `OrdersService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 3`** (1 nodes): `OrdersController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -871,7 +875,7 @@ Nodes (1): UsersModule
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 10`** (2 nodes): `pickImage()`, `uploadProfilePicture()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 14`** (1 nodes): `InventoryController`
+- **Thin community `Community 12`** (1 nodes): `InventoryController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 17`** (1 nodes): `RobotWebRtcGateway`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -879,27 +883,29 @@ Nodes (1): UsersModule
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 20`** (1 nodes): `useSocket()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 21`** (1 nodes): `MenuService`
+- **Thin community `Community 21`** (1 nodes): `useMutationQueue()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 22`** (2 nodes): `getDateRange()`, `localDate()`
+- **Thin community `Community 22`** (1 nodes): `MenuService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 24`** (1 nodes): `AdminService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 26`** (1 nodes): `MenuController`
+- **Thin community `Community 25`** (2 nodes): `getDateRange()`, `localDate()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 27`** (2 nodes): `getDateRange()`, `localDate()`
+- **Thin community `Community 28`** (1 nodes): `MenuController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 28`** (1 nodes): `App()`
+- **Thin community `Community 29`** (2 nodes): `getDateRange()`, `localDate()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 29`** (1 nodes): `RestaurantsController`
+- **Thin community `Community 30`** (1 nodes): `App()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 30`** (1 nodes): `RobotsService`
+- **Thin community `Community 31`** (1 nodes): `RestaurantsController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 31`** (2 nodes): `closeModal()`, `handleSave()`
+- **Thin community `Community 32`** (1 nodes): `RobotsService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 32`** (2 nodes): `buildTableSummaries()`, `getTableNum()`
+- **Thin community `Community 33`** (2 nodes): `closeModal()`, `handleSave()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 34`** (1 nodes): `AdminController`
+- **Thin community `Community 34`** (2 nodes): `buildTableSummaries()`, `getTableNum()`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 36`** (1 nodes): `AdminController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 40`** (1 nodes): `RecipesController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -911,13 +917,13 @@ Nodes (1): UsersModule
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 45`** (2 nodes): `CategoriesController`, `CreateCategoryDto`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 47`** (1 nodes): `DeliveriesController`
+- **Thin community `Community 48`** (1 nodes): `DeliveriesController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 48`** (1 nodes): `DeliveriesService`
+- **Thin community `Community 49`** (1 nodes): `DeliveriesService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 49`** (1 nodes): `OutletsController`
+- **Thin community `Community 50`** (1 nodes): `OutletsController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 50`** (1 nodes): `OutletsService`
+- **Thin community `Community 51`** (1 nodes): `OutletsService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 52`** (1 nodes): `PlatformFeesService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -925,25 +931,25 @@ Nodes (1): UsersModule
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 54`** (1 nodes): `RobotRuntimeService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 56`** (1 nodes): `UsersController`
+- **Thin community `Community 57`** (1 nodes): `UsersController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 60`** (1 nodes): `AnalyticsController`
+- **Thin community `Community 61`** (1 nodes): `AnalyticsController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 61`** (1 nodes): `AnalyticsService`
+- **Thin community `Community 62`** (1 nodes): `AnalyticsService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 62`** (1 nodes): `AuthService`
+- **Thin community `Community 63`** (1 nodes): `AuthService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 64`** (1 nodes): `CustomersController`
+- **Thin community `Community 65`** (1 nodes): `CustomersController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 65`** (1 nodes): `CustomersService`
+- **Thin community `Community 66`** (1 nodes): `CustomersService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 67`** (1 nodes): `PlatformFeesController`
+- **Thin community `Community 68`** (1 nodes): `PlatformFeesController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 68`** (1 nodes): `TelemetryService`
+- **Thin community `Community 69`** (1 nodes): `TelemetryService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 70`** (1 nodes): `AuditService`
+- **Thin community `Community 71`** (1 nodes): `AuditService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 71`** (1 nodes): `CategoriesService`
+- **Thin community `Community 72`** (1 nodes): `CategoriesService`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 77`** (1 nodes): `PaymentsController`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -1257,17 +1263,17 @@ Nodes (1): UsersModule
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `useMutationQueue()` connect `Community 21` to `Community 4`?**
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **What connects `Return a shared MediaPlayer for the camera.`, `Create and register a new RTCPeerConnection for a viewer.`, `A viewer has joined our room — initiate the offer.` to the rest of the system?**
   _103 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.09 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.09 - nodes in this community are weakly interconnected._
+- **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.13 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
 - **Should `Community 4` be split into smaller, more focused modules?**
-  _Cohesion score 0.14 - nodes in this community are weakly interconnected._
-- **Should `Community 6` be split into smaller, more focused modules?**
-  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
-- **Should `Community 8` be split into smaller, more focused modules?**
+  _Cohesion score 0.13 - nodes in this community are weakly interconnected._
+- **Should `Community 5` be split into smaller, more focused modules?**
   _Cohesion score 0.14 - nodes in this community are weakly interconnected._

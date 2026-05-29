@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import ProvisionPage from './pages/ProvisionPage'
 import DashboardPage from './pages/DashboardPage'
@@ -12,8 +12,10 @@ import IntegrationsPage from './pages/IntegrationsPage'
 import Layout from './components/Layout'
 import { useAuth } from './contexts/AuthContext'
 import { connectSocket, disconnectSocket } from './api/socket'
+import { useAutoPrint } from './hooks/useAutoPrint'
 
 function App() {
+  useAutoPrint()
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isLoading } = useAuth()
@@ -63,6 +65,8 @@ function App() {
         <Route path="/integrations" element={<IntegrationsPage />} />
         <Route path="/settings" element={<div className="p-8">Settings</div>} />
       </Route>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )
 }

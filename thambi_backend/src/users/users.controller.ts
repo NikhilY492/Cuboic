@@ -8,6 +8,7 @@ import {
   Body,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -28,8 +29,8 @@ export class UsersController {
   }
 
   @Get()
-  findAll(@Query('restaurantId') restaurantId: string) {
-    return this.usersService.findAll(restaurantId);
+  findAll(@Req() req: any) {
+    return this.usersService.findAll(req.user.restaurantId);
   }
 
   @Patch(':id')

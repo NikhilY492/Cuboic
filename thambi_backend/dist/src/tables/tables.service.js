@@ -19,13 +19,13 @@ let TablesService = class TablesService {
     }
     create(restaurantId, table_number) {
         return this.prisma.table.create({
-            data: { restaurantId, table_number, is_active: true }
+            data: { restaurantId, table_number, is_active: true },
         });
     }
     updateStatus(id, is_active) {
         return this.prisma.table.update({
             where: { id },
-            data: { is_active }
+            data: { is_active },
         });
     }
 };

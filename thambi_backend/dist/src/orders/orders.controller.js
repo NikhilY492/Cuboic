@@ -29,14 +29,14 @@ let OrdersController = class OrdersController {
     create(dto) {
         return this.ordersService.create(dto);
     }
-    getSummary(restaurantId) {
-        return this.ordersService.getSummary(restaurantId);
+    getSummary(req) {
+        return this.ordersService.getSummary(req.user.restaurantId);
     }
-    getUnpaidSummary(restaurantId, customerId, sessionId, phone) {
-        return this.ordersService.getUnpaidSummary(restaurantId, customerId, sessionId, phone);
+    getUnpaidSummary(req, customerId, sessionId, phone) {
+        return this.ordersService.getUnpaidSummary(req.user.restaurantId, customerId, sessionId, phone);
     }
-    getUnpaidGroups(restaurantId) {
-        return this.ordersService.getUnpaidGroups(restaurantId);
+    getUnpaidGroups(req) {
+        return this.ordersService.getUnpaidGroups(req.user.restaurantId);
     }
     checkSession(restaurantId, tableId) {
         return this.ordersService.getOrCreateSession(restaurantId, tableId);
@@ -47,8 +47,11 @@ let OrdersController = class OrdersController {
     findOne(id) {
         return this.ordersService.findOne(id);
     }
-    findAll(restaurantId, status) {
-        return this.ordersService.findAll(restaurantId, status);
+    findAll(req, status) {
+        return this.ordersService.findAll(req.user.restaurantId, status);
+    }
+    mergeOrders(body, req) {
+        return this.ordersService.mergeOrders(body.targetOrderId, body.sourceOrderIds, req.user?.sub, body.version);
     }
     updateStatus(id, dto) {
         return this.ordersService.updateStatus(id, dto);
@@ -56,20 +59,23 @@ let OrdersController = class OrdersController {
     updateTable(id, tableId) {
         return this.ordersService.updateTable(id, tableId);
     }
-    cancelOrder(id, req) {
-        return this.ordersService.cancelOrder(id, req.user?.sub);
+    cancelOrder(id, version, req) {
+        return this.ordersService.cancelOrder(id, req.user?.sub, version);
     }
-    updateItems(id, items, notes, req) {
-        return this.ordersService.updateItems(id, items, req.user.sub, notes);
+    updateItems(id, items, notes, version, req) {
+        return this.ordersService.updateItems(id, items, req.user.sub, notes, version);
     }
     confirmDelivery(id) {
         return this.ordersService.confirmDelivery(id);
     }
+    deliverItems(id, itemIds) {
+        return this.ordersService.markItemsDelivered(id, itemIds);
+    }
     markAsPaid(id, req) {
         return this.ordersService.markAsPaid(id, req.user.sub);
     }
-    markPaidBulk(restaurantId, orderIds, req) {
-        return this.ordersService.markPaidBulk(restaurantId, orderIds, req.user.sub);
+    markPaidBulk(orderIds, req) {
+        return this.ordersService.markPaidBulk(req.user.restaurantId, orderIds, req.user.sub);
     }
 };
 exports.OrdersController = OrdersController;
@@ -81,27 +87,33 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "create", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner', 'Admin', 'Manager'),
     (0, common_1.Get)('summary'),
-    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getSummary", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner', 'Admin', 'Manager'),
     (0, common_1.Get)('unpaid-summary'),
-    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Query)('customerId')),
     __param(2, (0, common_1.Query)('sessionId')),
     __param(3, (0, common_1.Query)('phone')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String, String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getUnpaidSummary", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner', 'Admin', 'Manager'),
     (0, common_1.Get)('unpaid-groups'),
-    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getUnpaidGroups", null);
 __decorate([
@@ -130,14 +142,24 @@ __decorate([
 ], OrdersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('Staff', 'Owner'),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner', 'Admin', 'Manager'),
     (0, common_1.Get)(),
-    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Query)('status')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner', 'Manager', 'Captain'),
+    (0, common_1.Post)('merge'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "mergeOrders", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('Staff', 'Owner'),
@@ -149,6 +171,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "updateStatus", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner', 'Admin', 'Manager'),
     (0, common_1.Patch)(':id/table'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('tableId')),
@@ -160,9 +184,10 @@ __decorate([
     (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
     (0, common_1.Patch)(':id/cancel'),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)('version')),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "cancelOrder", null);
 __decorate([
@@ -172,18 +197,31 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('items')),
     __param(2, (0, common_1.Body)('notes')),
-    __param(3, (0, common_1.Req)()),
+    __param(3, (0, common_1.Body)('version')),
+    __param(4, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Array, Object, Object]),
+    __metadata("design:paramtypes", [String, Array, Object, Object, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "updateItems", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner', 'Admin', 'Manager'),
     (0, common_1.Patch)(':id/confirm'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "confirmDelivery", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner', 'Waiter'),
+    (0, common_1.Patch)(':id/deliver-items'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('itemIds')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Array]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "deliverItems", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('Staff', 'Owner'),
@@ -196,13 +234,12 @@ __decorate([
 ], OrdersController.prototype, "markAsPaid", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('Staff', 'Owner'),
+    (0, roles_decorator_1.Roles)('Staff', 'Owner', 'Admin', 'Manager'),
     (0, common_1.Patch)('mark-paid-bulk'),
-    __param(0, (0, common_1.Query)('restaurantId')),
-    __param(1, (0, common_1.Body)('orderIds')),
-    __param(2, (0, common_1.Req)()),
+    __param(0, (0, common_1.Body)('orderIds')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Array, Object]),
+    __metadata("design:paramtypes", [Array, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "markPaidBulk", null);
 exports.OrdersController = OrdersController = __decorate([

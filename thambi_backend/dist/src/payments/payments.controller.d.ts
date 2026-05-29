@@ -2,7 +2,7 @@ import { PaymentsService } from './payments.service';
 export declare class PaymentsController {
     private readonly paymentsService;
     constructor(paymentsService: PaymentsService);
-    findAll(restaurantId: string, from?: string, to?: string): import("@prisma/client").Prisma.PrismaPromise<({
+    findAll(req: any, from?: string, to?: string): import("@prisma/client").Prisma.PrismaPromise<({
         order: {
             id: string;
             createdAt: Date;
@@ -17,6 +17,7 @@ export declare class PaymentsController {
             tax: number;
             total: number;
             notes: string | null;
+            version: number;
             tableId: string;
             sessionId: string | null;
             customerId: string | null;
@@ -31,7 +32,7 @@ export declare class PaymentsController {
         method: string;
         transaction_id: string | null;
     })[]>;
-    getSummary(restaurantId: string): Promise<{
+    getSummary(req: any): Promise<{
         order_count: number;
         total_revenue: number;
     }>;

@@ -23,28 +23,28 @@ let PaymentsController = class PaymentsController {
     constructor(paymentsService) {
         this.paymentsService = paymentsService;
     }
-    findAll(restaurantId, from, to) {
-        return this.paymentsService.findAll(restaurantId, from, to);
+    findAll(req, from, to) {
+        return this.paymentsService.findAll(req.user.restaurantId, from, to);
     }
-    getSummary(restaurantId) {
-        return this.paymentsService.getSummary(restaurantId);
+    getSummary(req) {
+        return this.paymentsService.getSummary(req.user.restaurantId);
     }
 };
 exports.PaymentsController = PaymentsController;
 __decorate([
     (0, common_1.Get)(),
-    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Query)('from')),
     __param(2, (0, common_1.Query)('to')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], PaymentsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('summary'),
-    __param(0, (0, common_1.Query)('restaurantId')),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PaymentsController.prototype, "getSummary", null);
 exports.PaymentsController = PaymentsController = __decorate([

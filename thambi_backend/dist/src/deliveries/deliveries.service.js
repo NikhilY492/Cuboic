@@ -21,7 +21,9 @@ let DeliveriesService = class DeliveriesService {
         this.eventsGateway = eventsGateway;
     }
     async create(dto) {
-        const robot = await this.prisma.robot.findUnique({ where: { id: dto.robotId } });
+        const robot = await this.prisma.robot.findUnique({
+            where: { id: dto.robotId },
+        });
         if (!robot)
             throw new common_1.NotFoundException('Robot not found');
         if (robot.status !== 'Idle')
@@ -78,7 +80,9 @@ let DeliveriesService = class DeliveriesService {
         });
     }
     async confirmStop(deliveryId, stopIndex) {
-        const delivery = await this.prisma.delivery.findUnique({ where: { id: deliveryId } });
+        const delivery = await this.prisma.delivery.findUnique({
+            where: { id: deliveryId },
+        });
         if (!delivery)
             throw new common_1.NotFoundException('Delivery not found');
         const stops = delivery.stops;
@@ -87,10 +91,19 @@ let DeliveriesService = class DeliveriesService {
             throw new common_1.NotFoundException('Stop not found');
         if (stop.status === 'Delivered')
             throw new common_1.BadRequestException('Stop already confirmed');
-        stops[stopIndex] = { ...stop, status: 'Delivered', delivered_at: new Date().toISOString() };
-        await this.prisma.order.update({ where: { id: stop.orderId }, data: { status: 'Delivered' } });
-        const robot = await this.prisma.robot.findUnique({ where: { id: delivery.robotId } });
-        let robotUpdate = {};
+        stops[stopIndex] = {
+            ...stop,
+            status: 'Delivered',
+            delivered_at: new Date().toISOString(),
+        };
+        await this.prisma.order.update({
+            where: { id: stop.orderId },
+            data: { status: 'Delivered' },
+        });
+        const robot = await this.prisma.robot.findUnique({
+            where: { id: delivery.robotId },
+        });
+        const robotUpdate = {};
         if (robot) {
             const cabs = robot.cabinets;
             const updatedCabs = cabs.map((c) => ({
@@ -104,7 +117,10 @@ let DeliveriesService = class DeliveriesService {
         if (allDone && robot)
             robotUpdate.status = 'Idle';
         if (robot && Object.keys(robotUpdate).length > 0) {
-            await this.prisma.robot.update({ where: { id: delivery.robotId }, data: robotUpdate });
+            await this.prisma.robot.update({
+                where: { id: delivery.robotId },
+                data: robotUpdate,
+            });
         }
         const updated = await this.prisma.delivery.update({
             where: { id: deliveryId },

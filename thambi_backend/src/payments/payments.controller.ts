@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -12,15 +12,15 @@ export class PaymentsController {
 
   @Get()
   findAll(
-    @Query('restaurantId') restaurantId: string,
+    @Req() req: any,
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return this.paymentsService.findAll(restaurantId, from, to);
+    return this.paymentsService.findAll(req.user.restaurantId, from, to);
   }
 
   @Get('summary')
-  getSummary(@Query('restaurantId') restaurantId: string) {
-    return this.paymentsService.getSummary(restaurantId);
+  getSummary(@Req() req: any) {
+    return this.paymentsService.getSummary(req.user.restaurantId);
   }
 }

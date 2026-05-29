@@ -54,7 +54,9 @@ let UsersService = class UsersService {
     async create(dto) {
         dto.userId = dto.userId.trim();
         dto.name = dto.name.trim();
-        const existing = await this.prisma.user.findUnique({ where: { user_id: dto.userId } });
+        const existing = await this.prisma.user.findUnique({
+            where: { user_id: dto.userId },
+        });
         if (existing)
             throw new common_1.ConflictException('User ID already taken');
         const passwordHash = await bcrypt.hash(dto.password, 10);
@@ -65,7 +67,12 @@ let UsersService = class UsersService {
                 password_hash: passwordHash,
                 role: dto.role ?? 'Staff',
                 restaurantId: dto.restaurantId ?? null,
-                dashboard_config: dto.dashboard_config ?? ["Pending", "Preparing", "Completed", "Robots"],
+                dashboard_config: dto.dashboard_config ?? [
+                    'Pending',
+                    'Preparing',
+                    'Completed',
+                    'Robots',
+                ],
             },
         });
         return user;
@@ -74,9 +81,16 @@ let UsersService = class UsersService {
         return this.prisma.user.findMany({
             where: { restaurantId },
             select: {
-                id: true, name: true, user_id: true, role: true,
-                is_active: true, restaurantId: true, createdAt: true,
-                dashboard_config: true, email: true, phone: true,
+                id: true,
+                name: true,
+                user_id: true,
+                role: true,
+                is_active: true,
+                restaurantId: true,
+                createdAt: true,
+                dashboard_config: true,
+                email: true,
+                phone: true,
                 image_url: true,
             },
         });
@@ -97,7 +111,16 @@ let UsersService = class UsersService {
         return this.prisma.user.update({
             where: { id },
             data: { password_hash: hash },
-            select: { id: true, name: true, user_id: true, role: true, dashboard_config: true, email: true, phone: true, image_url: true }
+            select: {
+                id: true,
+                name: true,
+                user_id: true,
+                role: true,
+                dashboard_config: true,
+                email: true,
+                phone: true,
+                image_url: true,
+            },
         });
     }
     async updateProfile(id, dto) {
@@ -105,9 +128,15 @@ let UsersService = class UsersService {
             where: { id },
             data: { ...dto },
             select: {
-                id: true, name: true, user_id: true, role: true,
-                restaurantId: true, email: true, phone: true,
-                dashboard_config: true, image_url: true
+                id: true,
+                name: true,
+                user_id: true,
+                role: true,
+                restaurantId: true,
+                email: true,
+                phone: true,
+                dashboard_config: true,
+                image_url: true,
             },
         });
     }
@@ -120,7 +149,14 @@ let UsersService = class UsersService {
         return this.prisma.user.update({
             where: { id },
             data,
-            select: { id: true, name: true, user_id: true, role: true, is_active: true, dashboard_config: true }
+            select: {
+                id: true,
+                name: true,
+                user_id: true,
+                role: true,
+                is_active: true,
+                dashboard_config: true,
+            },
         });
     }
     async remove(id) {

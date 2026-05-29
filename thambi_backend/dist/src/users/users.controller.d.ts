@@ -19,7 +19,7 @@ export declare class UsersController {
         dashboard_config: import("@prisma/client/runtime/library").JsonValue;
         outletId: string | null;
     }>;
-    findAll(restaurantId: string): import("@prisma/client").Prisma.PrismaPromise<{
+    findAll(req: any): import("@prisma/client").Prisma.PrismaPromise<{
         id: string;
         name: string;
         is_active: boolean;

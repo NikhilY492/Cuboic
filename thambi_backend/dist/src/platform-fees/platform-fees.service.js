@@ -29,7 +29,9 @@ let PlatformFeesService = class PlatformFeesService {
     findAll(restaurantId) {
         return this.prisma.platformFee.findMany({
             where: { restaurantId },
-            include: { order: { select: { id: true, total: true, createdAt: true } } },
+            include: {
+                order: { select: { id: true, total: true, createdAt: true } },
+            },
             orderBy: { createdAt: 'desc' },
         });
     }
@@ -38,9 +40,13 @@ let PlatformFeesService = class PlatformFeesService {
             where: { restaurantId },
             select: { amount: true, isPaid: true },
         });
-        const totalOwed = fees.filter(f => !f.isPaid).reduce((s, f) => s + f.amount, 0);
-        const totalPaid = fees.filter(f => f.isPaid).reduce((s, f) => s + f.amount, 0);
-        const unpaidCount = fees.filter(f => !f.isPaid).length;
+        const totalOwed = fees
+            .filter((f) => !f.isPaid)
+            .reduce((s, f) => s + f.amount, 0);
+        const totalPaid = fees
+            .filter((f) => f.isPaid)
+            .reduce((s, f) => s + f.amount, 0);
+        const unpaidCount = fees.filter((f) => !f.isPaid).length;
         return { totalOwed, totalPaid, unpaidCount };
     }
     async markAsPaid(feeId) {

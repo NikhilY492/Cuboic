@@ -44,21 +44,33 @@ export declare class OrdersController {
         tax: number;
         total: number;
         notes: string | null;
+        version: number;
         tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }>;
-    getSummary(restaurantId: string): Promise<{
+    getSummary(req: any): Promise<{
         pending: number;
         preparing: number;
         completed: number;
     }>;
-    getUnpaidSummary(restaurantId: string, customerId?: string, sessionId?: string, phone?: string): Promise<{
+    getUnpaidSummary(req: any, customerId?: string, sessionId?: string, phone?: string): Promise<{
         count: number;
         total: number;
         orderIds: string[];
     }>;
-    getUnpaidGroups(restaurantId: string): Promise<any[]>;
+    getUnpaidGroups(req: any): Promise<{
+        sessionId: string | null;
+        dbSessionId: string | null;
+        sessionStatus?: string;
+        customerId: string | null;
+        customer: any;
+        table: any;
+        total: number;
+        count: number;
+        orderIds: string[];
+        lastOrderAt: Date;
+    }[]>;
     checkSession(restaurantId: string, tableId: string): Promise<{
         id: string;
         createdAt: Date;
@@ -117,11 +129,12 @@ export declare class OrdersController {
         tax: number;
         total: number;
         notes: string | null;
+        version: number;
         tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }) | null, null, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
-    findAll(restaurantId: string, status?: string): import("@prisma/client").Prisma.PrismaPromise<({
+    findAll(req: any, status?: string): import("@prisma/client").Prisma.PrismaPromise<({
         table: {
             id: string;
             is_active: boolean;
@@ -161,10 +174,60 @@ export declare class OrdersController {
         tax: number;
         total: number;
         notes: string | null;
+        version: number;
         tableId: string;
         sessionId: string | null;
         customerId: string | null;
     })[]>;
+    mergeOrders(body: {
+        targetOrderId: string;
+        sourceOrderIds: string[];
+        version?: number;
+    }, req: any): Promise<{
+        table: {
+            id: string;
+            is_active: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            table_number: string;
+            restaurantId: string;
+        };
+        customer: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string;
+        } | null;
+        payment: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            amount: number;
+            orderId: string;
+            method: string;
+            transaction_id: string | null;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
+        customer_session_id: string;
+        orderType: string;
+        items: import("@prisma/client/runtime/library").JsonValue;
+        subtotal: number;
+        tax: number;
+        total: number;
+        notes: string | null;
+        version: number;
+        tableId: string;
+        sessionId: string | null;
+        customerId: string | null;
+    }>;
     updateStatus(id: string, dto: UpdateOrderStatusDto): Promise<{
         table: {
             id: string;
@@ -205,6 +268,7 @@ export declare class OrdersController {
         tax: number;
         total: number;
         notes: string | null;
+        version: number;
         tableId: string;
         sessionId: string | null;
         customerId: string | null;
@@ -249,11 +313,12 @@ export declare class OrdersController {
         tax: number;
         total: number;
         notes: string | null;
+        version: number;
         tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }>;
-    cancelOrder(id: string, req: any): Promise<{
+    cancelOrder(id: string, version: number | undefined, req: any): Promise<{
         table: {
             id: string;
             is_active: boolean;
@@ -293,6 +358,7 @@ export declare class OrdersController {
         tax: number;
         total: number;
         notes: string | null;
+        version: number;
         tableId: string;
         sessionId: string | null;
         customerId: string | null;
@@ -300,7 +366,7 @@ export declare class OrdersController {
     updateItems(id: string, items: Array<{
         itemId: string;
         quantity: number;
-    }>, notes: string | undefined, req: any): Promise<{
+    }>, notes: string | undefined, version: number | undefined, req: any): Promise<{
         table: {
             id: string;
             is_active: boolean;
@@ -340,6 +406,7 @@ export declare class OrdersController {
         tax: number;
         total: number;
         notes: string | null;
+        version: number;
         tableId: string;
         sessionId: string | null;
         customerId: string | null;
@@ -384,6 +451,52 @@ export declare class OrdersController {
         tax: number;
         total: number;
         notes: string | null;
+        version: number;
+        tableId: string;
+        sessionId: string | null;
+        customerId: string | null;
+    }>;
+    deliverItems(id: string, itemIds: string[]): Promise<{
+        table: {
+            id: string;
+            is_active: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            table_number: string;
+            restaurantId: string;
+        };
+        customer: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string;
+        } | null;
+        payment: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            amount: number;
+            orderId: string;
+            method: string;
+            transaction_id: string | null;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        restaurantId: string;
+        outletId: string | null;
+        status: import("@prisma/client").$Enums.OrderStatus;
+        customer_session_id: string;
+        orderType: string;
+        items: import("@prisma/client/runtime/library").JsonValue;
+        subtotal: number;
+        tax: number;
+        total: number;
+        notes: string | null;
+        version: number;
         tableId: string;
         sessionId: string | null;
         customerId: string | null;
@@ -428,11 +541,12 @@ export declare class OrdersController {
         tax: number;
         total: number;
         notes: string | null;
+        version: number;
         tableId: string;
         sessionId: string | null;
         customerId: string | null;
     }>;
-    markPaidBulk(restaurantId: string, orderIds: string[], req: any): Promise<{
+    markPaidBulk(orderIds: string[], req: any): Promise<{
         success: boolean;
         count: number;
     }>;

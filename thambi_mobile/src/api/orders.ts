@@ -14,6 +14,7 @@ export interface OrderItem {
     name: string;
     quantity: number;
     unitPrice: number;
+    isDelivered?: boolean;
 }
 
 export interface OrderTable {
@@ -72,6 +73,9 @@ export const ordersApi = {
 
     updateOrderItems: (id: string, items: { itemId: string, quantity: number }[], notes?: string, version?: number) =>
         api.patch<Order>(`/orders/${id}/items`, { items, notes, version }).then(r => r.data),
+
+    deliverItems: (id: string, itemIds: string[]) =>
+        api.patch<Order>(`/orders/${id}/deliver-items`, { itemIds }).then(r => r.data),
 
     mergeOrders: async (targetOrderId: string, sourceOrderIds: string[], version?: number): Promise<Order> => {
         const res = await api.post(`/orders/merge`, { targetOrderId, sourceOrderIds, version });

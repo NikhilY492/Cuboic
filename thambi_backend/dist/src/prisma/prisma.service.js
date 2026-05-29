@@ -23,7 +23,7 @@ let PrismaService = class PrismaService extends client_1.PrismaClient {
                 console.error(`❌ Prisma connection failed. Retries left: ${retries}. Waiting for DB wake-up...`);
                 if (retries === 0)
                     throw err;
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise((resolve) => setTimeout(resolve, 3000));
             }
         }
     }

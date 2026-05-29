@@ -166,10 +166,15 @@ export function MenuScreen() {
     });
 
     const toggleAvailability = async (item: MenuItem) => {
+        // Optimistic update
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_available: !item.is_available } : i));
+        
         try {
             await menuApi.toggleAvailability(item.id, !item.is_available);
-            setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_available: !item.is_available } : i));
         } catch (e: any) {
+            // Revert on error
+            setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_available: item.is_available } : i));
+            
             const msg = e?.response?.data?.message || e?.message || 'Could not update availability';
             console.error('[MenuScreen] toggleAvailability error:', e?.response?.status, msg);
             Alert.alert('Permission Error', `${msg} (${e?.response?.status ?? 'network'})`);

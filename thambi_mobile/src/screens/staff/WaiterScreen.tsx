@@ -33,7 +33,7 @@ function WaiterCard({
     onDeliver 
 }: { 
     item: Order; 
-    onDeliver?: (o: Order) => void;
+    onDeliver?: (o: Order, itemIds: string[]) => void;
 }) {
     const { colors } = useTheme();
     const indicatorColor = getStatusColor(item.status, colors);
@@ -44,6 +44,27 @@ function WaiterCard({
     const timeDisplay = elapsedMinutes > 0 ? `${elapsedMinutes} Min` : 'Just now';
     
     const isReady = item.status === 'Ready';
+
+    const undeliveredItems = item.items.filter((it: any) => !it.isDelivered);
+    const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+    useEffect(() => {
+        setSelectedItems(item.items.filter((it: any) => !it.isDelivered).map((it: any) => it.itemId));
+    }, [item]);
+
+    const toggleItem = (itemId: string) => {
+        setSelectedItems(prev => prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]);
+    };
+
+    const isAllSelected = selectedItems.length === undeliveredItems.length && undeliveredItems.length > 0;
+
+    const toggleSelectAll = () => {
+        if (isAllSelected) {
+            setSelectedItems([]);
+        } else {
+            setSelectedItems(undeliveredItems.map((it: any) => it.itemId));
+        }
+    };
 
     return (
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: isReady ? colors.green : colors.border, borderWidth: isReady ? 2 : 1, borderTopWidth: 4, borderTopColor: indicatorColor }]}>
@@ -60,28 +81,58 @@ function WaiterCard({
             <View style={styles.cardBody}>
                 {/* Items Summary */}
                 <View style={styles.itemsList}>
-                    {item.items.map((it: any, idx: number) => (
-                        <View key={idx} style={styles.itemRow}>
-                            <View style={styles.itemQtyWrap}>
-                                <Text style={[styles.itemQty, { color: colors.text }]}>{it.quantity} x</Text>
-                            </View>
-                            <View style={styles.itemNameWrap}>
-                                <Text style={[styles.itemName, { color: colors.text }]}>{it.name}</Text>
-                            </View>
-                        </View>
-                    ))}
+                    {item.items.map((it: any, idx: number) => {
+                        const isDelivered = it.isDelivered;
+                        const isSelected = selectedItems.includes(it.itemId);
+                        return (
+                            <TouchableOpacity 
+                                key={idx} 
+                                style={[styles.itemRow, isDelivered && { opacity: 0.5 }]}
+                                onPress={() => isReady && !isDelivered && toggleItem(it.itemId)}
+                                disabled={!isReady || isDelivered}
+                                activeOpacity={0.7}
+                            >
+                                {isReady && (
+                                    <View style={styles.checkboxContainer}>
+                                        <View style={[styles.checkbox, isSelected && { backgroundColor: colors.green, borderColor: colors.green }, isDelivered && { backgroundColor: colors.border, borderColor: colors.border }]}>
+                                            {(isSelected || isDelivered) && <Feather name="check" size={12} color="#fff" />}
+                                        </View>
+                                    </View>
+                                )}
+                                <View style={styles.itemQtyWrap}>
+                                    <Text style={[styles.itemQty, { color: colors.text, textDecorationLine: isDelivered ? 'line-through' : 'none' }]}>{it.quantity} x</Text>
+                                </View>
+                                <View style={styles.itemNameWrap}>
+                                    <Text style={[styles.itemName, { color: colors.text, textDecorationLine: isDelivered ? 'line-through' : 'none' }]}>{it.name}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    })}
                 </View>
 
                 {/* Actions */}
                 {isReady && onDeliver && (
-                    <TouchableOpacity 
-                        style={[styles.deliverBtn, { backgroundColor: colors.green }]} 
-                        onPress={() => onDeliver(item)}
-                        activeOpacity={0.8}
-                    >
-                        <Feather name="check-circle" size={20} color="#fff" />
-                        <Text style={[styles.deliverBtnText, { color: '#fff' }]}>Mark Delivered</Text>
-                    </TouchableOpacity>
+                    <View style={styles.actionContainer}>
+                        {undeliveredItems.length > 1 && (
+                            <TouchableOpacity onPress={toggleSelectAll} style={styles.selectAllBtn}>
+                                <View style={[styles.checkbox, isAllSelected && { backgroundColor: colors.green, borderColor: colors.green }]}>
+                                    {isAllSelected && <Feather name="check" size={12} color="#fff" />}
+                                </View>
+                                <Text style={[styles.selectAllText, { color: colors.text }]}>Select All</Text>
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity 
+                            style={[styles.deliverBtn, { backgroundColor: selectedItems.length > 0 ? colors.green : colors.border }]} 
+                            onPress={() => selectedItems.length > 0 && onDeliver(item, selectedItems)}
+                            activeOpacity={0.8}
+                            disabled={selectedItems.length === 0}
+                        >
+                            <Feather name="check-circle" size={20} color="#fff" />
+                            <Text style={[styles.deliverBtnText, { color: '#fff' }]}>
+                                {isAllSelected || undeliveredItems.length === 1 ? 'Deliver All' : `Deliver Selected (${selectedItems.length})`}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 )}
             </View>
         </View>
@@ -122,12 +173,12 @@ export function WaiterScreen() {
         'order:updated': () => loadOrders(),
     });
 
-    const handleDeliver = async (order: Order) => {
+    const handleDeliver = async (order: Order, itemIds: string[]) => {
         try {
-            const updated = await ordersApi.updateStatus(order.id, 'Delivered');
+            const updated = await ordersApi.deliverItems(order.id, itemIds);
             setOrders(prev => prev.map(o => o.id === order.id ? updated : o));
         } catch (err) {
-            Alert.alert('Error', 'Failed to update order status');
+            Alert.alert('Error', 'Failed to deliver items');
         }
     };
 
@@ -271,12 +322,12 @@ const styles = StyleSheet.create({
     itemNameWrap: { flex: 1 },
     itemName: { fontSize: 15, ...FONT.medium, lineHeight: 20 },
     deliverBtn: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 14,
         borderRadius: 12,
-        marginTop: 20,
         gap: 8,
     },
     deliverBtnText: {
@@ -284,5 +335,36 @@ const styles = StyleSheet.create({
         ...FONT.bold,
     },
     emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 80, gap: 16, paddingHorizontal: 40 },
-    emptyText: { fontSize: 15, ...FONT.medium, textAlign: 'center', lineHeight: 22 }
+    emptyText: { fontSize: 15, ...FONT.medium, textAlign: 'center', lineHeight: 22 },
+    checkboxContainer: {
+        justifyContent: 'center',
+        marginRight: 8,
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 2,
+        borderColor: '#ccc',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    actionContainer: {
+        marginTop: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 16,
+    },
+    selectAllBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingVertical: 14,
+        paddingHorizontal: 8,
+    },
+    selectAllText: {
+        fontSize: 15,
+        ...FONT.medium,
+    }
 });
