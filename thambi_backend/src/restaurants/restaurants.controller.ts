@@ -14,7 +14,6 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { EventsGateway } from '../events/events.gateway';
 import { RestaurantsService } from './restaurants.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('restaurants')
 export class RestaurantsController {
   constructor(
@@ -23,6 +22,8 @@ export class RestaurantsController {
   ) {}
 
   // GET /restaurants
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Admin', 'Owner')
   @Get()
   async getAll() {
     return this.restaurantsService.findAll();
@@ -47,6 +48,7 @@ export class RestaurantsController {
   }
 
   // POST /restaurants
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Owner', 'Admin')
   @Post()
   async create(@Body() body: any) {
@@ -55,6 +57,7 @@ export class RestaurantsController {
   }
 
   // PATCH /restaurants/:id
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Owner', 'Admin')
   @Patch(':id')
   async update(@Param('id') id: string, @Body() body: any) {
