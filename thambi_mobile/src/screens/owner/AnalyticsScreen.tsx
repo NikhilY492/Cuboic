@@ -12,6 +12,7 @@ import { Feather } from '@expo/vector-icons';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { useSocketEvent } from '../../context/SocketContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Svg, { Path, Text as SvgText } from 'react-native-svg';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -222,10 +223,7 @@ export function AnalyticsScreen() {
         legendFontSize: 12,
     }));
 
-    const customerPieData = [
-        { name: 'New', count: customerData?.newCustomers ?? 0, color: colors.green, legendFontColor: colors.text, legendFontSize: 12 },
-        { name: 'Returning', count: customerData?.returningCustomers ?? 0, color: colors.blue, legendFontColor: colors.text, legendFontSize: 12 },
-    ];
+
 
     const subLabel = activeSubLabel;
 
@@ -443,16 +441,78 @@ export function AnalyticsScreen() {
                             <Text style={[styles.cardSub, { color: colors.textDim }]}>{subLabel}</Text>
                         </View>
                         {customerData.newCustomers > 0 || customerData.returningCustomers > 0 ? (
-                            <PieChart
-                                data={customerPieData}
-                                width={screenWidth - 64}
-                                height={200}
-                                chartConfig={chartConfig}
-                                accessor="count"
-                                backgroundColor="transparent"
-                                paddingLeft="15"
-                                absolute
-                            />
+                            (() => {
+                                const total = customerData.newCustomers + customerData.returningCustomers;
+                                const newRatio = total > 0 ? customerData.newCustomers / total : 0;
+                                const radius = 90;
+                                const strokeWidth = 30;
+                                const cx = (screenWidth - 64) / 2;
+                                const cy = 100;
+                                const circumference = Math.PI * radius;
+                                const newLength = circumference * newRatio;
+                                const d = `M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`;
+
+                                return (
+                                    <View style={{ alignItems: 'center', marginBottom: 24, marginTop: 16 }}>
+                                        <Svg width={screenWidth - 64} height="120">
+                                            {/* Background arc (Returning customers) */}
+                                            <Path
+                                                d={d}
+                                                stroke={colors.blue}
+                                                strokeWidth={strokeWidth}
+                                                fill="none"
+                                            />
+                                            {/* Foreground arc (New customers) */}
+                                            {customerData.newCustomers > 0 && (
+                                                <Path
+                                                    d={d}
+                                                    stroke={colors.green}
+                                                    strokeWidth={strokeWidth}
+                                                    fill="none"
+                                                    strokeDasharray={`${newLength} ${circumference}`}
+                                                />
+                                            )}
+                                            {/* Text in the middle */}
+                                            <SvgText
+                                                x={cx}
+                                                y={cy - 20}
+                                                textAnchor="middle"
+                                                fill={colors.text}
+                                                fontSize="28"
+                                                fontWeight="bold"
+                                            >
+                                                {total}
+                                            </SvgText>
+                                            <SvgText
+                                                x={cx}
+                                                y={cy + 4}
+                                                textAnchor="middle"
+                                                fill={colors.textDim}
+                                                fontSize="14"
+                                            >
+                                                Total Customers
+                                            </SvgText>
+                                        </Svg>
+                                        
+                                        <View style={{ flexDirection: 'row', gap: 24, marginTop: 8 }}>
+                                            <View style={{ alignItems: 'center' }}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.green }} />
+                                                    <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>New</Text>
+                                                </View>
+                                                <Text style={{ color: colors.textDim, fontSize: 13, marginTop: 4 }}>{customerData.newCustomers} ({(newRatio*100).toFixed(0)}%)</Text>
+                                            </View>
+                                            <View style={{ alignItems: 'center' }}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.blue }} />
+                                                    <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>Returning</Text>
+                                                </View>
+                                                <Text style={{ color: colors.textDim, fontSize: 13, marginTop: 4 }}>{customerData.returningCustomers} ({((1-newRatio)*100).toFixed(0)}%)</Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                );
+                            })()
                         ) : (
                             <Text style={[styles.hint, { color: colors.textMuted }]}>No customer data available</Text>
                         )}

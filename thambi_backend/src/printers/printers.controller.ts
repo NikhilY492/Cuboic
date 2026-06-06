@@ -1,0 +1,46 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { PrintersService } from './printers.service';
+import { CreatePrinterDto } from './dto/create-printer.dto';
+import { UpdatePrinterDto } from './dto/update-printer.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
+@UseGuards(JwtAuthGuard)
+@Controller('printers')
+export class PrintersController {
+  constructor(private readonly printersService: PrintersService) {}
+
+  @Post()
+  create(@Body() createPrinterDto: CreatePrinterDto) {
+    return this.printersService.create(createPrinterDto);
+  }
+
+  @Get()
+  findAll(@Query('restaurantId') restaurantId: string) {
+    return this.printersService.findAll(restaurantId);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.printersService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updatePrinterDto: UpdatePrinterDto) {
+    return this.printersService.update(id, updatePrinterDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.printersService.remove(id);
+  }
+
+  @Post(':id/test')
+  testPrint(@Param('id') id: string) {
+    return this.printersService.testPrint(id);
+  }
+
+  @Post('reprint/:orderId')
+  reprintKot(@Param('orderId') orderId: string) {
+    return this.printersService.reprintKot(orderId);
+  }
+}

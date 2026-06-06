@@ -114,15 +114,17 @@ app.whenReady().then(() => {
 
   ipcMain.handle('print:kot', async (_, printerName: string, data: any[]) => {
     try {
+      const isPDF = printerName.toLowerCase().includes('pdf');
       await PosPrinter.print(data, {
         printerName,
         preview: false,
         width: '80mm',
         margin: '0 0 0 0',
         copies: 1,
-        timeOutPerLine: 400,
-        silent: true,
-        boolean: true // fixing rogue type error from package
+        timeOutPerLine: 5000,
+        silent: !isPDF,
+        boolean: true, // fixing rogue type error from package
+        pathTemplate: join(process.env.VITE_PUBLIC as string, 'print.html')
       } as any)
       return { success: true }
     } catch (error: any) {

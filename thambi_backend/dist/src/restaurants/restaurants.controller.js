@@ -58,6 +58,8 @@ let RestaurantsController = class RestaurantsController {
 };
 exports.RestaurantsController = RestaurantsController;
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Admin', 'Owner'),
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -78,6 +80,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], RestaurantsController.prototype, "getById", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('Owner', 'Admin'),
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
@@ -86,6 +89,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], RestaurantsController.prototype, "create", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('Owner', 'Admin'),
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),
@@ -103,7 +107,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], RestaurantsController.prototype, "callCaptain", null);
 exports.RestaurantsController = RestaurantsController = __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, common_1.Controller)('restaurants'),
     __metadata("design:paramtypes", [restaurants_service_1.RestaurantsService,
         events_gateway_1.EventsGateway])

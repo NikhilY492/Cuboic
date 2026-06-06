@@ -283,15 +283,17 @@ electron.app.whenReady().then(() => {
 	});
 	electron.ipcMain.handle("print:kot", async (_, printerName, data) => {
 		try {
+			const isPDF = printerName.toLowerCase().includes("pdf");
 			await import_dist.PosPrinter.print(data, {
 				printerName,
 				preview: false,
 				width: "80mm",
 				margin: "0 0 0 0",
 				copies: 1,
-				timeOutPerLine: 400,
-				silent: true,
-				boolean: true
+				timeOutPerLine: 5e3,
+				silent: !isPDF,
+				boolean: true,
+				pathTemplate: (0, node_path.join)(process.env.VITE_PUBLIC, "print.html")
 			});
 			return { success: true };
 		} catch (error) {

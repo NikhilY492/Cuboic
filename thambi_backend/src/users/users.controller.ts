@@ -33,6 +33,26 @@ export class UsersController {
     return this.usersService.findAll(req.user.restaurantId);
   }
 
+  @Get('roles')
+  getRoles(@Req() req: any) {
+    return this.usersService.getCustomRoles(req.user.restaurantId);
+  }
+
+  @Post('roles')
+  createRole(@Req() req: any, @Body() body: { name: string; permissions: string[] }) {
+    return this.usersService.createCustomRole(req.user.restaurantId, body.name, body.permissions);
+  }
+
+  @Patch('roles/:id')
+  updateRole(@Param('id') id: string, @Body() body: { name: string; permissions: string[] }) {
+    return this.usersService.updateCustomRole(id, body.name, body.permissions);
+  }
+
+  @Delete('roles/:id')
+  deleteRole(@Param('id') id: string) {
+    return this.usersService.deleteCustomRole(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);

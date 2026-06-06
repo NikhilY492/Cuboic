@@ -25,6 +25,7 @@ export class UsersService {
         user_id: dto.userId,
         password_hash: passwordHash,
         role: (dto.role as UserRole) ?? 'Staff',
+        customRoleId: dto.customRoleId ?? null,
         restaurantId: dto.restaurantId ?? null,
         dashboard_config: dto.dashboard_config ?? [
           'Pending',
@@ -45,6 +46,8 @@ export class UsersService {
         name: true,
         user_id: true,
         role: true,
+        customRoleId: true,
+        customRole: true,
         is_active: true,
         restaurantId: true,
         createdAt: true,
@@ -123,6 +126,7 @@ export class UsersService {
         name: true,
         user_id: true,
         role: true,
+        customRoleId: true,
         is_active: true,
         dashboard_config: true,
       },
@@ -131,5 +135,33 @@ export class UsersService {
 
   async remove(id: string) {
     return this.prisma.user.delete({ where: { id } });
+  }
+
+  // --- Custom Roles ---
+  async getCustomRoles(restaurantId: string) {
+    return this.prisma.customRole.findMany({
+      where: { restaurantId },
+    });
+  }
+
+  async createCustomRole(restaurantId: string, name: string, permissions: string[]) {
+    return this.prisma.customRole.create({
+      data: {
+        restaurantId,
+        name,
+        permissions,
+      },
+    });
+  }
+
+  async updateCustomRole(id: string, name: string, permissions: string[]) {
+    return this.prisma.customRole.update({
+      where: { id },
+      data: { name, permissions },
+    });
+  }
+
+  async deleteCustomRole(id: string) {
+    return this.prisma.customRole.delete({ where: { id } });
   }
 }

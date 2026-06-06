@@ -13,8 +13,10 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '@prisma/client';
 import { PlatformFeesService } from '../platform-fees/platform-fees.service';
 import { InventoryService } from '../inventory/inventory.service';
+import { InventoryConsumptionService } from '../inventory/inventory-consumption.service';
 import { AuditService } from '../audit/audit.service';
 import { UsersService } from '../users/users.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class OrdersService {
@@ -25,8 +27,10 @@ export class OrdersService {
         private readonly eventsGateway: EventsGateway,
         private readonly platformFeesService: PlatformFeesService,
         private readonly inventoryService: InventoryService,
+        private readonly inventoryConsumptionService: InventoryConsumptionService,
         private readonly auditService: AuditService,
         private readonly usersService: UsersService,
+        private eventEmitter: EventEmitter2,
     ) { }
 
     private async checkVersion(id: string, incomingVersion?: number) {
@@ -137,36 +141,54 @@ export class OrdersService {
         const tax = 0;
         const total = parseFloat((subtotal + tax).toFixed(2));
 
-        const order = await this.prisma.order.create({
-            data: {
-                restaurantId: dto.restaurantId,
-                outletId: dto.outletId,
-                tableId: dto.tableId,
-                sessionId:
-                    dto.orderType === 'Takeaway'
-                        ? null
-                        : (await this.getOrCreateSession(dto.restaurantId, dto.tableId)).id,
-                customerId: dto.customerId,
-                customer_session_id: dto.customerSessionId,
-                orderType: dto.orderType || 'DineIn',
-                notes: dto.notes,
-                items: orderItems,
-                subtotal,
-                tax,
-                total,
-                payment: {
-                    create: {
-                        amount: total,
-                        method: 'Counter',
-                        status:
-                            (('paymentStatus' in dto
-                                ? (dto as { paymentStatus?: string }).paymentStatus
-                                : undefined) || 'Pending') as any,
-                        transaction_id: `txn_${Date.now()}`,
+        const order = await this.prisma.$transaction(async (tx) => {
+            const createdOrder = await tx.order.create({
+                data: {
+                    restaurantId: dto.restaurantId,
+                    outletId: dto.outletId,
+                    tableId: dto.tableId,
+                    sessionId:
+                        dto.orderType === 'Takeaway'
+                            ? null
+                            : (await this.getOrCreateSession(dto.restaurantId, dto.tableId)).id,
+                    customerId: dto.customerId,
+                    customer_session_id: dto.customerSessionId,
+                    orderType: dto.orderType || 'DineIn',
+                    notes: dto.notes,
+                    items: orderItems,
+                    subtotal,
+                    tax,
+                    total,
+                    payment: {
+                        create: {
+                            amount: total,
+                            method: 'Counter',
+                            status:
+                                (('paymentStatus' in dto
+                                    ? (dto as { paymentStatus?: string }).paymentStatus
+                                    : undefined) || 'Pending') as any,
+                            transaction_id: `txn_${Date.now()}`,
+                        },
                     },
                 },
-            },
-            include: { payment: true, customer: true, table: true },
+                include: { payment: true, customer: true, table: true },
+            });
+
+            // Auto-create platform fee if order total > ₹100
+            if (total > 100) {
+                // Ensure platform fees service creates within transaction scope?
+                // The service itself runs its own Prisma calls. Wait, `createIfEligible` doesn't take a `tx`.
+                // For simplicity, we just use the global prisma inside createIfEligible, or inline it if it's strictly needed.
+                // It's acceptable for platform fees to happen immediately after or during.
+                // I will keep it outside the transaction, or call it after the transaction.
+            }
+
+            // Deduct inventory stock atomically via InventoryConsumptionService
+            if (dto.outletId) {
+                await this.inventoryConsumptionService.consumeOrderInventory(createdOrder.id, tx);
+            }
+
+            return createdOrder;
         });
 
         this.eventsGateway.emitToRestaurant(dto.restaurantId, 'order:new', order);
@@ -177,22 +199,6 @@ export class OrdersService {
             order.id,
             total,
         );
-
-        // Deduct inventory stock via Recipe Engine (only if outletId provided)
-        if (dto.outletId) {
-            try {
-                await this.inventoryService.deductForOrder(
-                    dto.outletId,
-                    order.id,
-                    dto.items.map((i) => ({ itemId: i.itemId, quantity: i.quantity })),
-                );
-            } catch (err) {
-                const e = err as Error;
-                this.logger.warn(
-                    `Inventory deduction failed for order ${order.id}: ${e.message}`,
-                );
-            }
-        }
 
         return order;
     }
@@ -253,12 +259,13 @@ export class OrdersService {
         });
         if (!order) throw new NotFoundException('Order not found');
 
-        if (existing.status !== 'Confirmed' && dto.status === 'Confirmed') {
+        if (existing.status !== 'Preparing' && dto.status === 'Preparing') {
             this.eventsGateway.emitToRestaurant(
                 order.restaurantId,
                 'order:print_kot',
                 order,
             );
+            this.eventEmitter.emit('order.preparing', order);
         }
 
         this.eventsGateway.emitToRestaurant(

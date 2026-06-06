@@ -40,4 +40,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   image_url?: string;
+
+  @IsOptional()
+  @IsString()
+  customRoleId?: string;
 }

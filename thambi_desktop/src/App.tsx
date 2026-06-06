@@ -9,6 +9,7 @@ import RecipesPage from './pages/RecipesPage'
 import CustomersPage from './pages/CustomersPage'
 import ReportsPage from './pages/ReportsPage'
 import IntegrationsPage from './pages/IntegrationsPage'
+import SettingsPage from './pages/SettingsPage'
 import Layout from './components/Layout'
 import { useAuth } from './contexts/AuthContext'
 import { connectSocket, disconnectSocket } from './api/socket'
@@ -63,7 +64,7 @@ function App() {
         <Route path="/customers" element={<CustomersPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/integrations" element={<IntegrationsPage />} />
-        <Route path="/settings" element={<div className="p-8">Settings</div>} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

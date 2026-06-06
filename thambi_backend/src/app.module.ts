@@ -30,6 +30,9 @@ import { AuditModule } from './audit/audit.module';
 import { UploadModule } from './upload/upload.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PrintersModule } from './printers/printers.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -70,6 +73,9 @@ import { join } from 'path';
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
     }),
+    EventEmitterModule.forRoot(),
+    PrintersModule,
+    SettingsModule,
   ],
   providers: [
     {

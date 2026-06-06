@@ -9,6 +9,17 @@ datasource db {
 
 // ── Enums ──────────────────────────────────────────────────────────────────
 
+enum PrinterType {
+  KITCHEN
+  BILL
+  BAR
+}
+
+enum ConnectionType {
+  LAN
+  USB
+}
+
 enum AlertSeverity {
   INFO
   WARNING
@@ -94,14 +105,19 @@ model SystemAlert {
 }
 
 model Restaurant {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  logo_url    String?
-  is_active   Boolean  @default(true)
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  logo_url        String?
+  is_active       Boolean         @default(true)
   paymentStrategy PaymentStrategy @default(PayPerOrder)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  gstNumber       String?
+  address         String?
+  contactNumber   String?
+  email           String?
+  currency        String          @default("INR")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   tables        Table[]
   categories    Category[]
@@ -115,6 +131,10 @@ model Restaurant {
   systemAlerts  SystemAlert[]
   tableSessions TableSession[]
   auditLogs     AuditLog[]
+  printers      Printer[]
+  printLogs     PrintLog[]
+  settings      RestaurantSettings?
+  customRoles   CustomRole[]
 }
 
 model Table {
@@ -172,6 +192,7 @@ model User {
   user_id       String   @unique
   password_hash String
   role          UserRole @default(Staff)
+  customRoleId  String?
   is_active     Boolean  @default(true)
   email         String?
   phone         String?
@@ -183,6 +204,7 @@ model User {
 
   restaurant Restaurant? @relation(fields: [restaurantId], references: [id])
   outlet     Outlet?     @relation(fields: [outletId], references: [id])
+  customRole CustomRole? @relation(fields: [customRoleId], references: [id])
 }
 
 model Customer {
@@ -213,6 +235,8 @@ model Order {
   status              OrderStatus @default(Pending)
   notes               String?
   version             Int         @default(0)
+  kotPrinted          Boolean     @default(false)
+  kotPrintedAt        DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -311,6 +335,8 @@ model Outlet {
   restaurantId String
   name         String
   address      String?
+  contactNumber String?
+  managerId    String?
   is_active    Boolean  @default(true)
 
   createdAt DateTime @default(now())
@@ -372,6 +398,7 @@ model StockTransaction {
   type            StockTransactionType
   quantity        Float
   costPerUnit     Float?               // Recorded cost at time of transaction
+  referenceType   String?              // e.g. "Order", "Supplier"
   referenceId     String?              // OrderID or supplier reference
   notes           String?
 
@@ -407,4 +434,60 @@ model AuditLog {
   createdAt    DateTime @default(now())
 
   restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
+model Printer {
+  id             String         @id @default(cuid())
+  restaurantId   String
+  name           String
+  type           PrinterType    @default(KITCHEN)
+  connectionType ConnectionType @default(LAN)
+  ipAddress      String?
+  port           Int            @default(9100)
+  isEnabled      Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  restaurant     Restaurant     @relation(fields: [restaurantId], references: [id])
+  printLogs      PrintLog[]
+}
+
+model PrintLog {
+  id           String      @id @default(cuid())
+  restaurantId String
+  printerId    String
+  orderId      String?
+  printType    String      // KOT, BILL, TEST
+  success      Boolean
+  errorMessage String?
+  printedAt    DateTime    @default(now())
+
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  printer      Printer     @relation(fields: [printerId], references: [id])
+}
+
+model RestaurantSettings {
+  id           String   @id @default(cuid())
+  restaurantId String   @unique
+  orderSettings Json    @default("{}")
+  paymentSettings Json  @default("{}")
+  notificationSettings Json @default("{}")
+  themeSettings Json    @default("{}")
+  integrations Json     @default("{}")
+  
+  updatedAt    DateTime @updatedAt
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
+model CustomRole {
+  id           String   @id @default(cuid())
+  restaurantId String
+  name         String
+  permissions  Json     @default("[]")
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  users        User[]
 }

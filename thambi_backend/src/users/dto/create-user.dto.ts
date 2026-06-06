@@ -31,4 +31,8 @@ export class CreateUserDto {
 
   @IsOptional()
   dashboard_config?: any;
+
+  @IsOptional()
+  @IsString()
+  customRoleId?: string;
 }

@@ -44,9 +44,19 @@ function KitchenCard({
     const indicatorColor = getStatusColor(item.status, colors);
     const tableNum = getTableNum(item);
     
+    const [now, setNow] = useState(Date.now());
+
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
     // Elapsed time calculation
-    const elapsedMinutes = Math.floor((new Date().getTime() - new Date(item.createdAt).getTime()) / 60000);
-    const timeDisplay = elapsedMinutes > 0 ? `${elapsedMinutes} Min` : 'Just now';
+    const diff = Math.max(0, now - new Date(item.createdAt).getTime());
+    const elapsedMinutes = Math.floor(diff / 60000);
+    const elapsedSeconds = Math.floor((diff % 60000) / 1000);
+    
+    const timeDisplay = `${elapsedMinutes}m ${elapsedSeconds}s`;
     const isUrgent = elapsedMinutes > 15;
 
     const nextState = NEXT_STATUS[item.status];
@@ -121,6 +131,7 @@ export function KitchenScreen() {
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const scrollRefs = useRef<Record<string, ScrollView | null>>({});
 
     const loadOrders = useCallback(async () => {
         if (!restaurantId) return;
@@ -206,13 +217,29 @@ export function KitchenScreen() {
                                         {status === 'Confirmed' ? 'New Orders' : 'Ready'}
                                     </Text>
                                 </View>
-                                <View style={[styles.badge, { backgroundColor: isDark ? colors.surface2 : colors.bg }]}>
-                                    <Text style={[styles.badgeText, { color: colors.textDim }]}>{colOrders.length}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                    <TouchableOpacity
+                                        onPress={() => scrollRefs.current[status]?.scrollTo({ y: 0, animated: true })}
+                                        style={[styles.scrollBtn, { backgroundColor: colors.surface2 }]}
+                                    >
+                                        <Feather name="arrow-up" size={16} color={colors.textDim} />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => scrollRefs.current[status]?.scrollToEnd({ animated: true })}
+                                        style={[styles.scrollBtn, { backgroundColor: colors.surface2 }]}
+                                    >
+                                        <Feather name="arrow-down" size={16} color={colors.textDim} />
+                                    </TouchableOpacity>
+                                    <View style={[styles.badge, { backgroundColor: isDark ? colors.surface2 : colors.bg }]}>
+                                        <Text style={[styles.badgeText, { color: colors.textDim }]}>{colOrders.length}</Text>
+                                    </View>
                                 </View>
                             </View>
                             
                             <ScrollView 
-                                showsVerticalScrollIndicator={false}
+                                ref={ref => scrollRefs.current[status] = ref}
+                                showsVerticalScrollIndicator={true}
+                                persistentScrollbar={true}
                                 contentContainerStyle={styles.columnBody}
                             >
                                 {colOrders.map(order => (
@@ -266,6 +293,7 @@ const styles = StyleSheet.create({
     colTitle: { fontSize: 14, ...FONT.bold },
     badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
     badgeText: { fontSize: 12, ...FONT.bold },
+    scrollBtn: { padding: 6, borderRadius: 6 },
     columnBody: { paddingBottom: 24, gap: 12 },
     cardWrapper: { width: '100%' },
     card: {
