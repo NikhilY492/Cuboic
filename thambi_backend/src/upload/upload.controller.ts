@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { fileTypeFromBuffer } from 'file-type';
+import { readFileSync } from 'fs';
 import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -29,29 +31,38 @@ export class UploadController {
         destination: UPLOAD_DIR,
         filename: (_req, file, cb) => {
           const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+          cb(null, `${uniqueSuffix}$`);
         },
       }),
       limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
       fileFilter: (_req, file, cb) => {
-        const allowed = /jpeg|jpg|png|webp/;
-        const ext = extname(file.originalname).toLowerCase().slice(1);
-        if (allowed.test(ext)) {
-          cb(null, true);
-        } else {
-          cb(
-            new BadRequestException(
-              'Only JPEG, PNG, and WebP images are allowed',
-            ),
-            false,
-          );
-        }
-      },
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+  ];
+
+  if (!allowedMimeTypes.includes(file.mimetype)) {
+    return cb(new BadRequestException('Invalid file type'), false);
+  }
+
+  cb(null, true);
+},
     }),
   )
-  uploadImage(@UploadedFile() file: Express.Multer.File) {
-    if (!file) throw new BadRequestException('No file provided');
-    const baseUrl = process.env.API_BASE_URL ?? 'https://api.thambi.in';
-    return { url: `${baseUrl}/uploads/${file.filename}` };
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+  if (!file) throw new BadRequestException('No file provided');
+
+  const buffer = readFileSync(file.path);
+  const type = await fileTypeFromBuffer(buffer);
+
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+  if (!type || !allowed.includes(type.mime)) {
+    throw new BadRequestException('Invalid or corrupted image file');
   }
+
+  const baseUrl = process.env.API_BASE_URL ?? 'https://api.thambi.in';
+  return { url: `${baseUrl}/uploads/${file.filename}` };
+}
 }
