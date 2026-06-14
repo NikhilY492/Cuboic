@@ -51,18 +51,31 @@ export class UploadController {
     }),
   )
   async uploadImage(@UploadedFile() file: Express.Multer.File) {
-  if (!file) throw new BadRequestException('No file provided');
+  if (!file) {
+    throw new BadRequestException('No file provided');
+  }
 
+  // 🔴 Read actual file content from disk
   const buffer = readFileSync(file.path);
+
+  // 🔴 Detect real file type using magic bytes
   const type = await fileTypeFromBuffer(buffer);
 
-  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+  ];
 
-  if (!type || !allowed.includes(type.mime)) {
+  // ❌ BLOCK invalid / fake / corrupted files
+  if (!type || !allowedTypes.includes(type.mime)) {
     throw new BadRequestException('Invalid or corrupted image file');
   }
 
   const baseUrl = process.env.API_BASE_URL ?? 'https://api.thambi.in';
-  return { url: `${baseUrl}/uploads/${file.filename}` };
+
+  return {
+    url: `${baseUrl}/uploads/${file.filename}`,
+  };
 }
 }
