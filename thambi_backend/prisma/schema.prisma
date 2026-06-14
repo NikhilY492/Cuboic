@@ -194,6 +194,8 @@ model User {
   role          UserRole @default(Staff)
   customRoleId  String?
   is_active     Boolean  @default(true)
+  failedLoginAttempts Int @default(0)
+  lockUntil DateTime?
   email         String?
   phone         String?
   dashboard_config Json @default("[\"Pending\",\"Preparing\",\"Completed\",\"Robots\"]")
