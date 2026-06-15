@@ -44,33 +44,36 @@ export class AuthService {
   }
 
   async changePassword(userId: string, oldPass: string, newPass: string) {
-  const user = await this.usersService.findById(userId);
+  const user = await this.usersService.findByUserId(userId);
 
   if (!user) {
     throw new UnauthorizedException('User not found');
   }
 
-  // 🔴 STEP 1: verify old password
   const isValid = await bcrypt.compare(oldPass, user.password_hash);
 
   if (!isValid) {
     throw new UnauthorizedException('Old password is incorrect');
   }
 
-  // 🔴 STEP 2: validate new password strength
   if (newPass.length < 8) {
-    throw new BadRequestException('Password must be at least 8 characters');
+    throw new BadRequestException(
+      'Password must be at least 8 characters',
+    );
   }
 
-  if (!/[A-Z]/.test(newPass) || !/[0-9]/.test(newPass)) {
-    throw new BadRequestException('Password must contain uppercase letter and number');
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/;
+
+  if (!passwordRegex.test(newPass)) {
+    throw new BadRequestException(
+      'Password must contain uppercase, lowercase, number and special character',
+    );
   }
 
-  // 🔴 STEP 3: hash new password
   const hashed = await bcrypt.hash(newPass, 10);
 
-  // 🔴 STEP 4: update password
-  await this.usersService.updatePassword(userId, hashed);
+  await this.usersService.updatePassword(user.id, hashed);
 
   return { message: 'Password updated successfully' };
 }
