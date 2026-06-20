@@ -5,10 +5,10 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/filters/system-alert.filter';
 import { AdminService } from './admin/admin.service';
-
+import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  app.use(helmet());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
