@@ -2,13 +2,14 @@ import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
-
+import { AuditService } from '../audit/audit.service';
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-  ) {}
+  private usersService: UsersService,
+  private jwtService: JwtService,
+  private auditService: AuditService,
+) {}
 
   async validateUser(userId: string, password: string) {
     const user = await this.usersService.findByUserId(userId);
@@ -73,8 +74,17 @@ export class AuthService {
 
   const hashed = await bcrypt.hash(newPass, 10);
 
-  await this.usersService.updatePassword(user.id, hashed);
+await this.usersService.updatePassword(user.id, hashed);
 
-  return { message: 'Password updated successfully' };
+const restaurantId =
+  user.restaurantId ?? user.outlet?.restaurantId ?? '';
+
+await this.auditService.logAction(
+  restaurantId,
+  user.id,
+  'Password Changed',
+  {},
+);
+return { message: 'Password updated successfully' };
 }
 }
