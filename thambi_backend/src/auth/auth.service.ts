@@ -12,12 +12,46 @@ export class AuthService {
 ) {}
 
   async validateUser(userId: string, password: string) {
-    const user = await this.usersService.findByUserId(userId);
-    if (!user) return null;
-    const valid = await bcrypt.compare(password, user.password_hash);
-    if (!valid) return null;
-    return user;
+  const user = await this.usersService.findByUserId(userId);
+
+  if (!user) return null;
+
+  // Account locked?
+  if (
+    user.lockUntil &&
+    user.lockUntil > new Date()
+  ) {
+    throw new UnauthorizedException(
+      'Account locked. Try again later.'
+    );
   }
+
+  const valid = await bcrypt.compare(password, user.password_hash);
+
+  // Wrong password
+  if (!valid) {
+
+    const attempts = user.failedLoginAttempts + 1;
+
+    await this.usersService.update(user.id, {
+  failedLoginAttempts: attempts,
+  lockUntil:
+    attempts >= 5
+      ? new Date(Date.now() + 15 * 60 * 1000)
+      : null,
+});
+
+    return null;
+  }
+
+  // Successful login → reset counter
+  await this.usersService.update(user.id, {
+  failedLoginAttempts: 0,
+  lockUntil: null,
+});
+
+  return user;
+}
 
   login(user: any) {
     // Resolve restaurantId: staff may be linked via an outlet rather than directly

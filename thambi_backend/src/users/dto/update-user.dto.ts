@@ -5,6 +5,8 @@ import {
   IsBoolean,
   MinLength,
   Matches,
+  IsInt,
+  IsDateString,
 } from 'class-validator';
 
 export class UpdateUserDto {
@@ -60,4 +62,13 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   customRoleId?: string;
+  
+    @IsOptional()
+  @IsInt()
+  failedLoginAttempts?: number;
+
+  @IsOptional()
+  lockUntil?: Date | null;
+ 
+
 }
