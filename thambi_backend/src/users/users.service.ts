@@ -61,16 +61,16 @@ export class UsersService {
 
   async findByUserId(userId: string) {
     return this.prisma.user.findUnique({
-  where: { user_id: userId },
-  include: {
-    outlet: {
-      select: {
-        restaurantId: true,
+      where: { user_id: userId },
+      include: {
+        outlet: {
+          select: {
+            restaurantId: true,
+          },
+        },
       },
-    },
-  },
-});
-}
+    });
+  }
 
   async findById(id: string) {
     return this.prisma.user.findUnique({
@@ -150,7 +150,11 @@ export class UsersService {
     });
   }
 
-  async createCustomRole(restaurantId: string, name: string, permissions: string[]) {
+  async createCustomRole(
+    restaurantId: string,
+    name: string,
+    permissions: string[],
+  ) {
     return this.prisma.customRole.create({
       data: {
         restaurantId,

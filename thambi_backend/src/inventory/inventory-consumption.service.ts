@@ -6,15 +6,19 @@ export class InventoryConsumptionService {
   private readonly logger = new Logger(InventoryConsumptionService.name);
 
   // Configurable flag for negative stock (defaults to true)
-  private readonly ALLOW_NEGATIVE_STOCK = process.env.ALLOW_NEGATIVE_STOCK !== 'false';
+  private readonly ALLOW_NEGATIVE_STOCK =
+    process.env.ALLOW_NEGATIVE_STOCK !== 'false';
 
-  async consumeOrderInventory(orderId: string, tx: Prisma.TransactionClient): Promise<void> {
+  async consumeOrderInventory(
+    orderId: string,
+    tx: Prisma.TransactionClient,
+  ): Promise<void> {
     // 1. Fetch Order and Items
     const order = await tx.order.findUnique({
       where: { id: orderId },
       include: {
         outlet: true,
-      }
+      },
     });
 
     if (!order) {
@@ -22,7 +26,9 @@ export class InventoryConsumptionService {
     }
 
     if (!order.outletId) {
-      this.logger.warn(`Order ${orderId} has no outletId. Skipping inventory deduction.`);
+      this.logger.warn(
+        `Order ${orderId} has no outletId. Skipping inventory deduction.`,
+      );
       return;
     }
 
@@ -32,16 +38,18 @@ export class InventoryConsumptionService {
 
     // 2. Fetch Recipes and Ingredients
     const recipes = await tx.recipe.findMany({
-      where: { menuItemId: { in: items.map(i => i.itemId) } },
+      where: { menuItemId: { in: items.map((i) => i.itemId) } },
       include: { ingredients: true },
     });
 
     // Handle missing recipes
-    const itemIdsWithRecipes = new Set(recipes.map(r => r.menuItemId));
+    const itemIdsWithRecipes = new Set(recipes.map((r) => r.menuItemId));
     for (const item of items) {
       if (!itemIdsWithRecipes.has(item.itemId)) {
-        this.logger.warn(`Menu item ${item.name} (${item.itemId}) has no recipe configured.`);
-        
+        this.logger.warn(
+          `Menu item ${item.name} (${item.itemId}) has no recipe configured.`,
+        );
+
         // Audit warning for missing recipe
         await tx.auditLog.create({
           data: {
@@ -52,9 +60,9 @@ export class InventoryConsumptionService {
               orderId,
               menuItemId: item.itemId,
               menuItemName: item.name,
-              message: "Menu item has no recipe configured"
-            }
-          }
+              message: 'Menu item has no recipe configured',
+            },
+          },
         });
       }
     }
@@ -62,7 +70,7 @@ export class InventoryConsumptionService {
     // 3. Calculate Required Deductions
     const deductions = new Map<string, number>();
     for (const orderItem of items) {
-      const recipe = recipes.find(r => r.menuItemId === orderItem.itemId);
+      const recipe = recipes.find((r) => r.menuItemId === orderItem.itemId);
       if (!recipe) continue;
 
       for (const ingredient of recipe.ingredients) {
@@ -76,24 +84,28 @@ export class InventoryConsumptionService {
 
     // 4. Fetch Current Inventory Items for this specific outlet
     const inventoryItems = await tx.inventoryItem.findMany({
-      where: { 
+      where: {
         id: { in: Array.from(deductions.keys()) },
-        outletId: order.outletId 
-      }
+        outletId: order.outletId,
+      },
     });
 
-    const inventoryItemMap = new Map(inventoryItems.map(i => [i.id, i]));
+    const inventoryItemMap = new Map(inventoryItems.map((i) => [i.id, i]));
 
     for (const [inventoryItemId, neededQty] of deductions.entries()) {
       const invItem = inventoryItemMap.get(inventoryItemId);
       if (!invItem) {
-        throw new BadRequestException(`Inventory item ${inventoryItemId} not found in outlet ${order.outletId}`);
+        throw new BadRequestException(
+          `Inventory item ${inventoryItemId} not found in outlet ${order.outletId}`,
+        );
       }
 
       // Check negative stock preference
       if (!this.ALLOW_NEGATIVE_STOCK) {
         if (invItem.currentStock < neededQty) {
-          throw new BadRequestException(`Insufficient stock for ${invItem.name}. Required: ${neededQty}, Available: ${invItem.currentStock}`);
+          throw new BadRequestException(
+            `Insufficient stock for ${invItem.name}. Required: ${neededQty}, Available: ${invItem.currentStock}`,
+          );
         }
       }
 
@@ -102,7 +114,7 @@ export class InventoryConsumptionService {
       // 5. Update InventoryItem
       await tx.inventoryItem.update({
         where: { id: inventoryItemId },
-        data: { currentStock: newStock }
+        data: { currentStock: newStock },
       });
 
       // 6. Create StockTransaction
@@ -114,8 +126,8 @@ export class InventoryConsumptionService {
           quantity: neededQty,
           referenceType: 'Order',
           referenceId: orderId,
-          notes: `Auto-deducted for order ${orderId}`
-        }
+          notes: `Auto-deducted for order ${orderId}`,
+        },
       });
 
       // 7. Audit Logging
@@ -128,9 +140,9 @@ export class InventoryConsumptionService {
             orderId,
             inventoryItemId,
             quantityDeducted: neededQty,
-            outletId: order.outletId
-          }
-        }
+            outletId: order.outletId,
+          },
+        },
       });
 
       // 8. Low Stock Detection
@@ -147,9 +159,9 @@ export class InventoryConsumptionService {
               inventoryItemName: invItem.name,
               outletId: order.outletId,
               currentStock: newStock,
-              reorderLevel: invItem.reorderLevel
-            }
-          }
+              reorderLevel: invItem.reorderLevel,
+            },
+          },
         });
       }
     }

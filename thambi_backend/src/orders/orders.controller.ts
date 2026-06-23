@@ -80,10 +80,7 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Get()
-  findAll(
-    @Req() req: any,
-    @Query('status') status?: string,
-  ) {
+  findAll(@Req() req: any, @Query('status') status?: string) {
     return this.ordersService.findAll(req.user.restaurantId, status);
   }
 
@@ -156,10 +153,7 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Waiter')
   @Patch(':id/deliver-items')
-  deliverItems(
-    @Param('id') id: string,
-    @Body('itemIds') itemIds: string[],
-  ) {
+  deliverItems(@Param('id') id: string, @Body('itemIds') itemIds: string[]) {
     return this.ordersService.markItemsDelivered(id, itemIds);
   }
 
@@ -173,10 +167,7 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Patch('mark-paid-bulk')
-  markPaidBulk(
-    @Body('orderIds') orderIds: string[],
-    @Req() req: any,
-  ) {
+  markPaidBulk(@Body('orderIds') orderIds: string[], @Req() req: any) {
     return this.ordersService.markPaidBulk(
       req.user.restaurantId,
       orderIds,

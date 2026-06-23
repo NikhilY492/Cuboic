@@ -39,12 +39,22 @@ export class UsersController {
   }
 
   @Post('roles')
-  createRole(@Req() req: any, @Body() body: { name: string; permissions: string[] }) {
-    return this.usersService.createCustomRole(req.user.restaurantId, body.name, body.permissions);
+  createRole(
+    @Req() req: any,
+    @Body() body: { name: string; permissions: string[] },
+  ) {
+    return this.usersService.createCustomRole(
+      req.user.restaurantId,
+      body.name,
+      body.permissions,
+    );
   }
 
   @Patch('roles/:id')
-  updateRole(@Param('id') id: string, @Body() body: { name: string; permissions: string[] }) {
+  updateRole(
+    @Param('id') id: string,
+    @Body() body: { name: string; permissions: string[] },
+  ) {
     return this.usersService.updateCustomRole(id, body.name, body.permissions);
   }
 

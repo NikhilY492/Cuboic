@@ -60,8 +60,12 @@ export class SettingsService {
         },
         update: {
           ...(config.orderSettings && { orderSettings: config.orderSettings }),
-          ...(config.paymentSettings && { paymentSettings: config.paymentSettings }),
-          ...(config.notificationSettings && { notificationSettings: config.notificationSettings }),
+          ...(config.paymentSettings && {
+            paymentSettings: config.paymentSettings,
+          }),
+          ...(config.notificationSettings && {
+            notificationSettings: config.notificationSettings,
+          }),
           ...(config.themeSettings && { themeSettings: config.themeSettings }),
           ...(config.integrations && { integrations: config.integrations }),
         },

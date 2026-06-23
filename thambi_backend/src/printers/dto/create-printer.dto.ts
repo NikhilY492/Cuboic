@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsOptional, IsInt, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsInt,
+  IsBoolean,
+} from 'class-validator';
 import { PrinterType, ConnectionType } from '@prisma/client';
 
 export class CreatePrinterDto {

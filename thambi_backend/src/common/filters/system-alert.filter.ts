@@ -51,14 +51,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     const responseBody = {
-  statusCode: status,
-  message:
-    typeof exceptionResponse === 'object'
-      ? (exceptionResponse as any).message || 'Internal server error'
-      : exceptionResponse,
-  timestamp: new Date().toISOString(),
-  path: request.url,
-};
+      statusCode: status,
+      message:
+        typeof exceptionResponse === 'object'
+          ? (exceptionResponse as any).message || 'Internal server error'
+          : exceptionResponse,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+    };
 
     response.status(status).json(responseBody);
   }

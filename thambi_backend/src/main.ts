@@ -21,20 +21,16 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(adminService));
 
   app.enableCors({
-  origin: [
-    'https://thambi.in',
-    'https://admin.thambi.in',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'X-Outlet-Id'
-  ],
-});
+    origin: [
+      'https://thambi.in',
+      'https://admin.thambi.in',
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Outlet-Id'],
+  });
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`🚀 Thambi backend running on http://localhost:${port}`);

@@ -15,9 +15,8 @@ import { AuditModule } from '../audit/audit.module';
     AuditModule,
     PassportModule,
     JwtModule.register({
-      secret:
-        process.env.JWT_SECRET!,
-      signOptions: { expiresIn:'7d'},
+      secret: process.env.JWT_SECRET!,
+      signOptions: { expiresIn: '7d' },
     }),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],

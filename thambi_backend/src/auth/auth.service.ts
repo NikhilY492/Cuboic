@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
@@ -6,52 +10,43 @@ import { AuditService } from '../audit/audit.service';
 @Injectable()
 export class AuthService {
   constructor(
-  private usersService: UsersService,
-  private jwtService: JwtService,
-  private auditService: AuditService,
-) {}
+    private usersService: UsersService,
+    private jwtService: JwtService,
+    private auditService: AuditService,
+  ) {}
 
   async validateUser(userId: string, password: string) {
-  const user = await this.usersService.findByUserId(userId);
+    const user = await this.usersService.findByUserId(userId);
 
-  if (!user) return null;
+    if (!user) return null;
 
-  // Account locked?
-  if (
-    user.lockUntil &&
-    user.lockUntil > new Date()
-  ) {
-    throw new UnauthorizedException(
-      'Account locked. Try again later.'
-    );
-  }
+    // Account locked?
+    if (user.lockUntil && user.lockUntil > new Date()) {
+      throw new UnauthorizedException('Account locked. Try again later.');
+    }
 
-  const valid = await bcrypt.compare(password, user.password_hash);
+    const valid = await bcrypt.compare(password, user.password_hash);
 
-  // Wrong password
-  if (!valid) {
+    // Wrong password
+    if (!valid) {
+      const attempts = user.failedLoginAttempts + 1;
 
-    const attempts = user.failedLoginAttempts + 1;
+      await this.usersService.update(user.id, {
+        failedLoginAttempts: attempts,
+        lockUntil: attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null,
+      });
 
+      return null;
+    }
+
+    // Successful login → reset counter
     await this.usersService.update(user.id, {
-  failedLoginAttempts: attempts,
-  lockUntil:
-    attempts >= 5
-      ? new Date(Date.now() + 15 * 60 * 1000)
-      : null,
-});
+      failedLoginAttempts: 0,
+      lockUntil: null,
+    });
 
-    return null;
+    return user;
   }
-
-  // Successful login → reset counter
-  await this.usersService.update(user.id, {
-  failedLoginAttempts: 0,
-  lockUntil: null,
-});
-
-  return user;
-}
 
   login(user: any) {
     // Resolve restaurantId: staff may be linked via an outlet rather than directly
@@ -79,46 +74,42 @@ export class AuthService {
   }
 
   async changePassword(userId: string, oldPass: string, newPass: string) {
-  const user = await this.usersService.findByUserId(userId);
+    const user = await this.usersService.findByUserId(userId);
 
-  if (!user) {
-    throw new UnauthorizedException('User not found');
-  }
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
 
-  const isValid = await bcrypt.compare(oldPass, user.password_hash);
+    const isValid = await bcrypt.compare(oldPass, user.password_hash);
 
-  if (!isValid) {
-    throw new UnauthorizedException('Old password is incorrect');
-  }
+    if (!isValid) {
+      throw new UnauthorizedException('Old password is incorrect');
+    }
 
-  if (newPass.length < 8) {
-    throw new BadRequestException(
-      'Password must be at least 8 characters',
+    if (newPass.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters');
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/;
+
+    if (!passwordRegex.test(newPass)) {
+      throw new BadRequestException(
+        'Password must contain uppercase, lowercase, number and special character',
+      );
+    }
+
+    const hashed = await bcrypt.hash(newPass, 10);
+
+    await this.usersService.updatePassword(user.id, hashed);
+
+    const restaurantId = user.restaurantId ?? user.outlet?.restaurantId ?? '';
+
+    await this.auditService.logAction(
+      restaurantId,
+      user.id,
+      'Password Changed',
+      {},
     );
+    return { message: 'Password updated successfully' };
   }
-
-  const passwordRegex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/;
-
-  if (!passwordRegex.test(newPass)) {
-    throw new BadRequestException(
-      'Password must contain uppercase, lowercase, number and special character',
-    );
-  }
-
-  const hashed = await bcrypt.hash(newPass, 10);
-
-await this.usersService.updatePassword(user.id, hashed);
-
-const restaurantId =
-  user.restaurantId ?? user.outlet?.restaurantId ?? '';
-
-await this.auditService.logAction(
-  restaurantId,
-  user.id,
-  'Password Changed',
-  {},
-);
-return { message: 'Password updated successfully' };
-}
 }

@@ -21,14 +21,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   @MinLength(8)
-  @Matches(
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/,
-  {
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/, {
     message:
       'Password must contain uppercase, lowercase, number and special character',
-  },
-)
-
+  })
   password?: string;
 
   @IsOptional()
@@ -62,13 +58,11 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   customRoleId?: string;
-  
-    @IsOptional()
+
+  @IsOptional()
   @IsInt()
   failedLoginAttempts?: number;
 
   @IsOptional()
   lockUntil?: Date | null;
- 
-
 }

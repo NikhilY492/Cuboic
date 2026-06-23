@@ -47,7 +47,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('change-password')
-  changePassword( @Request() req: any, @Body() body: ChangePasswordDto,) {
+  changePassword(@Request() req: any, @Body() body: ChangePasswordDto) {
     return this.authService.changePassword(
       req.user.userId,
       body.oldPassword,
