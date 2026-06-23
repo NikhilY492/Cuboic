@@ -1,4 +1,13 @@
-import { IsString, IsIn, IsOptional, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsIn,
+  IsOptional,
+  IsBoolean,
+  MinLength,
+  Matches,
+  IsInt,
+  IsDateString,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -11,6 +20,15 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
+  @MinLength(8)
+  @Matches(
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/,
+  {
+    message:
+      'Password must contain uppercase, lowercase, number and special character',
+  },
+)
+
   password?: string;
 
   @IsOptional()
@@ -44,4 +62,13 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   customRoleId?: string;
+  
+    @IsOptional()
+  @IsInt()
+  failedLoginAttempts?: number;
+
+  @IsOptional()
+  lockUntil?: Date | null;
+ 
+
 }

@@ -47,22 +47,13 @@ export class RestaurantsController {
     return restaurant;
   }
 
-  // POST /restaurants
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('Owner', 'Admin')
-  @Post()
-  async create(@Body() body: any) {
-    console.log('BODY:', body);
-    return this.restaurantsService.create(body);
-  }
-
   // PATCH /restaurants/:id
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('Owner', 'Admin')
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() body: any) {
-    return this.restaurantsService.update(id, body);
-  }
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('Owner', 'Admin')
+@Patch(':id')
+async update(@Param('id') id: string, @Body() body: any) {
+  return this.restaurantsService.update(id, body);
+}
 
   // POST /restaurants/:id/call-captain
   @Post(':id/call-captain')
