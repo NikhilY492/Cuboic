@@ -3,12 +3,13 @@ import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { AuditService } from '../audit/audit.service';
 import * as bcrypt from 'bcryptjs';
 
 describe('AuthService', () => {
   let service: AuthService;
   let usersService: jest.Mocked<
-    Pick<UsersService, 'findByUserId' | 'updatePassword'>
+    Pick<UsersService, 'findByUserId' | 'updatePassword' | 'update'>
   >;
   let jwtService: jest.Mocked<Pick<JwtService, 'sign'>>;
 
@@ -27,6 +28,8 @@ describe('AuthService', () => {
     outletId: null,
     is_active: true,
     customRoleId: null,
+    failedLoginAttempts: 0,
+    lockUntil: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -35,7 +38,8 @@ describe('AuthService', () => {
     usersService = {
       findByUserId: jest.fn(),
       updatePassword: jest.fn(),
-    };
+      update: jest.fn(),
+    } as any;
     jwtService = { sign: jest.fn().mockReturnValue('mock.jwt.token') };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -43,6 +47,7 @@ describe('AuthService', () => {
         AuthService,
         { provide: UsersService, useValue: usersService },
         { provide: JwtService, useValue: jwtService },
+        { provide: AuditService, useValue: { logAction: jest.fn() } },
       ],
     }).compile();
 
@@ -137,7 +142,7 @@ describe('AuthService', () => {
       });
       usersService.updatePassword.mockResolvedValue({ ...mockUser } as any);
 
-      await service.changePassword('john.doe', 'old-pass', 'new-pass');
+      await service.changePassword('john.doe', 'old-pass', 'StrongP@ss1');
 
       expect(usersService.updatePassword).toHaveBeenCalledWith(
         'user-uuid-1',
@@ -153,7 +158,7 @@ describe('AuthService', () => {
       });
 
       await expect(
-        service.changePassword('john.doe', 'wrong-old', 'new-pass'),
+        service.changePassword('john.doe', 'wrong-old', 'StrongP@ss1'),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
