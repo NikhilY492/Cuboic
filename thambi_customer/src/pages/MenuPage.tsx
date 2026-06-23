@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getRestaurant, getCategories, getMenuItems, type Category, type MenuItem } from '../api/menu';
 import { updateOrderTable, checkSession } from '../api/orders';
@@ -10,6 +10,8 @@ import { TableSelectorModal } from '../components/TableSelectorModal';
 import { ConfirmTableMoveModal } from '../components/ConfirmTableMoveModal';
 import { CustomerAuthModal } from '../components/CustomerAuthModal';
 import { OrderTypeModal } from '../components/OrderTypeModal';
+import { GeofenceGate } from '../components/GeofenceGate';
+import { useGeofence } from '../hooks/useGeofence';
 import { type Customer } from '../api/customers';
 import { getCustomer, setCustomer as setCustomerSession } from '../utils/auth';
 import { getSessionId } from '../utils/session';
@@ -20,6 +22,18 @@ import './MenuPage.css';
 
 // Stable session id per device
 const SESSION_ID = getSessionId();
+
+/**
+ * Tiny sentinel rendered inside GeofenceGate. When GeofenceGate lets its
+ * children through (status === 'inside'), this mounts and fires onCleared.
+ */
+function GeofenceClearedSentinel({ onCleared }: { onCleared: () => void }) {
+    useEffect(() => {
+        onCleared();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    return null;
+}
 
 export function MenuPage() {
     const [params, setParams] = useSearchParams();
@@ -42,6 +56,25 @@ export function MenuPage() {
     const [activeOrders, setActiveOrders] = useState<ActiveOrderSession[]>([]);
     const [paymentStrategy, setPaymentStrategy] = useState<'PayPerOrder' | 'PayAtEnd'>('PayPerOrder');
     const [isTableMaintenance, setIsTableMaintenance] = useState(false);
+
+    // Geofencing config (populated from restaurant API response)
+    const [geofenceConfig, setGeofenceConfig] = useState<{
+        lat: number | null;
+        lng: number | null;
+        radius: number;
+        enabled: boolean;
+    }>({ lat: null, lng: null, radius: 25, enabled: false });
+
+    // Controls whether the geofence gate overlay is visible
+    const [geofenceGateOpen, setGeofenceGateOpen] = useState(false);
+
+    // Run the geofence check reactively (so the hook is always mounted)
+    useGeofence({
+        lat: geofenceConfig.lat,
+        lng: geofenceConfig.lng,
+        radius: geofenceConfig.radius,
+        enabled: geofenceGateOpen && geofenceConfig.enabled,
+    });
 
     const [authOpen, setAuthOpen] = useState(false);
     const [orderTypeOpen, setOrderTypeOpen] = useState(false);
@@ -131,8 +164,21 @@ export function MenuPage() {
             setAuthOpen(true);
             return;
         }
+        // If geofencing is enabled, gate checkout behind a location check
+        if (geofenceConfig.enabled && geofenceConfig.lat != null && geofenceConfig.lng != null) {
+            setCartOpen(false);
+            setGeofenceGateOpen(true);
+            return;
+        }
         proceedWithAuth(cust);
     };
+
+    const handleGeofenceCleared = useCallback(() => {
+        setGeofenceGateOpen(false);
+        const cust = getCustomer();
+        if (cust) proceedWithAuth(cust);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const proceedWithAuth = (customer: Customer) => {
         if (!tableId) {
@@ -222,6 +268,13 @@ export function MenuPage() {
         Promise.all([getRestaurant(restaurantId), getCategories(restaurantId)]).then(([rest, cats]) => {
             setRestaurantName(rest.name);
             setPaymentStrategy(rest.paymentStrategy ?? 'PayPerOrder');
+            // Store geofence config from restaurant
+            setGeofenceConfig({
+                lat: rest.latitude ?? null,
+                lng: rest.longitude ?? null,
+                radius: rest.geofenceRadius ?? 25,
+                enabled: rest.geofenceEnabled ?? false,
+            });
             const sorted = cats.sort((a, b) => a.display_order - b.display_order);
             setCategories(sorted);
             setActiveCategory(null);
@@ -705,6 +758,20 @@ export function MenuPage() {
                 onClose={() => setOrderTypeOpen(false)}
                 onSelect={handleOrderTypeSelect}
             />
+
+            {/* ── Geofence gate overlay ─────────────────────────────── */}
+            {geofenceGateOpen && (
+                <GeofenceGate
+                    lat={geofenceConfig.lat}
+                    lng={geofenceConfig.lng}
+                    radius={geofenceConfig.radius}
+                    enabled={geofenceConfig.enabled}
+                    onEscapeHatch={() => setGeofenceGateOpen(false)}
+                >
+                    {/* GeofenceGate calls children when inside — use an auto-proceed sentinel */}
+                    <GeofenceClearedSentinel onCleared={handleGeofenceCleared} />
+                </GeofenceGate>
+            )}
 
             {/* ── Orders bottom sheet ────────────────────────────── */}
             <OrdersDrawer

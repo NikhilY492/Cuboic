@@ -23,6 +23,10 @@ export interface Restaurant {
     paymentStrategy?: 'PayPerOrder' | 'PayAtEnd';
     settings?: { tax_percentage: number };
     tables?: Array<{ id: string; table_number: string; is_active?: boolean; is_occupied?: boolean }>;
+    latitude?: number;
+    longitude?: number;
+    geofenceEnabled?: boolean;
+    geofenceRadius?: number;
 }
 
 export const getRestaurant = (id: string) =>

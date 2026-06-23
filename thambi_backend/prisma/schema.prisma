@@ -116,6 +116,10 @@ model Restaurant {
   contactNumber   String?
   email           String?
   currency        String          @default("INR")
+  latitude        Float?          // Restaurant GPS latitude
+  longitude       Float?          // Restaurant GPS longitude
+  geofenceEnabled Boolean         @default(false)
+  geofenceRadius  Float           @default(25)  // metres (default 25 m)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 

@@ -25,6 +25,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? join(process.env.APP_ROOT, 'publ
 let win: BrowserWindow | null
 
 function createWindow() {
+  console.log('[DEBUG] createWindow called');
   win = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -48,6 +49,7 @@ function createWindow() {
 }
 
 app.on('window-all-closed', () => {
+  console.log('[DEBUG] window-all-closed event triggered');
   if (process.platform !== 'darwin') {
     app.quit()
     win = null
@@ -55,6 +57,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
+  console.log('[DEBUG] activate event triggered');
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
@@ -64,12 +67,14 @@ app.on('activate', () => {
 app.commandLine.appendSwitch('disable-http-cache');
 
 app.whenReady().then(() => {
+  console.log('[DEBUG] App is ready, initializing...');
   createWindow()
 
   // --- Auth Storage Handlers ---
   const authPath = join(app.getPath('userData'), 'auth.dat')
 
   ipcMain.handle('auth:store-token', (_, token: string, outletId: string) => {
+    console.log('[DEBUG] IPC handle: auth:store-token called for outlet:', outletId);
     try {
       if (safeStorage.isEncryptionAvailable()) {
         const encrypted = safeStorage.encryptString(JSON.stringify({ token, outletId }))
@@ -84,6 +89,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('auth:get-token', () => {
+    console.log('[DEBUG] IPC handle: auth:get-token called');
     try {
       if (fs.existsSync(authPath) && safeStorage.isEncryptionAvailable()) {
         const encrypted = fs.readFileSync(authPath)
@@ -98,12 +104,14 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('auth:clear-token', () => {
+    console.log('[DEBUG] IPC handle: auth:clear-token called');
     if (fs.existsSync(authPath)) fs.unlinkSync(authPath)
     return true
   })
 
   // --- Printing Handlers ---
   ipcMain.handle('print:get-printers', async (event) => {
+    console.log('[DEBUG] IPC handle: print:get-printers called');
     try {
       return await event.sender.getPrintersAsync()
     } catch (e) {
@@ -113,6 +121,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('print:kot', async (_, printerName: string, data: any[]) => {
+    console.log('[DEBUG] IPC handle: print:kot called for printer:', printerName, 'with data length:', data?.length);
     try {
       const isPDF = printerName.toLowerCase().includes('pdf');
       await PosPrinter.print(data, {

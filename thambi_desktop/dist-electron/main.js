@@ -215,6 +215,7 @@ var RENDERER_DIST = (0, node_path.join)(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? (0, node_path.join)(process.env.APP_ROOT, "public") : RENDERER_DIST;
 var win;
 function createWindow() {
+	console.log("[DEBUG] createWindow called");
 	win = new electron.BrowserWindow({
 		width: 1200,
 		height: 800,
@@ -228,19 +229,23 @@ function createWindow() {
 	else win.loadFile((0, node_path.join)(RENDERER_DIST, "index.html"));
 }
 electron.app.on("window-all-closed", () => {
+	console.log("[DEBUG] window-all-closed event triggered");
 	if (process.platform !== "darwin") {
 		electron.app.quit();
 		win = null;
 	}
 });
 electron.app.on("activate", () => {
+	console.log("[DEBUG] activate event triggered");
 	if (electron.BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 electron.app.commandLine.appendSwitch("disable-http-cache");
 electron.app.whenReady().then(() => {
+	console.log("[DEBUG] App is ready, initializing...");
 	createWindow();
 	const authPath = (0, node_path.join)(electron.app.getPath("userData"), "auth.dat");
 	electron.ipcMain.handle("auth:store-token", (_, token, outletId) => {
+		console.log("[DEBUG] IPC handle: auth:store-token called for outlet:", outletId);
 		try {
 			if (electron.safeStorage.isEncryptionAvailable()) {
 				const encrypted = electron.safeStorage.encryptString(JSON.stringify({
@@ -257,6 +262,7 @@ electron.app.whenReady().then(() => {
 		}
 	});
 	electron.ipcMain.handle("auth:get-token", () => {
+		console.log("[DEBUG] IPC handle: auth:get-token called");
 		try {
 			if (node_fs.default.existsSync(authPath) && electron.safeStorage.isEncryptionAvailable()) {
 				const encrypted = node_fs.default.readFileSync(authPath);
@@ -270,10 +276,12 @@ electron.app.whenReady().then(() => {
 		}
 	});
 	electron.ipcMain.handle("auth:clear-token", () => {
+		console.log("[DEBUG] IPC handle: auth:clear-token called");
 		if (node_fs.default.existsSync(authPath)) node_fs.default.unlinkSync(authPath);
 		return true;
 	});
 	electron.ipcMain.handle("print:get-printers", async (event) => {
+		console.log("[DEBUG] IPC handle: print:get-printers called");
 		try {
 			return await event.sender.getPrintersAsync();
 		} catch (e) {
@@ -282,6 +290,7 @@ electron.app.whenReady().then(() => {
 		}
 	});
 	electron.ipcMain.handle("print:kot", async (_, printerName, data) => {
+		console.log("[DEBUG] IPC handle: print:kot called for printer:", printerName, "with data length:", data?.length);
 		try {
 			const isPDF = printerName.toLowerCase().includes("pdf");
 			await import_dist.PosPrinter.print(data, {

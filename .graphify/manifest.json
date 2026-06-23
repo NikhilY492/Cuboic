@@ -1171,6 +1171,10 @@
     "mtime": 1775120163437.4934,
     "hash": "830e80e77889a7fcd6ff267d4a903a30"
   },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\inventory\\inventory-consumption.service.ts": {
+    "mtime": 1780771701744.688,
+    "hash": "bd56f3cdb306517f7d0fdbaf5ceeff0a"
+  },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\inventory\\inventory.controller.ts": {
     "mtime": 1779975639927.7732,
     "hash": "1f1732276fcbd066b5dc2625a1e1f860"
@@ -1275,6 +1279,26 @@
     "mtime": 1779975639968.8403,
     "hash": "026212980ecca1a45cca61483756c881"
   },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\printers\\dto\\create-printer.dto.ts": {
+    "mtime": 1780766531270.0483,
+    "hash": "6d8bd2387adc005d3d0045aaa4979a4d"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\printers\\dto\\update-printer.dto.ts": {
+    "mtime": 1780766533948.6306,
+    "hash": "46261340401cc2bbc65b829794441a8f"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\printers\\printers.controller.ts": {
+    "mtime": 1780770902092.4724,
+    "hash": "abc5f8e45293e82f253918e273f8009b"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\printers\\printers.module.ts": {
+    "mtime": 1780766546557.782,
+    "hash": "a1408b3c5f120197fd249f400a024c4f"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\printers\\printers.service.ts": {
+    "mtime": 1780766549084.6206,
+    "hash": "b609afb260b280e4cee77b5e7ea38b48"
+  },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\prisma\\prisma.module.ts": {
     "mtime": 1779975639973.8384,
     "hash": "0d14fad4b4742f49ea6d9d9c48069e8b"
@@ -1350,6 +1374,22 @@
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\seed.ts": {
     "mtime": 1779975640009.1582,
     "hash": "da1ebebb28faca35e538a664b3f85694"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\settings\\dto\\update-settings.dto.ts": {
+    "mtime": 1780770534467.4126,
+    "hash": "76fbcf40505d0a53cbf417e954cc2e1d"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\settings\\settings.controller.ts": {
+    "mtime": 1780770904277.2214,
+    "hash": "269109ec375a662da6c1fb29e92dd95f"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\settings\\settings.module.ts": {
+    "mtime": 1780770532418.3188,
+    "hash": "9808e6f3c65c13dd74a401f2d9ffc099"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\settings\\settings.service.ts": {
+    "mtime": 1780770536532.4282,
+    "hash": "a11b7fdb3e3417b29527376917b74f13"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_backend\\src\\tables\\tables.controller.ts": {
     "mtime": 1779975640011.1604,
@@ -1456,8 +1496,8 @@
     "hash": "66e622a29b530dad8ebeac7f762f8895"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_customer\\src\\api\\menu.ts": {
-    "mtime": 1779861453663.642,
-    "hash": "63017b5baf05c8f7e72de581fd4419e6"
+    "mtime": 1782160700111.8606,
+    "hash": "1b18c95e3386b07ab2807c4f2834679e"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_customer\\src\\api\\orders.ts": {
     "mtime": 1777471879688.5095,
@@ -1524,8 +1564,8 @@
     "hash": "51406c050d6baa90aab819188031ed5a"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_customer\\src\\pages\\MenuPage.tsx": {
-    "mtime": 1779861997499.6191,
-    "hash": "9d82ed59e7ae40ec4b196118b7cb9916"
+    "mtime": 1782160823617.6497,
+    "hash": "2272a07858ad8d5110be4805fd0e1e20"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_customer\\src\\pages\\OrderTrackerPage.tsx": {
     "mtime": 1779975640033.7092,
@@ -1544,11 +1584,11 @@
     "hash": "199e1221ae03d6974fdc8b5e23787b98"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\dist-electron\\main.js": {
-    "mtime": 1780659107219.7222,
-    "hash": "af19af30a30606c9a6c1ce98ef457ab9"
+    "mtime": 1781306595418.2224,
+    "hash": "afb5373609fb34be8e7dbd356b17eaea"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\dist-electron\\preload.js": {
-    "mtime": 1780659107211.6472,
+    "mtime": 1781305711313.0112,
     "hash": "359d87e7d6d183ade2fc01ce8b23b061"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\dist-electron\\preload.mjs": {
@@ -1556,8 +1596,8 @@
     "hash": "359d87e7d6d183ade2fc01ce8b23b061"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\electron\\main.ts": {
-    "mtime": 1780042802292.214,
-    "hash": "5b8406fc4e6fe1076fcd08bd61463118"
+    "mtime": 1781306595400.407,
+    "hash": "eb3a6593b940285ff35f4c645897b909"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\electron\\preload.ts": {
     "mtime": 1775124553004.4316,
@@ -1600,8 +1640,8 @@
     "hash": "b8c9e61d15279b66c0ea61917cd8a0eb"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\contexts\\ThemeContext.tsx": {
-    "mtime": 1775132586668.073,
-    "hash": "c5308e2a4fce4ba75997691e7c6523eb"
+    "mtime": 1782160171218.7607,
+    "hash": "e4f4ff4251d0315bc9960c72917d3a5d"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\hooks\\useAutoPrint.ts": {
     "mtime": 1780039905524.4512,
@@ -1612,8 +1652,8 @@
     "hash": "4bec8ea6542c0d934ca10f7a65951e63"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\main.tsx": {
-    "mtime": 1779975640058.438,
-    "hash": "3f6cd72f5e0a56c7194f43c99eded915"
+    "mtime": 1781303390854.0327,
+    "hash": "7b7590e093d39e89fb16c78d6b6efac3"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\CustomersPage.tsx": {
     "mtime": 1775555042429.0945,
@@ -1651,6 +1691,42 @@
     "mtime": 1775770980770.661,
     "hash": "2571d1115c5995aafc944573b293e5c0"
   },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\SettingsPage.tsx": {
+    "mtime": 1780770849011.2021,
+    "hash": "2658d8383de203c84c4f4e2b6f190ff4"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\settings\\BackupDataTab.tsx": {
+    "mtime": 1780770847003.114,
+    "hash": "c8a06e3e738763f1aa18d59912d63617"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\settings\\OrderSettingsTab.tsx": {
+    "mtime": 1780770790065.1868,
+    "hash": "6f0a0b8b0c82b3548a88bd6ce31f7886"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\settings\\OutletSettingsTab.tsx": {
+    "mtime": 1782160932363.7837,
+    "hash": "b6e4c52cb69cfb7f9695e44d637b8274"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\settings\\PaymentSettingsTab.tsx": {
+    "mtime": 1780770792085.675,
+    "hash": "7c05192b33a93b5fce216d60ba2877a7"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\settings\\PrinterSettingsTab.tsx": {
+    "mtime": 1780770666671.637,
+    "hash": "301ae6e01c2354ff2862768b2e992bc1"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\settings\\RestaurantSettingsTab.tsx": {
+    "mtime": 1780770668705.3772,
+    "hash": "01685c6c778a4e491eee879f9004d578"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\settings\\StaffPermissionsTab.tsx": {
+    "mtime": 1780770737567.109,
+    "hash": "463aef5eb059a6cf6c1fa9a4d5452228"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\pages\\settings\\ThemeAppearanceTab.tsx": {
+    "mtime": 1780770794123.0554,
+    "hash": "204b68bd2b1a962724d3899e72a66ed5"
+  },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\src\\utils\\printKOT.ts": {
     "mtime": 1780038705294.937,
     "hash": "fa90ac35e540be330ec984590d37c261"
@@ -1660,8 +1736,8 @@
     "hash": "2a1df93052017ad7520cfc90efc20f27"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\vite.config.ts": {
-    "mtime": 1779975640066.0962,
-    "hash": "97dc5475ff5512e564ac499bb68cb72d"
+    "mtime": 1781303460571.031,
+    "hash": "68e110a13b40e60a212330fef117c4d7"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_mobile\\App.tsx": {
     "mtime": 1775219759245.8496,
@@ -2104,8 +2180,8 @@
     "hash": "791e1d5452e0b6f28d835c45f8a47a21"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\.graphify\\GRAPH_REPORT.md": {
-    "mtime": 1780770956501.2273,
-    "hash": "6ca9821c80e3a623f339d925cd69ed95"
+    "mtime": 1780771776516.17,
+    "hash": "657ab0c7d06415eb141211a8ab3d5024"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\AGENTS.md": {
     "mtime": 1777571298655.6458,
@@ -2222,6 +2298,10 @@
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\index.html": {
     "mtime": 1779975640043.707,
     "hash": "9f1fe0f86cfeabc79c9e068217af2a88"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_desktop\\public\\print.html": {
+    "mtime": 1780042793641.3179,
+    "hash": "b9322ddfdab4d3d29a191d9decb09415"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\thambi_mobile\\.graphify\\GRAPH_REPORT.md": {
     "mtime": 1779470580210.3735,
