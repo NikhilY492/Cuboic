@@ -72,10 +72,12 @@ export class OrdersController {
     return this.ordersService.closeSession(id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(id);
-  }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('Staff', 'Owner', 'Admin', 'Manager')
+@Get(':id')
+findOne(@Param('id') id: string, @Req() req: any) {
+  return this.ordersService.findOne(id, req.user.restaurantId);
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')

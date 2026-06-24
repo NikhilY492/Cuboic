@@ -206,12 +206,25 @@ export class OrdersService {
     return order;
   }
 
-  findOne(id: string) {
-    return this.prisma.order.findUnique({
-      where: { id },
-      include: { table: true, payment: true, customer: true },
-    });
+  async findOne(id: string, restaurantId: string) {
+  const order = await this.prisma.order.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+    include: {
+      table: true,
+      payment: true,
+      customer: true,
+    },
+  });
+
+  if (!order) {
+    throw new NotFoundException('Order not found');
   }
+
+  return order;
+}
 
   findAll(restaurantId: string, status?: string) {
     return this.prisma.order.findMany({
