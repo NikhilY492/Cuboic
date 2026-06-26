@@ -143,7 +143,8 @@ export class UsersService {
     return this.prisma.user.delete({ where: { id } });
   }
 
-  // --- Custom Roles ---
+    // --- Custom Roles ---
+
   async getCustomRoles(restaurantId: string) {
     return this.prisma.customRole.findMany({
       where: { restaurantId },
@@ -164,14 +165,47 @@ export class UsersService {
     });
   }
 
-  async updateCustomRole(id: string, name: string, permissions: string[]) {
+  async updateCustomRole(
+    id: string,
+    restaurantId: string,
+    name: string,
+    permissions: string[],
+  ) {
+    const role = await this.prisma.customRole.findFirst({
+      where: {
+        id,
+        restaurantId,
+      },
+    });
+
+    if (!role) {
+      throw new ConflictException('Role not found');
+    }
+
     return this.prisma.customRole.update({
       where: { id },
-      data: { name, permissions },
+      data: {
+        name,
+        permissions,
+      },
     });
   }
 
-  async deleteCustomRole(id: string) {
-    return this.prisma.customRole.delete({ where: { id } });
+  async deleteCustomRole(id: string, restaurantId: string) {
+    const role = await this.prisma.customRole.findFirst({
+      where: {
+        id,
+        restaurantId,
+      },
+    });
+
+    if (!role) {
+      throw new ConflictException('Role not found');
+    }
+
+    return this.prisma.customRole.delete({
+      where: { id },
+    });
   }
 }
+

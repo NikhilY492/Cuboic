@@ -51,20 +51,28 @@ export class UsersController {
   }
 
   @Patch('roles/:id')
-  updateRole(
-    @Param('id') id: string,
-    @Body() body: { name: string; permissions: string[] },
-  ) {
-    return this.usersService.updateCustomRole(id, body.name, body.permissions);
-  }
+updateRole(
+  @Param('id') id: string,
+  @Req() req: any,
+  @Body() body: { name: string; permissions: string[] },
+) {
+  return this.usersService.updateCustomRole(
+  id,
+  req.user.restaurantId,
+  body.name,
+  body.permissions,
+);
+}
 
   @Delete('roles/:id')
-  deleteRole(@Param('id') id: string) {
-    return this.usersService.deleteCustomRole(id);
-  }
+deleteRole(@Param('id') id: string, @Req() req: any) {
+  return this.usersService.deleteCustomRole(
+  id,
+  req.user.restaurantId,
+);
+}
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+  @Patch(':id') update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
   }
 
