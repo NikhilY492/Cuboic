@@ -18,18 +18,41 @@ export class OutletsService {
     });
   }
 
-  async findOne(id: string) {
-    const outlet = await this.prisma.outlet.findUnique({
-      where: { id },
-      include: { restaurant: true },
-    });
-    if (!outlet) throw new NotFoundException('Outlet not found');
-    return outlet;
+  async findOne(id: string, restaurantId: string) {
+  const outlet = await this.prisma.outlet.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+    include: { restaurant: true },
+  });
+
+  if (!outlet) {
+    throw new NotFoundException('Outlet not found');
   }
 
-  async update(id: string, data: Partial<CreateOutletDto>) {
-    const outlet = await this.prisma.outlet.findUnique({ where: { id } });
-    if (!outlet) throw new NotFoundException('Outlet not found');
-    return this.prisma.outlet.update({ where: { id }, data });
+  return outlet;
+}
+
+  async update(
+  id: string,
+  data: Partial<CreateOutletDto>,
+  restaurantId: string,
+) {
+  const outlet = await this.prisma.outlet.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+  });
+
+  if (!outlet) {
+    throw new NotFoundException('Outlet not found');
   }
+
+  return this.prisma.outlet.update({
+    where: { id },
+    data,
+  });
+}
 }
