@@ -733,7 +733,21 @@ if (!existing) {
   return order;
 }
 
-  async markAsPaid(id: string, userId: string) {
+  async markAsPaid(
+  id: string,
+  userId: string,
+  restaurantId: string,
+) {
+    const existing = await this.prisma.order.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new NotFoundException('Order not found');
+}
     const hasAccess = await this.hasPermission(userId, 'SettlePayments', [
       'Captain',
       'Cashier',

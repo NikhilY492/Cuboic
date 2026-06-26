@@ -193,8 +193,12 @@ confirmDelivery(
   @Roles('Staff', 'Owner')
   @Patch(':id/pay')
   markAsPaid(@Param('id') id: string, @Req() req: any) {
-    return this.ordersService.markAsPaid(id, req.user.sub);
-  }
+  return this.ordersService.markAsPaid(
+    id,
+    req.user.sub,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')
