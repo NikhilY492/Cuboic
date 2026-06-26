@@ -148,9 +148,15 @@ findOne(@Param('id') id: string, @Req() req: any) {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Patch(':id/confirm')
-  confirmDelivery(@Param('id') id: string) {
-    return this.ordersService.confirmDelivery(id);
-  }
+confirmDelivery(
+  @Param('id') id: string,
+  @Req() req: any,
+) {
+  return this.ordersService.confirmDelivery(
+    id,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Waiter')

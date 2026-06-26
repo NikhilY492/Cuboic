@@ -649,15 +649,35 @@ export class OrdersService {
     return updatedOrder;
   }
 
-  async confirmDelivery(id: string) {
-    const order = await this.prisma.order.update({
-      where: { id },
-      data: { status: 'Delivered' },
-      include: { table: true, payment: true, customer: true },
-    });
-    if (!order) throw new NotFoundException('Order not found');
-    return order;
+  async confirmDelivery(
+  id: string,
+  restaurantId: string,
+) {
+  const existing = await this.prisma.order.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+  });
+
+  if (!existing) {
+    throw new NotFoundException('Order not found');
   }
+
+  const order = await this.prisma.order.update({
+    where: { id },
+    data: {
+      status: 'Delivered',
+    },
+    include: {
+      table: true,
+      payment: true,
+      customer: true,
+    },
+  });
+
+  return order;
+}
 
   async markAsPaid(id: string, userId: string) {
     const hasAccess = await this.hasPermission(userId, 'SettlePayments', [
