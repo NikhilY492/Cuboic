@@ -266,8 +266,34 @@ export class OrdersService {
     return summary;
   }
 
-  async updateStatus(id: string, dto: UpdateOrderStatusDto) {
-    const existing = await this.checkVersion(id, dto.version);
+  async updateStatus(
+  id: string,
+  dto: UpdateOrderStatusDto,
+  restaurantId: string,
+) {
+     const existing = await this.prisma.order.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new NotFoundException('Order not found');
+}
+
+if (
+  dto.version !== undefined &&
+  dto.version < existing.version
+) {
+  throw new ConflictException({
+    error: 'STALE_VERSION',
+    currentVersion: existing.version,
+    updatedAt: existing.updatedAt,
+    updatedBy: 'Another user',
+  });
+}
+    
     const order = await this.prisma.order.update({
       where: { id },
       data: { status: dto.status as OrderStatus, version: { increment: 1 } },

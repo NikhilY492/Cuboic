@@ -105,9 +105,17 @@ findOne(@Param('id') id: string, @Req() req: any) {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner')
   @Patch(':id/status')
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
-    return this.ordersService.updateStatus(id, dto);
-  }
+  updateStatus(
+  @Param('id') id: string,
+  @Body() dto: UpdateOrderStatusDto,
+  @Req() req: any,
+) {
+  return this.ordersService.updateStatus(
+    id,
+    dto,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')
