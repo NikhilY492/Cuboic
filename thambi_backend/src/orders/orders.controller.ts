@@ -161,9 +161,17 @@ confirmDelivery(
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Waiter')
   @Patch(':id/deliver-items')
-  deliverItems(@Param('id') id: string, @Body('itemIds') itemIds: string[]) {
-    return this.ordersService.markItemsDelivered(id, itemIds);
-  }
+  deliverItems(
+  @Param('id') id: string,
+  @Body('itemIds') itemIds: string[],
+  @Req() req: any,
+) {
+  return this.ordersService.markItemsDelivered(
+    id,
+    itemIds,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner')

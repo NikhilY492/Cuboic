@@ -614,7 +614,21 @@ export class OrdersService {
     return updatedTarget;
   }
 
-  async markItemsDelivered(id: string, itemIds: string[]) {
+  async markItemsDelivered(
+  id: string,
+  itemIds: string[],
+  restaurantId: string,
+) {
+    const existing = await this.prisma.order.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new NotFoundException('Order not found');
+}
     const order = await this.prisma.order.findUnique({ where: { id } });
     if (!order) throw new NotFoundException('Order not found');
 
