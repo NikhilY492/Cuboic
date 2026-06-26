@@ -120,9 +120,17 @@ findOne(@Param('id') id: string, @Req() req: any) {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Patch(':id/table')
-  updateTable(@Param('id') id: string, @Body('tableId') tableId: string) {
-    return this.ordersService.updateTable(id, tableId);
-  }
+  updateTable(
+  @Param('id') id: string,
+  @Body('tableId') tableId: string,
+  @Req() req: any,
+) {
+  return this.ordersService.updateTable(
+    id,
+    tableId,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(OptionalJwtAuthGuard)
   @Patch(':id/cancel')

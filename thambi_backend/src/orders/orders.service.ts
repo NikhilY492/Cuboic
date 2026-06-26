@@ -318,7 +318,21 @@ if (
     return order;
   }
 
-  async updateTable(id: string, tableId: string) {
+  async updateTable(
+  id: string,
+  tableId: string,
+  restaurantId: string,
+) {
+     const existing = await this.prisma.order.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new NotFoundException('Order not found');
+}
     const order = await this.prisma.order.update({
       where: { id },
       data: { tableId },
