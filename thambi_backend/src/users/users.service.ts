@@ -1,4 +1,8 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -117,12 +121,27 @@ export class UsersService {
     });
   }
 
-  async update(id: string, dto: UpdateUserDto) {
+  async update(
+  id: string,
+  restaurantId: string,
+  dto: UpdateUserDto,
+) {
     const data: any = { ...dto };
     if (dto.password) {
       data.password_hash = await bcrypt.hash(dto.password, 10);
     }
     delete data.password;
+
+    const existing = await this.prisma.user.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new ConflictException('User not found');
+}    
 
     return this.prisma.user.update({
       where: { id },
@@ -139,11 +158,25 @@ export class UsersService {
     });
   }
 
-  async remove(id: string) {
-    return this.prisma.user.delete({ where: { id } });
+  async remove(id: string, restaurantId: string) {
+  const existing = await this.prisma.user.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+  });
+
+  if (!existing) {
+    throw new ConflictException('User not found');
   }
 
-  // --- Custom Roles ---
+  return this.prisma.user.delete({
+    where: { id },
+  });
+}
+
+    // --- Custom Roles ---
+
   async getCustomRoles(restaurantId: string) {
     return this.prisma.customRole.findMany({
       where: { restaurantId },
@@ -164,14 +197,47 @@ export class UsersService {
     });
   }
 
-  async updateCustomRole(id: string, name: string, permissions: string[]) {
+  async updateCustomRole(
+    id: string,
+    restaurantId: string,
+    name: string,
+    permissions: string[],
+  ) {
+    const role = await this.prisma.customRole.findFirst({
+      where: {
+        id,
+        restaurantId,
+      },
+    });
+
+    if (!role) {
+      throw new ConflictException('Role not found');
+    }
+
     return this.prisma.customRole.update({
       where: { id },
-      data: { name, permissions },
+      data: {
+        name,
+        permissions,
+      },
     });
   }
 
-  async deleteCustomRole(id: string) {
-    return this.prisma.customRole.delete({ where: { id } });
+  async deleteCustomRole(id: string, restaurantId: string) {
+    const role = await this.prisma.customRole.findFirst({
+      where: {
+        id,
+        restaurantId,
+      },
+    });
+
+    if (!role) {
+      throw new ConflictException('Role not found');
+    }
+
+    return this.prisma.customRole.delete({
+      where: { id },
+    });
   }
 }
+

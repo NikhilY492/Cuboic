@@ -72,10 +72,12 @@ export class OrdersController {
     return this.ordersService.closeSession(id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(id);
-  }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('Staff', 'Owner', 'Admin', 'Manager')
+@Get(':id')
+findOne(@Param('id') id: string, @Req() req: any) {
+  return this.ordersService.findOne(id, req.user.restaurantId);
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')
@@ -103,16 +105,32 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner')
   @Patch(':id/status')
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
-    return this.ordersService.updateStatus(id, dto);
-  }
+  updateStatus(
+  @Param('id') id: string,
+  @Body() dto: UpdateOrderStatusDto,
+  @Req() req: any,
+) {
+  return this.ordersService.updateStatus(
+    id,
+    dto,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Patch(':id/table')
-  updateTable(@Param('id') id: string, @Body('tableId') tableId: string) {
-    return this.ordersService.updateTable(id, tableId);
-  }
+  updateTable(
+  @Param('id') id: string,
+  @Body('tableId') tableId: string,
+  @Req() req: any,
+) {
+  return this.ordersService.updateTable(
+    id,
+    tableId,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(OptionalJwtAuthGuard)
   @Patch(':id/cancel')
@@ -146,23 +164,41 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')
   @Patch(':id/confirm')
-  confirmDelivery(@Param('id') id: string) {
-    return this.ordersService.confirmDelivery(id);
-  }
+confirmDelivery(
+  @Param('id') id: string,
+  @Req() req: any,
+) {
+  return this.ordersService.confirmDelivery(
+    id,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Waiter')
   @Patch(':id/deliver-items')
-  deliverItems(@Param('id') id: string, @Body('itemIds') itemIds: string[]) {
-    return this.ordersService.markItemsDelivered(id, itemIds);
-  }
+  deliverItems(
+  @Param('id') id: string,
+  @Body('itemIds') itemIds: string[],
+  @Req() req: any,
+) {
+  return this.ordersService.markItemsDelivered(
+    id,
+    itemIds,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner')
   @Patch(':id/pay')
   markAsPaid(@Param('id') id: string, @Req() req: any) {
-    return this.ordersService.markAsPaid(id, req.user.sub);
-  }
+  return this.ordersService.markAsPaid(
+    id,
+    req.user.sub,
+    req.user.restaurantId,
+  );
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner', 'Admin', 'Manager')

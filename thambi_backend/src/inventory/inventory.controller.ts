@@ -8,6 +8,7 @@ import {
   Body,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
@@ -36,22 +37,23 @@ export class InventoryController {
   }
 
   @Get('items/:id')
-  findOne(@Param('id') id: string) {
-    return this.inventoryService.findOne(id);
-  }
+findOne(@Param('id') id: string, @Req() req: any) {
+  return this.inventoryService.findOne(id, req.user.outletId);
+}
 
   @Patch('items/:id')
-  update(
-    @Param('id') id: string,
-    @Body() body: Partial<CreateInventoryItemDto>,
-  ) {
-    return this.inventoryService.update(id, body);
-  }
+update(
+  @Param('id') id: string,
+  @Body() body: Partial<CreateInventoryItemDto>,
+  @Req() req: any,
+) {
+  return this.inventoryService.update(id, req.user.outletId, body);
+}
 
   @Delete('items/:id')
-  remove(@Param('id') id: string) {
-    return this.inventoryService.remove(id);
-  }
+remove(@Param('id') id: string, @Req() req: any) {
+  return this.inventoryService.remove(id, req.user.outletId);
+}
 
   @Patch('items/bulk')
   bulkUpdate(
@@ -63,14 +65,22 @@ export class InventoryController {
 
   // ── Stock Operations ─────────────────────────────────────────────────────
   @Post('items/:id/stock-in')
-  stockIn(@Param('id') id: string, @Body() dto: StockInDto) {
-    return this.inventoryService.stockIn(id, dto);
-  }
+stockIn(
+  @Param('id') id: string,
+  @Body() dto: StockInDto,
+  @Req() req: any,
+) {
+  return this.inventoryService.stockIn(id, req.user.outletId, dto);
+}
 
   @Post('items/:id/adjust')
-  adjust(@Param('id') id: string, @Body() dto: StockAdjustDto) {
-    return this.inventoryService.adjust(id, dto);
-  }
+adjust(
+  @Param('id') id: string,
+  @Body() dto: StockAdjustDto,
+  @Req() req: any,
+) {
+  return this.inventoryService.adjust(id, req.user.outletId, dto);
+}
 
   // ── Availability Check ───────────────────────────────────────────────────
   @Post('check-availability')

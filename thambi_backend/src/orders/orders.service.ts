@@ -33,19 +33,32 @@ export class OrdersService {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  private async checkVersion(id: string, incomingVersion?: number) {
-    const existing = await this.prisma.order.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException('Order not found');
-    if (incomingVersion !== undefined && incomingVersion < existing.version) {
-      throw new ConflictException({
-        error: 'STALE_VERSION',
-        currentVersion: existing.version,
-        updatedAt: existing.updatedAt,
-        updatedBy: 'Another user', // Note: storing lastModifiedBy would be better, but generic string is okay for now.
-      });
-    }
-    return existing;
+   private async checkVersion(
+  id: string,
+  incomingVersion?: number,
+) {
+  const existing = await this.prisma.order.findUnique({
+    where: { id },
+  });
+
+  if (!existing) {
+    throw new NotFoundException('Order not found');
   }
+
+  if (
+    incomingVersion !== undefined &&
+    incomingVersion < existing.version
+  ) {
+    throw new ConflictException({
+      error: 'STALE_VERSION',
+      currentVersion: existing.version,
+      updatedAt: existing.updatedAt,
+      updatedBy: 'Another user',
+    });
+  }
+
+  return existing;
+}
 
   async getOrCreateSession(restaurantId: string, tableId: string) {
     // Find active session for this table
@@ -206,12 +219,25 @@ export class OrdersService {
     return order;
   }
 
-  findOne(id: string) {
-    return this.prisma.order.findUnique({
-      where: { id },
-      include: { table: true, payment: true, customer: true },
-    });
+  async findOne(id: string, restaurantId: string) {
+  const order = await this.prisma.order.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+    include: {
+      table: true,
+      payment: true,
+      customer: true,
+    },
+  });
+
+  if (!order) {
+    throw new NotFoundException('Order not found');
   }
+
+  return order;
+}
 
   findAll(restaurantId: string, status?: string) {
     return this.prisma.order.findMany({
@@ -253,8 +279,34 @@ export class OrdersService {
     return summary;
   }
 
-  async updateStatus(id: string, dto: UpdateOrderStatusDto) {
-    const existing = await this.checkVersion(id, dto.version);
+  async updateStatus(
+  id: string,
+  dto: UpdateOrderStatusDto,
+  restaurantId: string,
+) {
+     const existing = await this.prisma.order.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new NotFoundException('Order not found');
+}
+
+if (
+  dto.version !== undefined &&
+  dto.version < existing.version
+) {
+  throw new ConflictException({
+    error: 'STALE_VERSION',
+    currentVersion: existing.version,
+    updatedAt: existing.updatedAt,
+    updatedBy: 'Another user',
+  });
+}
+    
     const order = await this.prisma.order.update({
       where: { id },
       data: { status: dto.status as OrderStatus, version: { increment: 1 } },
@@ -279,7 +331,21 @@ export class OrdersService {
     return order;
   }
 
-  async updateTable(id: string, tableId: string) {
+  async updateTable(
+  id: string,
+  tableId: string,
+  restaurantId: string,
+) {
+     const existing = await this.prisma.order.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new NotFoundException('Order not found');
+}
     const order = await this.prisma.order.update({
       where: { id },
       data: { tableId },
@@ -501,7 +567,10 @@ export class OrdersService {
     userId?: string,
     incomingVersion?: number,
   ) {
-    const targetOrder = await this.checkVersion(targetOrderId, incomingVersion);
+    const targetOrder = await this.checkVersion(
+  targetOrderId,
+  incomingVersion,
+);
 
     const sourceOrders = await this.prisma.order.findMany({
       where: {
@@ -601,9 +670,22 @@ export class OrdersService {
     return updatedTarget;
   }
 
-  async markItemsDelivered(id: string, itemIds: string[]) {
-    const order = await this.prisma.order.findUnique({ where: { id } });
-    if (!order) throw new NotFoundException('Order not found');
+  async markItemsDelivered(
+  id: string,
+  itemIds: string[],
+  restaurantId: string,
+) {
+    const existing = await this.prisma.order.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new NotFoundException('Order not found');
+}
+    const order = existing;
 
     const items = Array.isArray(order.items) ? (order.items as any[]) : [];
     let allDelivered = true;
@@ -636,17 +718,51 @@ export class OrdersService {
     return updatedOrder;
   }
 
-  async confirmDelivery(id: string) {
-    const order = await this.prisma.order.update({
-      where: { id },
-      data: { status: 'Delivered' },
-      include: { table: true, payment: true, customer: true },
-    });
-    if (!order) throw new NotFoundException('Order not found');
-    return order;
+  async confirmDelivery(
+  id: string,
+  restaurantId: string,
+) {
+  const existing = await this.prisma.order.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+  });
+
+  if (!existing) {
+    throw new NotFoundException('Order not found');
   }
 
-  async markAsPaid(id: string, userId: string) {
+  const order = await this.prisma.order.update({
+    where: { id },
+    data: {
+      status: 'Delivered',
+    },
+    include: {
+      table: true,
+      payment: true,
+      customer: true,
+    },
+  });
+
+  return order;
+}
+
+  async markAsPaid(
+  id: string,
+  userId: string,
+  restaurantId: string,
+) {
+    const existing = await this.prisma.order.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new NotFoundException('Order not found');
+}
     const hasAccess = await this.hasPermission(userId, 'SettlePayments', [
       'Captain',
       'Cashier',

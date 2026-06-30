@@ -20,6 +20,11 @@ export class AuthService {
 
     if (!user) return null;
 
+    const restaurantId = user.restaurantId ?? user.outlet?.restaurantId;
+
+if (!restaurantId) {
+  throw new UnauthorizedException('User is not associated with a restaurant');
+}
     // Account locked?
     if (user.lockUntil && user.lockUntil > new Date()) {
       throw new UnauthorizedException('Account locked. Try again later.');
@@ -31,19 +36,28 @@ export class AuthService {
     if (!valid) {
       const attempts = user.failedLoginAttempts + 1;
 
-      await this.usersService.update(user.id, {
-        failedLoginAttempts: attempts,
-        lockUntil: attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null,
-      });
+      await this.usersService.update(
+  user.id,
+  restaurantId,
+  {
+    failedLoginAttempts: attempts,
+    lockUntil: attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null,
+  },
+);
 
       return null;
     }
 
     // Successful login → reset counter
-    await this.usersService.update(user.id, {
-      failedLoginAttempts: 0,
-      lockUntil: null,
-    });
+    // Successful login → reset counter
+await this.usersService.update(
+  user.id,
+  restaurantId,
+  {
+    failedLoginAttempts: 0,
+    lockUntil: null,
+  },
+);
 
     return user;
   }

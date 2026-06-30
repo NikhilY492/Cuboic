@@ -7,6 +7,7 @@ import {
   Body,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { OutletsService } from './outlets.service';
 import { CreateOutletDto } from './dto/create-outlet.dto';
@@ -28,12 +29,20 @@ export class OutletsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.outletsService.findOne(id);
-  }
+findOne(@Param('id') id: string, @Req() req: any) {
+  return this.outletsService.findOne(id, req.user.restaurantId);
+}
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: Partial<CreateOutletDto>) {
-    return this.outletsService.update(id, body);
-  }
+update(
+  @Param('id') id: string,
+  @Body() body: Partial<CreateOutletDto>,
+  @Req() req: any,
+) {
+  return this.outletsService.update(
+    id,
+    body,
+    req.user.restaurantId,
+  );
+}
 }

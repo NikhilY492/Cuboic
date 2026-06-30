@@ -35,23 +35,45 @@ export class InventoryService {
     return items.filter((i) => i.currentStock <= i.reorderLevel);
   }
 
-  async findOne(id: string) {
-    const item = await this.prisma.inventoryItem.findUnique({
-      where: { id },
-      include: { transactions: { orderBy: { createdAt: 'desc' }, take: 20 } },
-    });
+  async findOne(id: string, outletId: string) {
+    const item = await this.prisma.inventoryItem.findFirst({
+  where: {
+    id,
+    outletId,
+  },
+  include: {
+    transactions: {
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    },
+  },
+});
     if (!item) throw new NotFoundException('Inventory item not found');
     return item;
   }
 
-  async update(id: string, data: Partial<CreateInventoryItemDto>) {
-    const item = await this.prisma.inventoryItem.findUnique({ where: { id } });
+  async update(
+  id: string,
+  outletId: string,
+  data: Partial<CreateInventoryItemDto>,
+) {
+    const item = await this.prisma.inventoryItem.findFirst({
+  where: {
+    id,
+    outletId,
+  },
+});
     if (!item) throw new NotFoundException('Inventory item not found');
     return this.prisma.inventoryItem.update({ where: { id }, data });
   }
 
-  async remove(id: string) {
-    const item = await this.prisma.inventoryItem.findUnique({ where: { id } });
+  async remove(id: string, outletId: string) {
+    const item = await this.prisma.inventoryItem.findFirst({
+  where: {
+    id,
+    outletId,
+  },
+});
     if (!item) throw new NotFoundException('Inventory item not found');
     return this.prisma.inventoryItem.delete({ where: { id } });
   }
@@ -76,8 +98,17 @@ export class InventoryService {
 
   // ── Stock In (Procurement) ───────────────────────────────────────────────
 
-  async stockIn(id: string, dto: StockInDto) {
-    const item = await this.prisma.inventoryItem.findUnique({ where: { id } });
+  async stockIn(
+  id: string,
+  outletId: string,
+  dto: StockInDto,
+) {
+    const item = await this.prisma.inventoryItem.findFirst({
+  where: {
+    id,
+    outletId,
+  },
+});
     if (!item) throw new NotFoundException('Inventory item not found');
 
     const newStock = item.currentStock + dto.quantity;
@@ -121,8 +152,17 @@ export class InventoryService {
 
   // ── Manual Adjust (Wastage / Spoilage / Correction) ─────────────────────
 
-  async adjust(id: string, dto: StockAdjustDto) {
-    const item = await this.prisma.inventoryItem.findUnique({ where: { id } });
+  async adjust(
+  id: string,
+  outletId: string,
+  dto: StockAdjustDto,
+) {
+    const item = await this.prisma.inventoryItem.findFirst({
+  where: {
+    id,
+    outletId,
+  },
+});
     if (!item) throw new NotFoundException('Inventory item not found');
 
     const newStock = Math.max(0, item.currentStock - dto.quantity);

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -9,9 +9,20 @@ export class RobotsService {
     return this.prisma.robot.findMany({ where: { restaurantId } });
   }
 
-  findOne(id: string) {
-    return this.prisma.robot.findUnique({ where: { id } });
+  async findOne(id: string, restaurantId: string) {
+  const robot = await this.prisma.robot.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+  });
+
+  if (!robot) {
+    throw new NotFoundException('Robot not found');
   }
+
+  return robot;
+}
 
   async findByIdWithSecret(robotId: string) {
     return this.prisma.robot.findUnique({ where: { id: robotId } });

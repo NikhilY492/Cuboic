@@ -150,7 +150,7 @@ export class RobotWebRtcGateway
       return;
     }
 
-    const robot = await this.robotsService.findOne(robotId);
+    const robot = await this.robotsService.findByIdWithSecret(robotId);
     if (!robot || robot.restaurantId !== payload.restaurantId) {
       client.emit('webrtc:auth_failed', { reason: 'Access denied' });
       client.disconnect();
