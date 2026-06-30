@@ -30,27 +30,62 @@ export class PrintersService {
     });
   }
 
-  async findOne(id: string) {
-    const printer = await this.prisma.printer.findUnique({ where: { id } });
-    if (!printer) throw new NotFoundException('Printer not found');
-    return printer;
+  async findOne(id: string, restaurantId: string) {
+  const printer = await this.prisma.printer.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+  });
+
+  if (!printer) {
+    throw new NotFoundException('Printer not found');
   }
 
-  async update(id: string, updatePrinterDto: UpdatePrinterDto) {
-    return this.prisma.printer.update({
-      where: { id },
-      data: updatePrinterDto,
-    });
+  return printer;
+}
+
+  async update(
+  id: string,
+  restaurantId: string,
+  updatePrinterDto: UpdatePrinterDto,
+) {
+  const printer = await this.prisma.printer.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+  });
+
+  if (!printer) {
+    throw new NotFoundException('Printer not found');
   }
 
-  async remove(id: string) {
-    return this.prisma.printer.delete({
-      where: { id },
-    });
+  return this.prisma.printer.update({
+    where: { id },
+    data: updatePrinterDto,
+  });
+}
+
+  async remove(id: string, restaurantId: string) {
+  const printer = await this.prisma.printer.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+  });
+
+  if (!printer) {
+    throw new NotFoundException('Printer not found');
   }
 
-  async testPrint(id: string) {
-    const printer = await this.findOne(id);
+  return this.prisma.printer.delete({
+    where: { id },
+  });
+}
+
+  async testPrint(id: string, restaurantId: string) {
+  const printer = await this.findOne(id, restaurantId);
     if (!printer.isEnabled)
       throw new BadRequestException('Printer is disabled');
     if (printer.connectionType !== 'LAN' || !printer.ipAddress) {

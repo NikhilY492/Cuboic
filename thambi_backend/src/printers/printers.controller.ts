@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { PrintersService } from './printers.service';
 import { CreatePrinterDto } from './dto/create-printer.dto';
@@ -30,24 +31,47 @@ export class PrintersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.printersService.findOne(id);
-  }
+findOne(@Param('id') id: string, @Req() req: any) {
+  return this.printersService.findOne(
+    id,
+    req.user.restaurantId,
+  );
+}
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePrinterDto: UpdatePrinterDto) {
-    return this.printersService.update(id, updatePrinterDto);
-  }
+update(
+  @Param('id') id: string,
+  @Req() req: any,
+  @Body() updatePrinterDto: UpdatePrinterDto,
+) {
+  return this.printersService.update(
+    id,
+    req.user.restaurantId,
+    updatePrinterDto,
+  );
+}
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.printersService.remove(id);
-  }
+remove(
+  @Param('id') id: string,
+  @Req() req: any,
+) {
+  return this.printersService.remove(
+    id,
+    req.user.restaurantId,
+  );
+}
 
   @Post(':id/test')
-  testPrint(@Param('id') id: string) {
-    return this.printersService.testPrint(id);
-  }
+testPrint(
+  @Param('id') id: string,
+  @Req() req: any,
+) {
+  return this.printersService.testPrint(
+    id,
+    req.user.restaurantId,
+  );
+}
 
   @Post('reprint/:orderId')
   reprintKot(@Param('orderId') orderId: string) {
