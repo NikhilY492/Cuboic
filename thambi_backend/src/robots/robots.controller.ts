@@ -1,4 +1,11 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { RobotsService } from './robots.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -16,7 +23,13 @@ export class RobotsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.robotsService.findOne(id);
-  }
+findOne(
+  @Param('id') id: string,
+  @Req() req: any,
+) {
+  return this.robotsService.findOne(
+    id,
+    req.user.restaurantId,
+  );
+}
 }
