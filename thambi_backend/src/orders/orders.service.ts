@@ -33,19 +33,32 @@ export class OrdersService {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  private async checkVersion(id: string, incomingVersion?: number) {
-    const existing = await this.prisma.order.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException('Order not found');
-    if (incomingVersion !== undefined && incomingVersion < existing.version) {
-      throw new ConflictException({
-        error: 'STALE_VERSION',
-        currentVersion: existing.version,
-        updatedAt: existing.updatedAt,
-        updatedBy: 'Another user', // Note: storing lastModifiedBy would be better, but generic string is okay for now.
-      });
-    }
-    return existing;
+   private async checkVersion(
+  id: string,
+  incomingVersion?: number,
+) {
+  const existing = await this.prisma.order.findUnique({
+    where: { id },
+  });
+
+  if (!existing) {
+    throw new NotFoundException('Order not found');
   }
+
+  if (
+    incomingVersion !== undefined &&
+    incomingVersion < existing.version
+  ) {
+    throw new ConflictException({
+      error: 'STALE_VERSION',
+      currentVersion: existing.version,
+      updatedAt: existing.updatedAt,
+      updatedBy: 'Another user',
+    });
+  }
+
+  return existing;
+}
 
   async getOrCreateSession(restaurantId: string, tableId: string) {
     // Find active session for this table
@@ -554,7 +567,10 @@ if (!existing) {
     userId?: string,
     incomingVersion?: number,
   ) {
-    const targetOrder = await this.checkVersion(targetOrderId, incomingVersion);
+    const targetOrder = await this.checkVersion(
+  targetOrderId,
+  incomingVersion,
+);
 
     const sourceOrders = await this.prisma.order.findMany({
       where: {
@@ -669,8 +685,7 @@ if (!existing) {
 if (!existing) {
   throw new NotFoundException('Order not found');
 }
-    const order = await this.prisma.order.findUnique({ where: { id } });
-    if (!order) throw new NotFoundException('Order not found');
+    const order = existing;
 
     const items = Array.isArray(order.items) ? (order.items as any[]) : [];
     let allDelivered = true;
