@@ -72,12 +72,27 @@ deleteRole(@Param('id') id: string, @Req() req: any) {
 );
 }
 
-  @Patch(':id') update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto);
-  }
+  @Patch(':id') 
+  update(
+  @Param('id') id: string,
+  @Req() req: any,
+  @Body() dto: UpdateUserDto,
+) {
+  return this.usersService.update(
+    id,
+    req.user.restaurantId,
+    dto,
+  );
+}
 
   @Delete(':id')
-  remove(@Param('id') id: string, @Req() req: any) {
-  return this.usersService.remove(id, req.user.restaurantId);
+  remove(
+  @Param('id') id: string,
+  @Req() req: any,
+) {
+  return this.usersService.remove(
+    id,
+    req.user.restaurantId,
+  );
 }
 }

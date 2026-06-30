@@ -121,12 +121,27 @@ export class UsersService {
     });
   }
 
-  async update(id: string, dto: UpdateUserDto) {
+  async update(
+  id: string,
+  restaurantId: string,
+  dto: UpdateUserDto,
+) {
     const data: any = { ...dto };
     if (dto.password) {
       data.password_hash = await bcrypt.hash(dto.password, 10);
     }
     delete data.password;
+
+    const existing = await this.prisma.user.findFirst({
+  where: {
+    id,
+    restaurantId,
+  },
+});
+
+if (!existing) {
+  throw new ConflictException('User not found');
+}    
 
     return this.prisma.user.update({
       where: { id },
@@ -144,15 +159,15 @@ export class UsersService {
   }
 
   async remove(id: string, restaurantId: string) {
-  const user = await this.prisma.user.findFirst({
+  const existing = await this.prisma.user.findFirst({
     where: {
       id,
       restaurantId,
     },
   });
 
-  if (!user) {
-    throw new NotFoundException('User not found');
+  if (!existing) {
+    throw new ConflictException('User not found');
   }
 
   return this.prisma.user.delete({
