@@ -77,7 +77,7 @@ deleteRole(@Param('id') id: string, @Req() req: any) {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
-  }
+  remove(@Param('id') id: string, @Req() req: any) {
+  return this.usersService.remove(id, req.user.restaurantId);
+}
 }

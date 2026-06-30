@@ -1,4 +1,8 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -139,9 +143,22 @@ export class UsersService {
     });
   }
 
-  async remove(id: string) {
-    return this.prisma.user.delete({ where: { id } });
+  async remove(id: string, restaurantId: string) {
+  const user = await this.prisma.user.findFirst({
+    where: {
+      id,
+      restaurantId,
+    },
+  });
+
+  if (!user) {
+    throw new NotFoundException('User not found');
   }
+
+  return this.prisma.user.delete({
+    where: { id },
+  });
+}
 
     // --- Custom Roles ---
 
