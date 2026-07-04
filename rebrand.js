@@ -17,13 +17,13 @@ function replaceInDir(dir) {
                 const preserveRenderUrl = content.includes('cuboic-884m.onrender.com');
 
                 let newContent = content
-                    .replace(/Thambi/g, 'Thambi')
-                    .replace(/thambi(?!_)/g, 'thambi') // avoid changing thambi_backend folder references if any
+                    .replace(/Onomex/g, 'Onomex')
+                    .replace(/onomex(?!_)/g, 'onomex') // avoid changing onomex_backend folder references if any
                     .replace(/logo1\.png/g, 'pic1.png')
                     .replace(/logo\.png/g, 'pic1.png');
 
                 if (preserveRenderUrl) {
-                    newContent = newContent.replace(/thambi\.onrender\.com/g, 'cuboic-884m.onrender.com');
+                    newContent = newContent.replace(/onomex\.onrender\.com/g, 'cuboic-884m.onrender.com');
                 }
 
                 if (content !== newContent) {
@@ -35,8 +35,8 @@ function replaceInDir(dir) {
     });
 }
 
-replaceInDir(path.join(__dirname, 'thambi_customer'));
-replaceInDir(path.join(__dirname, 'thambi_admin'));
-replaceInDir(path.join(__dirname, 'thambi_mobile'));
-replaceInDir(path.join(__dirname, 'thambi_backend'));
+replaceInDir(path.join(__dirname, 'onomex_customer'));
+replaceInDir(path.join(__dirname, 'onomex_admin'));
+replaceInDir(path.join(__dirname, 'onomex_mobile'));
+replaceInDir(path.join(__dirname, 'onomex_backend'));
 console.log('Rebranding complete!');

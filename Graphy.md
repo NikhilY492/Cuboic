@@ -43,7 +43,7 @@
    │  ├── [Content_Types].xml
    │  └── _rels
   ├── temp.txt
-  ├── thambi_backend
+  ├── onomex_backend
    │  ├── add_new_restaurant.ts
    │  ├── add_south_indian_restaurant.ts
    │  ├── audit_results.json
@@ -629,7 +629,7 @@
    │  ├── verify_mock.ts
    │  ├── verify_output.json
    │  └── verify_specific_menu.ts
-  ├── thambi_customer
+  ├── onomex_customer
    │  ├── dist
    │  │  ├── assets
    │  │  │  ├── index-DKEZURwj.css
@@ -700,7 +700,7 @@
    │  ├── tsconfig.json
    │  ├── tsconfig.node.json
    │  └── vite.config.ts
-  ├── thambi_desktop
+  ├── onomex_desktop
    │  ├── build_output.txt
    │  ├── dist
    │  │  ├── assets
@@ -734,7 +734,7 @@
    │  │  ├── App.tsx
    │  │  ├── assets
    │  │  │  ├── hero.png
-   │  │  │  ├── logo-thambi.png
+   │  │  │  ├── logo-onomex.png
    │  │  │  ├── logo.png
    │  │  │  ├── react.svg
    │  │  │  └── vite.svg
@@ -762,7 +762,7 @@
    │  ├── tsconfig.json
    │  ├── tsconfig.node.json
    │  └── vite.config.ts
-  ├── thambi_mobile
+  ├── onomex_mobile
    │  ├── app.json
    │  ├── App.tsx
    │  ├── assets
@@ -771,7 +771,7 @@
    │  │  ├── favicon.png
    │  │  ├── icon.png
    │  │  ├── images
-   │  │  │  └── thambi_logo.png
+   │  │  │  └── onomex_logo.png
    │  │  ├── pic1.png
    │  │  ├── sounds
    │  │  │  └── ding.mp3
@@ -833,7 +833,7 @@
    │  │  │    └── OrdersScreen.tsx
    │  │  └── theme.ts
    │  └── tsconfig.json
-  ├── thambi_public
+  ├── onomex_public
    │  ├── eslint.config.js
    │  ├── index.html
    │  ├── package-lock.json

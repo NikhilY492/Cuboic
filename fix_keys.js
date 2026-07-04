@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const DIRS = [
-    path.join(__dirname, 'thambi_admin', 'src'),
-    path.join(__dirname, 'thambi_customer', 'src'),
+    path.join(__dirname, 'onomex_admin', 'src'),
+    path.join(__dirname, 'onomex_customer', 'src'),
 ];
 
 const REPLACEMENTS = [

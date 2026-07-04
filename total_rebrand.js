@@ -18,8 +18,8 @@ function walkAndReplace(dir) {
             walkAndReplace(fullPath);
             
             // Rename directory after processing children
-            if (item.toLowerCase().includes('thambi')) {
-                const newItemName = item.replace(/Thambi/g, 'Thambi').replace(/thambi/g, 'thambi');
+            if (item.toLowerCase().includes('onomex')) {
+                const newItemName = item.replace(/Onomex/g, 'Onomex').replace(/onomex/g, 'onomex').replace(/ONOMEX/g, 'ONOMEX');
                 const newDirPath = path.join(dir, newItemName);
                 if (fullPath !== newDirPath) {
                     fs.renameSync(fullPath, newDirPath);
@@ -36,17 +36,21 @@ function walkAndReplace(dir) {
 
                     // Rebrand logic
                     // We use regex to handle case sensitivity
-                    newContent = newContent.replace(/Thambi/g, 'Thambi');
+                    newContent = newContent.replace(/Onomex/g, 'Onomex');
+                    newContent = newContent.replace(/ONOMEX/g, 'ONOMEX');
                     
                     // Special case: Preserve render URL if it matches exactly
                     // The user said "except for some URL" in the first request
                     // If we find the render url, we'll restore it after the mass replace
                     const renderUrlMatch = content.includes('cuboic-884m.onrender.com');
                     
-                    newContent = newContent.replace(/thambi/g, 'thambi');
+                    newContent = newContent.replace(/onomex/g, 'onomex');
+                    
+                    // Special case: preserve backend server
+                    newContent = newContent.replace(/api\.onomex\.in/g, 'api.thambi.in');
 
                     if (renderUrlMatch) {
-                        newContent = newContent.replace(/thambi-884m\.onrender\.com/g, 'cuboic-884m.onrender.com');
+                        newContent = newContent.replace(/onomex-884m\.onrender\.com/g, 'cuboic-884m.onrender.com');
                     }
 
                     if (content !== newContent) {
@@ -59,8 +63,8 @@ function walkAndReplace(dir) {
             }
 
             // Rename file
-            if (item.toLowerCase().includes('thambi')) {
-                const newItemName = item.replace(/Thambi/g, 'Thambi').replace(/thambi/g, 'thambi');
+            if (item.toLowerCase().includes('onomex')) {
+                const newItemName = item.replace(/Onomex/g, 'Onomex').replace(/onomex/g, 'onomex').replace(/ONOMEX/g, 'ONOMEX');
                 const newFilePath = path.join(dir, newItemName);
                 if (fullPath !== newFilePath) {
                     fs.renameSync(fullPath, newFilePath);
@@ -71,6 +75,6 @@ function walkAndReplace(dir) {
     }
 }
 
-console.log('Starting total rebrand from Thambi to Thambi...');
+console.log('Starting total rebrand from Onomex to Onomex...');
 walkAndReplace(ROOT_DIR);
 console.log('Rebrand complete!');

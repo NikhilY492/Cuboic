@@ -39,7 +39,7 @@ function replaceInDir(dir) {
     });
 }
 
-replaceInDir(path.join(__dirname, 'thambi_customer', 'src'));
-replaceInDir(path.join(__dirname, 'thambi_admin', 'src'));
-replaceInDir(path.join(__dirname, 'thambi_mobile', 'src'));
+replaceInDir(path.join(__dirname, 'onomex_customer', 'src'));
+replaceInDir(path.join(__dirname, 'onomex_admin', 'src'));
+replaceInDir(path.join(__dirname, 'onomex_mobile', 'src'));
 console.log('Color replacements complete!');

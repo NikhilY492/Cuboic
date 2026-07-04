@@ -23,7 +23,7 @@
 
 ## Surprising Connections (you probably didn't know these)
 - `index-CAA0bLX8.js` --calls--> `i()`  [EXTRACTED]
-  C:\Users\H3X4N\Documents\GitHub\Cuboic\thambi_desktop\dist\assets\index-CAA0bLX8.js → C:\Users\H3X4N\Documents\GitHub\Cuboic\thambi_desktop\dist\assets\index-CAA0bLX8.js  _Bridges community 0 → community 5_
+  C:\Users\H3X4N\Documents\GitHub\Cuboic\onomex_desktop\dist\assets\index-CAA0bLX8.js → C:\Users\H3X4N\Documents\GitHub\Cuboic\onomex_desktop\dist\assets\index-CAA0bLX8.js  _Bridges community 0 → community 5_
 
 ## Communities
 
