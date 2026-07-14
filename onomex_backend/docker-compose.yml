@@ -11,7 +11,7 @@ services:
 
   customer:
     build:
-      context: ../thambi_customer
+      context: ../onomex_customer
       dockerfile: Dockerfile
     ports:
       - "8082:80"

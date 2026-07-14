@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://api.thambi.in'
+const API_BASE = import.meta.env.VITE_API_URL || 'https://cuboic-884m.onrender.com'
 
 export default function ProvisionPage() {
   const navigate = useNavigate()

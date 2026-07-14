@@ -7,17 +7,292 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ── Enums ──────────────────────────────────────────────────────────────────
-
-enum PrinterType {
-  KITCHEN
-  BILL
-  BAR
+model SystemAlert {
+  id           String        @id @default(cuid())
+  severity     AlertSeverity @default(INFO)
+  source       String
+  message      String
+  details      Json?
+  restaurantId String?
+  robotId      String?
+  isResolved   Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  restaurant   Restaurant?   @relation(fields: [restaurantId], references: [id])
 }
 
-enum ConnectionType {
-  LAN
-  USB
+model Restaurant {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  logo_url        String?
+  is_active       Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  paymentStrategy PaymentStrategy @default(PayPerOrder)
+  auditLogs       AuditLog[]
+  categories      Category[]
+  deliveries      Delivery[]
+  menuItems       MenuItem[]
+  orders          Order[]
+  outlets         Outlet[]
+  platformFees    PlatformFee[]
+  robots          Robot[]
+  systemAlerts    SystemAlert[]
+  tables          Table[]
+  tableSessions   TableSession[]
+  users           User[]
+}
+
+model Table {
+  id            String         @id @default(cuid())
+  restaurantId  String
+  table_number  String
+  is_active     Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  orders        Order[]
+  restaurant    Restaurant     @relation(fields: [restaurantId], references: [id])
+  tableSessions TableSession[]
+}
+
+model Category {
+  id            String     @id @default(cuid())
+  restaurantId  String
+  name          String
+  display_order Int        @default(0)
+  is_active     Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  menuItems     MenuItem[]
+}
+
+model MenuItem {
+  id            String     @id @default(cuid())
+  restaurantId  String
+  categoryId    String
+  name          String
+  description   String?
+  price         Float
+  image_url     String?
+  is_available  Boolean    @default(true)
+  display_order Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  category      Category   @relation(fields: [categoryId], references: [id])
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  recipe        Recipe?
+}
+
+model User {
+  id               String      @id @default(cuid())
+  restaurantId     String?
+  name             String
+  user_id          String      @unique
+  password_hash    String
+  role             UserRole    @default(Staff)
+  is_active        Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  outletId         String?
+  dashboard_config Json        @default("[\"Pending\", \"Preparing\", \"Completed\", \"Robots\"]")
+  email            String?
+  phone            String?
+  image_url        String?
+  outlet           Outlet?     @relation(fields: [outletId], references: [id])
+  restaurant       Restaurant? @relation(fields: [restaurantId], references: [id])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id                  String        @id @default(cuid())
+  restaurantId        String
+  tableId             String
+  customer_session_id String
+  items               Json
+  subtotal            Float
+  tax                 Float
+  total               Float
+  status              OrderStatus   @default(Pending)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  notes               String?
+  customerId          String?
+  orderType           String        @default("DineIn")
+  outletId            String?
+  sessionId           String?
+  version             Int           @default(0)
+  customer            Customer?     @relation(fields: [customerId], references: [id])
+  outlet              Outlet?       @relation(fields: [outletId], references: [id])
+  restaurant          Restaurant    @relation(fields: [restaurantId], references: [id])
+  session             TableSession? @relation(fields: [sessionId], references: [id])
+  table               Table         @relation(fields: [tableId], references: [id])
+  payment             Payment?
+  platformFee         PlatformFee?
+}
+
+model Robot {
+  id                String           @id @default(cuid())
+  restaurantId      String
+  name              String
+  secretKey         String
+  status            RobotStatus      @default(Idle)
+  mode              RobotMode        @default(Automatic)
+  currentDeliveryId String?
+  isOnline          Boolean          @default(false)
+  lastSeen          DateTime?
+  battery           Float            @default(100)
+  location          Json             @default("{\"x\": 0, \"y\": 0}")
+  cabinets          Json             @default("[{\"id\": \"C1\", \"status\": \"Free\"}, {\"id\": \"C2\", \"status\": \"Free\"}, {\"id\": \"C3\", \"status\": \"Free\"}]")
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  restaurant        Restaurant       @relation(fields: [restaurantId], references: [id])
+  telemetries       RobotTelemetry[]
+}
+
+model Delivery {
+  id           String         @id @default(cuid())
+  restaurantId String
+  robotId      String
+  stops        Json
+  status       DeliveryStatus @default(InTransit)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id])
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  orderId        String        @unique
+  amount         Float
+  method         String
+  status         PaymentStatus @default(Pending)
+  transaction_id String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  order          Order         @relation(fields: [orderId], references: [id])
+}
+
+model PlatformFee {
+  id           String     @id @default(cuid())
+  restaurantId String
+  orderId      String     @unique
+  amount       Float      @default(5)
+  isPaid       Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  order        Order      @relation(fields: [orderId], references: [id])
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
+model RobotTelemetry {
+  id        String      @id @default(cuid())
+  robotId   String
+  battery   Float
+  location  Json
+  status    RobotStatus
+  createdAt DateTime    @default(now())
+  robot     Robot       @relation(fields: [robotId], references: [id])
+}
+
+model Outlet {
+  id             String          @id @default(cuid())
+  restaurantId   String
+  name           String
+  address        String?
+  is_active      Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  inventoryItems InventoryItem[]
+  orders         Order[]
+  restaurant     Restaurant      @relation(fields: [restaurantId], references: [id])
+  users          User[]
+}
+
+model InventoryItem {
+  id                String             @id @default(cuid())
+  outletId          String
+  name              String
+  unit              String
+  category          String             @default("General")
+  currentStock      Float              @default(0)
+  reservedStock     Float              @default(0)
+  costPerUnit       Float              @default(0)
+  reorderLevel      Float              @default(10)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  outlet            Outlet             @relation(fields: [outletId], references: [id])
+  recipeIngredients RecipeIngredient[]
+  transactions      StockTransaction[]
+}
+
+model Recipe {
+  id           String             @id @default(cuid())
+  menuItemId   String             @unique
+  instructions String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  menuItem     MenuItem           @relation(fields: [menuItemId], references: [id])
+  ingredients  RecipeIngredient[]
+}
+
+model RecipeIngredient {
+  id              String        @id @default(cuid())
+  recipeId        String
+  inventoryItemId String
+  quantity        Float
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  recipe          Recipe        @relation(fields: [recipeId], references: [id])
+
+  @@unique([recipeId, inventoryItemId])
+}
+
+model StockTransaction {
+  id              String               @id @default(cuid())
+  inventoryItemId String
+  outletId        String
+  type            StockTransactionType
+  quantity        Float
+  costPerUnit     Float?
+  referenceId     String?
+  notes           String?
+  createdAt       DateTime             @default(now())
+  inventoryItem   InventoryItem        @relation(fields: [inventoryItemId], references: [id])
+}
+
+model TableSession {
+  id             String     @id @default(cuid())
+  restaurantId   String
+  tableId        String
+  status         String     @default("Active")
+  lastActivityAt DateTime   @default(now())
+  createdAt      DateTime   @default(now())
+  closedAt       DateTime?
+  orders         Order[]
+  restaurant     Restaurant @relation(fields: [restaurantId], references: [id])
+  table          Table      @relation(fields: [tableId], references: [id])
+
+  @@index([restaurantId])
+  @@index([tableId])
+  @@index([status])
+}
+
+model AuditLog {
+  id           String     @id @default(cuid())
+  restaurantId String
+  userId       String
+  action       String
+  details      Json
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 }
 
 enum AlertSeverity {
@@ -29,12 +304,12 @@ enum AlertSeverity {
 enum UserRole {
   Admin
   Owner
+  Staff
   Manager
-  Captain
   Cashier
   Waiter
   Kitchen
-  Staff
+  Captain
 }
 
 enum OrderStatus {
@@ -86,414 +361,4 @@ enum StockTransactionType {
 enum PaymentStrategy {
   PayPerOrder
   PayAtEnd
-}
-
-// ── Models ─────────────────────────────────────────────────────────────────
-
-model SystemAlert {
-  id           String        @id @default(cuid())
-  severity     AlertSeverity @default(INFO)
-  source       String        // e.g., "RobotService", "PaymentGateway"
-  message      String
-  details      Json?         // Extended logs, stack traces, or payload samples
-  restaurantId String?       // Link to specific restaurant if applicable
-  robotId      String?       // Link to specific robot if applicable
-  isResolved   Boolean       @default(false)
-  createdAt    DateTime      @default(now())
-
-  restaurant   Restaurant?   @relation(fields: [restaurantId], references: [id])
-}
-
-model Restaurant {
-  id              String          @id @default(cuid())
-  name            String
-  description     String?
-  logo_url        String?
-  is_active       Boolean         @default(true)
-  paymentStrategy PaymentStrategy @default(PayPerOrder)
-  gstNumber       String?
-  address         String?
-  contactNumber   String?
-  email           String?
-  currency        String          @default("INR")
-  latitude        Float?          // Restaurant GPS latitude
-  longitude       Float?          // Restaurant GPS longitude
-  geofenceEnabled Boolean         @default(false)
-  geofenceRadius  Float           @default(25)  // metres (default 25 m)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  tables        Table[]
-  categories    Category[]
-  menuItems     MenuItem[]
-  users         User[]
-  robots        Robot[]
-  orders        Order[]
-  deliveries    Delivery[]
-  platformFees  PlatformFee[]
-  outlets       Outlet[]
-  systemAlerts  SystemAlert[]
-  tableSessions TableSession[]
-  auditLogs     AuditLog[]
-  printers      Printer[]
-  printLogs     PrintLog[]
-  settings      RestaurantSettings?
-  customRoles   CustomRole[]
-}
-
-model Table {
-  id           String  @id @default(cuid())
-  restaurantId String
-  table_number String
-  is_active    Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
-  orders     Order[]
-  tableSessions TableSession[]
-}
-
-model Category {
-  id            String  @id @default(cuid())
-  restaurantId  String
-  name          String
-  display_order Int     @default(0)
-  is_active     Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
-  menuItems  MenuItem[]
-}
-
-model MenuItem {
-  id            String  @id @default(cuid())
-  restaurantId  String
-  categoryId    String
-  name          String
-  description   String?
-  price         Float
-  image_url     String?
-  is_available  Boolean @default(true)
-  display_order Int     @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
-  category   Category   @relation(fields: [categoryId], references: [id])
-  recipe     Recipe?
-}
-
-model User {
-  id            String   @id @default(cuid())
-  restaurantId  String?
-  outletId      String?
-  name          String
-  user_id       String   @unique
-  password_hash String
-  role          UserRole @default(Staff)
-  customRoleId  String?
-  is_active     Boolean  @default(true)
-  failedLoginAttempts Int @default(0)
-  lockUntil DateTime?
-  email         String?
-  phone         String?
-  dashboard_config Json @default("[\"Pending\",\"Preparing\",\"Completed\",\"Robots\"]")
-  image_url     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  restaurant Restaurant? @relation(fields: [restaurantId], references: [id])
-  outlet     Outlet?     @relation(fields: [outletId], references: [id])
-  customRole CustomRole? @relation(fields: [customRoleId], references: [id])
-}
-
-model Customer {
-  id        String   @id @default(cuid())
-  phone     String   @unique
-  name      String
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  orders    Order[]
-}
-
-// items stored as Json: [{item_id, name, unit_price, quantity}]
-model Order {
-  id                  String      @id @default(cuid())
-  restaurantId        String
-  outletId            String?
-  tableId             String
-  sessionId           String?
-  customerId          String?
-  customer_session_id String
-  orderType           String      @default("DineIn") // DineIn, Takeaway, Delivery
-  items               Json
-  subtotal            Float
-  tax                 Float
-  total               Float
-  status              OrderStatus @default(Pending)
-  notes               String?
-  version             Int         @default(0)
-  kotPrinted          Boolean     @default(false)
-  kotPrintedAt        DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
-  outlet       Outlet?      @relation(fields: [outletId], references: [id])
-  table        Table        @relation(fields: [tableId], references: [id])
-  session      TableSession? @relation(fields: [sessionId], references: [id])
-  customer     Customer?    @relation(fields: [customerId], references: [id])
-  payment      Payment?
-  platformFee  PlatformFee?
-}
-
-// cabinets stored as Json: [{id, status}]
-// location stored as Json: {x, y}
-model Robot {
-  id                String      @id @default(cuid())
-  restaurantId      String
-  name              String
-  secretKey         String
-  status            RobotStatus @default(Idle)
-  mode              RobotMode   @default(Automatic)
-  currentDeliveryId String?
-  isOnline          Boolean     @default(false)
-  lastSeen          DateTime?
-  battery           Float       @default(100)
-  location          Json        @default("{\"x\":0,\"y\":0}")
-  cabinets          Json        @default("[{\"id\":\"C1\",\"status\":\"Free\"},{\"id\":\"C2\",\"status\":\"Free\"},{\"id\":\"C3\",\"status\":\"Free\"}]")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  restaurant  Restaurant      @relation(fields: [restaurantId], references: [id])
-  telemetries RobotTelemetry[]
-}
-
-// stops stored as Json: [{order_id, table_id, cabinets, sequence, status, delivered_at?}]
-model Delivery {
-  id           String         @id @default(cuid())
-  restaurantId String
-  robotId      String
-  stops        Json
-  status       DeliveryStatus @default(InTransit)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
-}
-
-
-model Payment {
-  id             String        @id @default(cuid())
-  orderId        String        @unique
-  amount         Float
-  method         String
-  status         PaymentStatus @default(Pending)
-  transaction_id String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  order Order @relation(fields: [orderId], references: [id])
-}
-
-model PlatformFee {
-  id           String   @id @default(cuid())
-  restaurantId String
-  orderId      String   @unique
-  amount       Float    @default(5)
-  isPaid       Boolean  @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
-  order      Order      @relation(fields: [orderId], references: [id])
-}
-
-model RobotTelemetry {
-  id       String      @id @default(cuid())
-  robotId  String
-  battery  Float
-  location Json
-  status   RobotStatus
-
-  createdAt DateTime @default(now())
-
-  robot Robot @relation(fields: [robotId], references: [id])
-}
-
-// ── Phase 1 Inventory & Recipe Models ─────────────────────────────────────
-
-model Outlet {
-  id           String   @id @default(cuid())
-  restaurantId String
-  name         String
-  address      String?
-  contactNumber String?
-  managerId    String?
-  is_active    Boolean  @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  restaurant     Restaurant      @relation(fields: [restaurantId], references: [id])
-  inventoryItems InventoryItem[]
-  users          User[]
-  orders         Order[]
-}
-
-model InventoryItem {
-  id            String   @id @default(cuid())
-  outletId      String
-  name          String
-  unit          String   // kg, l, g, ml, pcs
-  category      String   @default("General") // Vegetables, Meat, Dairy, DryGoods
-  currentStock  Float    @default(0)
-  reservedStock Float    @default(0)
-  costPerUnit   Float    @default(0)
-  reorderLevel  Float    @default(10)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  outlet            Outlet             @relation(fields: [outletId], references: [id])
-  transactions      StockTransaction[]
-  recipeIngredients RecipeIngredient[]
-}
-
-model Recipe {
-  id           String  @id @default(cuid())
-  menuItemId   String  @unique
-  instructions String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  menuItem    MenuItem          @relation(fields: [menuItemId], references: [id])
-  ingredients RecipeIngredient[]
-}
-
-model RecipeIngredient {
-  id              String @id @default(cuid())
-  recipeId        String
-  inventoryItemId String
-  quantity        Float  // Amount of inventory item per 1 unit of menu item
-
-  recipe        Recipe        @relation(fields: [recipeId], references: [id])
-  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
-
-  @@unique([recipeId, inventoryItemId])
-}
-
-model StockTransaction {
-  id              String               @id @default(cuid())
-  inventoryItemId String
-  outletId        String
-  type            StockTransactionType
-  quantity        Float
-  costPerUnit     Float?               // Recorded cost at time of transaction
-  referenceType   String?              // e.g. "Order", "Supplier"
-  referenceId     String?              // OrderID or supplier reference
-  notes           String?
-
-  createdAt DateTime @default(now())
-
-  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
-}
-
-model TableSession {
-  id             String   @id @default(cuid())
-  restaurantId   String
-  tableId        String
-  status         String   @default("Active") // Active, Closed, Expired
-  lastActivityAt DateTime @default(now())
-  createdAt      DateTime @default(now())
-  closedAt       DateTime?
-
-  orders         Order[]
-  restaurant     Restaurant @relation(fields: [restaurantId], references: [id])
-  table          Table      @relation(fields: [tableId], references: [id])
-
-  @@index([restaurantId])
-  @@index([tableId])
-  @@index([status])
-}
-
-model AuditLog {
-  id           String   @id @default(cuid())
-  restaurantId String
-  userId       String
-  action       String
-  details      Json
-  createdAt    DateTime @default(now())
-
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
-}
-
-model Printer {
-  id             String         @id @default(cuid())
-  restaurantId   String
-  name           String
-  type           PrinterType    @default(KITCHEN)
-  connectionType ConnectionType @default(LAN)
-  ipAddress      String?
-  port           Int            @default(9100)
-  isEnabled      Boolean        @default(true)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  restaurant     Restaurant     @relation(fields: [restaurantId], references: [id])
-  printLogs      PrintLog[]
-}
-
-model PrintLog {
-  id           String      @id @default(cuid())
-  restaurantId String
-  printerId    String
-  orderId      String?
-  printType    String      // KOT, BILL, TEST
-  success      Boolean
-  errorMessage String?
-  printedAt    DateTime    @default(now())
-
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
-  printer      Printer     @relation(fields: [printerId], references: [id])
-}
-
-model RestaurantSettings {
-  id           String   @id @default(cuid())
-  restaurantId String   @unique
-  orderSettings Json    @default("{}")
-  paymentSettings Json  @default("{}")
-  notificationSettings Json @default("{}")
-  themeSettings Json    @default("{}")
-  integrations Json     @default("{}")
-  
-  updatedAt    DateTime @updatedAt
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
-}
-
-model CustomRole {
-  id           String   @id @default(cuid())
-  restaurantId String
-  name         String
-  permissions  Json     @default("[]")
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
-  users        User[]
 }
