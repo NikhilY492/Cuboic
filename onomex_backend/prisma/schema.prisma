@@ -99,6 +99,8 @@ model User {
   email            String?
   phone            String?
   image_url        String?
+  failedLoginAttempts Int      @default(0)
+  lockUntil        DateTime?
   outlet           Outlet?     @relation(fields: [outletId], references: [id])
   restaurant       Restaurant? @relation(fields: [restaurantId], references: [id])
 }
