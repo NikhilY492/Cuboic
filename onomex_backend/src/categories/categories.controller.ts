@@ -1,4 +1,6 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, UseInterceptors, Inject } from '@nestjs/common';
+import { CacheInterceptor, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { CategoriesService } from './categories.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
@@ -11,8 +13,12 @@ class CreateCategoryDto {
 
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(
+    private readonly categoriesService: CategoriesService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
+  @UseInterceptors(CacheInterceptor)
   @Get()
   findAll(@Query('restaurantId') restaurantId: string) {
     return this.categoriesService.findAll(restaurantId);
@@ -20,7 +26,9 @@ export class CategoriesController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Body() dto: CreateCategoryDto) {
-    return this.categoriesService.create(dto);
+  async create(@Body() dto: CreateCategoryDto) {
+    const cat = await this.categoriesService.create(dto);
+    await this.cacheManager.reset();
+    return cat;
   }
 }

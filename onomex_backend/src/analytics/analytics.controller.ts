@@ -1,4 +1,5 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { AnalyticsService } from './analytics.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -7,6 +8,8 @@ import { UserRole } from '@prisma/client';
 
 @Controller('analytics')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@UseInterceptors(CacheInterceptor)
+@CacheTTL(300000) // 5 minutes TTL
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 

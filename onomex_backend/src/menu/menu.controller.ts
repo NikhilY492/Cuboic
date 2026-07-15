@@ -8,8 +8,11 @@ import {
   Param,
   Query,
   UseGuards,
-  Req,
+  UseInterceptors,
+  Inject,
 } from '@nestjs/common';
+import { CacheInterceptor, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { MenuService } from './menu.service';
 import { QueryMenuDto } from './dto/query-menu.dto';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
@@ -20,9 +23,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('menu')
 export class MenuController {
-  constructor(private readonly menuService: MenuService) {}
+  constructor(
+    private readonly menuService: MenuService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   // Public — customer-facing (no auth)
+  @UseInterceptors(CacheInterceptor)
   @Get()
   getMenu(@Query() query: QueryMenuDto) {
     return this.menuService.getMenu(
@@ -35,6 +42,7 @@ export class MenuController {
   // Admin — fetch ALL items (including unavailable)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner')
+  @UseInterceptors(CacheInterceptor)
   @Get('admin')
   getAdminMenu(@Query('restaurantId') restaurantId: string) {
     return this.menuService.getAllForAdmin(restaurantId);
@@ -44,36 +52,44 @@ export class MenuController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner')
   @Post()
-  createItem(@Body() dto: CreateMenuItemDto) {
-    return this.menuService.createItem(dto);
+  async createItem(@Body() dto: CreateMenuItemDto) {
+    const item = await this.menuService.createItem(dto);
+    await this.cacheManager.reset();
+    return item;
   }
 
   // Admin — update an existing menu item (price, availability, etc.)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner')
   @Put(':id')
-  updateItem(@Param('id') id: string, @Body() dto: UpdateMenuItemDto) {
-    return this.menuService.updateItem(id, dto);
+  async updateItem(@Param('id') id: string, @Body() dto: UpdateMenuItemDto) {
+    const item = await this.menuService.updateItem(id, dto);
+    await this.cacheManager.reset();
+    return item;
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Staff', 'Owner')
   @Patch('bulk')
-  bulkUpdate(
+  async bulkUpdate(
     @Query('restaurantId') restaurantId: string,
     @Body() body: Array<{ id: string; data: Partial<UpdateMenuItemDto> }>,
   ) {
-    return this.menuService.bulkUpdate(restaurantId, body);
+    const items = await this.menuService.bulkUpdate(restaurantId, body);
+    await this.cacheManager.reset();
+    return items;
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Owner', 'Manager', 'Captain')
   @Patch(':id/86')
-  toggleAvailability(
+  async toggleAvailability(
     @Param('id') id: string,
     @Body('is_available') is_available: boolean,
     @Req() req: any,
   ) {
-    return this.menuService.toggleAvailability(id, is_available, req.user.sub);
+    const item = await this.menuService.toggleAvailability(id, is_available, req.user.sub);
+    await this.cacheManager.reset();
+    return item;
   }
 }
