@@ -16,10 +16,35 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            echo "=== Disk usage before deploy ==="
+            df -h /
+
+            echo "=== Cleaning Docker resources ==="
+            docker image prune -af
+            docker builder prune -af
+            docker volume prune -f
+
+            echo "=== Cleaning npm cache ==="
+            npm cache clean --force
+
+            echo "=== Disk usage after cleanup ==="
+            df -h /
+
+            echo "=== Pulling latest code ==="
             cd ~/Cuboic
             git reset --hard HEAD
             git pull origin main
+
+            echo "=== Installing dependencies ==="
             cd thambi_backend
-            npm install
+            npm ci
+
+            echo "=== Building ==="
             npm run build
-            pm2 restart all
+
+            echo "=== Restarting PM2 ==="
+            pm2 describe thambi_backend > /dev/null 2>&1 \
+              && pm2 restart thambi_backend \
+              || pm2 start npm --name thambi_backend -- run start
+
+            pm2 save
