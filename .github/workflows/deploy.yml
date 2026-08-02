@@ -36,15 +36,15 @@ jobs:
             git pull origin main
 
             echo "=== Installing dependencies ==="
-            cd thambi_backend
+            cd onomex_backend
             npm ci
 
             echo "=== Building ==="
             npm run build
 
             echo "=== Restarting PM2 ==="
-            pm2 describe thambi_backend > /dev/null 2>&1 \
-              && pm2 restart thambi_backend \
-              || pm2 start dist/src/main.js --name thambi_backend
+            pm2 describe onomex_backend > /dev/null 2>&1 \
+              && pm2 restart onomex_backend \
+              || pm2 start dist/src/main.js --name onomex_backend
 
             pm2 save
