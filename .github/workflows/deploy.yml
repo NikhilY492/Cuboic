@@ -45,6 +45,6 @@ jobs:
             echo "=== Restarting PM2 ==="
             pm2 describe thambi_backend > /dev/null 2>&1 \
               && pm2 restart thambi_backend \
-              || pm2 start npm --name thambi_backend -- run start
+              || pm2 start dist/src/main.js --name thambi_backend
 
             pm2 save
