@@ -24,6 +24,9 @@ async function bootstrap() {
     origin: [
       'https://onomex.in',
       'https://admin.onomex.in',
+      'https://thambi.in',
+      'https://admin.thambi.in',
+      'https://menu.thambi.in',
       'http://localhost:3000',
       'http://localhost:5173',
     ],
