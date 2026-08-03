@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   Query,
+  Req,
   UseGuards,
   UseInterceptors,
   Inject,
@@ -82,7 +83,7 @@ export class MenuController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Owner', 'Manager', 'Captain')
-  @Patch(':id/86')
+  @Patch(':id/toggle')
   async toggleAvailability(
     @Param('id') id: string,
     @Body('is_available') is_available: boolean,
