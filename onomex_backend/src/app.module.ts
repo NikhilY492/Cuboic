@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv } from '@keyv/redis';
-import Keyv from 'keyv';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
@@ -51,9 +50,7 @@ import { SettingsModule } from './settings/settings.module';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         stores: [
-          new Keyv({
-            store: createKeyv(`redis://${configService.get('REDIS_HOST', 'localhost')}:${configService.get('REDIS_PORT', '6379')}`),
-          }),
+          createKeyv(`redis://${configService.get('REDIS_HOST', 'localhost')}:${configService.get('REDIS_PORT', '6379')}`),
         ],
       }),
       inject: [ConfigService],
