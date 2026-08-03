@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { createKeyv } from '@keyv/redis';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
@@ -44,10 +45,15 @@ import { SettingsModule } from './settings/settings.module';
         limit: 10,
       },
     ]),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      ttl: 300000, // 5 minutes in ms
-      max: 1000,   // max 1000 items in memory
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        stores: [
+          createKeyv(`redis://${configService.get('REDIS_HOST', 'localhost')}:${configService.get('REDIS_PORT', '6379')}`),
+        ],
+      }),
+      inject: [ConfigService],
     }),
     PrismaModule,
     MenuModule,
