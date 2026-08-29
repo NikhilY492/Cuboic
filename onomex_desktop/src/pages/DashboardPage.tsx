@@ -169,27 +169,59 @@ export default function DashboardPage() {
     { label: 'Robots Online', value: loadingLive ? '...' : liveStats.activeRobots, icon: Zap, color: 'text-purple-500', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
   ]
 
+  const [peakHoursTab, setPeakHoursTab] = useState<'weekday' | 'weekend'>('weekday')
+
   // Chart config variables
   const textColor = isDark ? '#e4e4e7' : '#52525b'
 
-  // Data processing for charts
+  // Data processing for charts (combining history + 7-day forecast)
   const lineData = useMemo(() => {
     if (!revenueData) return []
     const sorted = [...revenueData.trends].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    return sorted.map(t => ({
-      name: new Date(t.date).getDate().toString(),
+    
+    const rows = sorted.map((t, idx) => ({
+      name: new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       revenue: t.revenue,
-      orders: t.volume
+      forecastRevenue: idx === sorted.length - 1 ? t.revenue : undefined, // Connect the line smoothly
+      orders: t.volume,
+      isForecast: false,
     }))
+
+    if (revenueData.forecast && revenueData.forecast.length > 0) {
+      revenueData.forecast.forEach(f => {
+        rows.push({
+          name: new Date(f.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          revenue: undefined as any,
+          forecastRevenue: f.revenue,
+          orders: f.volume,
+          isForecast: true,
+        })
+      })
+    }
+
+    return rows
   }, [revenueData])
 
   const peakHoursData = useMemo(() => {
     if (!revenueData) return []
+    const demand = revenueData.hourlyDemand?.[peakHoursTab]
+    if (demand && demand.length > 0) {
+      return demand.map(h => ({
+        hour: `${h.hour}:00`,
+        count: Number(h.avgOrders.toFixed(1)),
+        revenue: Number(h.avgRevenue.toFixed(0)),
+        label: h.label,
+        zScore: h.ordersZ,
+      }))
+    }
     return revenueData.peakHours.filter(h => h.count > 0).map(h => ({
       hour: `${h.hour}:00`,
-      count: h.count
+      count: h.count,
+      label: 'normal',
     }))
-  }, [revenueData])
+  }, [revenueData, peakHoursTab])
+
+  const peakSummary = revenueData?.hourlyDemand?.summary?.[peakHoursTab]
 
   const pieColors = ['#4ade80', '#60a5fa', '#f87171', '#c084fc', '#facc15']
   const categoryPieData = useMemo(() => {
@@ -298,17 +330,47 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Main Chart */}
+          {/* Main Chart: Revenue Trends + AI Forecast */}
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm transition-colors duration-300">
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Revenue Trends</h3>
-              <p className="text-zinc-500 text-sm">{activeSubLabel}</p>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  Revenue Trends & 7-Day AI Demand Forecast
+                </h3>
+                <p className="text-zinc-500 text-sm">{activeSubLabel} • Solid line = Actuals, Dashed = Forecast</p>
+              </div>
+              <div className="flex items-center gap-4 text-xs font-semibold">
+                <span className="flex items-center gap-1.5 text-accent">
+                  <span className="w-3 h-0.5 bg-accent" /> Actual Revenue
+                </span>
+                <span className="flex items-center gap-1.5 text-amber-500">
+                  <span className="w-3 h-0.5 border-t-2 border-dashed border-amber-500" /> 7-Day Projection
+                </span>
+              </div>
             </div>
+
             {lineData.length > 0 ? (
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={lineData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                    <Line type="monotone" dataKey="revenue" stroke="#a3e635" strokeWidth={3} dot={{ r: 4, fill: '#a3e635', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#a3e635"
+                      strokeWidth={3}
+                      dot={{ r: 3, fill: '#a3e635', strokeWidth: 0 }}
+                      activeDot={{ r: 6 }}
+                      name="Actual Revenue"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="forecastRevenue"
+                      stroke="#f59e0b"
+                      strokeWidth={2.5}
+                      strokeDasharray="4 4"
+                      dot={{ r: 3, fill: '#f59e0b' }}
+                      name="Forecasted Revenue"
+                    />
                     <XAxis dataKey="name" stroke={textColor} fontSize={12} tickLine={false} axisLine={false} dy={10} />
                     <YAxis stroke={textColor} fontSize={12} tickLine={false} axisLine={false} dx={-10} tickFormatter={(value) => `₹${value}`} />
                     <Tooltip 
@@ -324,24 +386,77 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Peak Hours */}
+            {/* Peak Hours (Weekday vs Weekend Z-Score Curve) */}
             <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm transition-colors duration-300 flex flex-col">
-              <div className="mb-6">
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Peak Hours</h3>
-                <p className="text-zinc-500 text-sm">Order volume by hour of day</p>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Peak Demand Hours</h3>
+                  <p className="text-zinc-500 text-xs mt-0.5">Z-score hourly classification (Red = Peak, Sky = Slow)</p>
+                </div>
+                <div className="flex rounded-lg bg-zinc-100 dark:bg-zinc-800 p-0.5 text-xs font-semibold">
+                  <button
+                    onClick={() => setPeakHoursTab('weekday')}
+                    className={`px-3 py-1 rounded-md transition-colors ${
+                      peakHoursTab === 'weekday' ? 'bg-white dark:bg-zinc-900 text-accent shadow-sm' : 'text-zinc-500'
+                    }`}
+                  >
+                    Weekday
+                  </button>
+                  <button
+                    onClick={() => setPeakHoursTab('weekend')}
+                    className={`px-3 py-1 rounded-md transition-colors ${
+                      peakHoursTab === 'weekend' ? 'bg-white dark:bg-zinc-900 text-accent shadow-sm' : 'text-zinc-500'
+                    }`}
+                  >
+                    Weekend
+                  </button>
+                </div>
               </div>
+
+              {peakSummary && (
+                <div className="flex gap-2 mb-3 text-[11px] font-semibold flex-wrap">
+                  <span className="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                    🔥 Peak Hours: {peakSummary.peakHours.length > 0 ? peakSummary.peakHours.map(h => `${h}:00`).join(', ') : 'None'}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                    💤 Slow Hours: {peakSummary.slowHours.length > 0 ? peakSummary.slowHours.map(h => `${h}:00`).join(', ') : 'None'}
+                  </span>
+                </div>
+              )}
+
               {peakHoursData.length > 0 ? (
-                <div className="h-64 flex-1">
+                <div className="h-60 flex-1">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={peakHoursData}>
-                      <XAxis dataKey="hour" stroke={textColor} fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                      <Tooltip cursor={{ fill: 'rgba(163, 230, 53, 0.1)' }} contentStyle={{ backgroundColor: isDark ? '#18181b' : '#fff', borderColor: isDark ? '#27272a' : '#e4e4e7', borderRadius: '12px' }} />
-                      <Bar dataKey="count" fill="#a3e635" radius={[4, 4, 0, 0]} />
+                      <XAxis dataKey="hour" stroke={textColor} fontSize={10} tickLine={false} axisLine={false} dy={5} />
+                      <Tooltip
+                        cursor={{ fill: 'rgba(163, 230, 53, 0.1)' }}
+                        contentStyle={{ backgroundColor: isDark ? '#18181b' : '#fff', borderColor: isDark ? '#27272a' : '#e4e4e7', borderRadius: '12px' }}
+                      />
+                      <Bar
+                        dataKey="count"
+                        radius={[4, 4, 0, 0]}
+                        name="Avg Orders"
+                        fill="#a3e635"
+                      >
+                        {peakHoursData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              entry.label === 'peak'
+                                ? '#f97316'
+                                : entry.label === 'slow'
+                                ? '#38bdf8'
+                                : '#a3e635'
+                            }
+                          />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="h-64 flex items-center justify-center text-zinc-500 italic flex-1">No peak hours data available</div>
+                <div className="h-60 flex items-center justify-center text-zinc-500 italic flex-1">No peak hours data available</div>
               )}
             </div>
 

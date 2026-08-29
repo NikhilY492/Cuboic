@@ -1,7 +1,19 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { apiClient } from '../api/apiClient'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
+import { analyticsApi, type InventoryForecastSummary, type InventoryItemPrediction } from '../api/analytics'
 import * as XLSX from 'xlsx'
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ReferenceLine,
+} from 'recharts'
+import { AlertTriangle, Clock, TrendingDown, ShieldCheck, Sparkles, Plus, Download, Upload, Trash2, ArrowDownCircle, Sliders } from 'lucide-react'
 
 type InventoryItem = {
   id: string
@@ -10,14 +22,21 @@ type InventoryItem = {
   category: string
   currentStock: number
   reorderLevel: number
+  leadTimeDays?: number
   costPerUnit: number
 }
 
 export default function InventoryPage() {
   const { user } = useAuth()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
   const [items, setItems] = useState<InventoryItem[]>([])
+  const [forecast, setForecast] = useState<InventoryForecastSummary | null>(null)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
-  
+  const [filterMode, setFilterMode] = useState<'all' | 'critical' | 'low'>('all')
+  const [loadingForecast, setLoadingForecast] = useState(false)
+
   // Modals state
   const [isStockInModalOpen, setStockInModalOpen] = useState(false)
   const [isAdjustModalOpen, setAdjustModalOpen] = useState(false)
@@ -28,8 +47,9 @@ export default function InventoryPage() {
   const [newItemUnit, setNewItemUnit] = useState('kg')
   const [newItemCategory, setNewItemCategory] = useState('Produce')
   const [newItemReorder, setNewItemReorder] = useState('5')
+  const [newItemLeadTime, setNewItemLeadTime] = useState('2')
   const [newItemCost, setNewItemCost] = useState('0')
-  
+
   // Stock In Form
   const [stockInQty, setStockInQty] = useState('')
   const [stockInCost, setStockInCost] = useState('')
@@ -41,10 +61,17 @@ export default function InventoryPage() {
   const fetchInventory = async () => {
     if (!user?.outletId) return
     try {
-      const { data } = await apiClient.get(`/inventory/items?outletId=${user.outletId}`)
-      setItems(data)
+      setLoadingForecast(true)
+      const [{ data: itemsData }, forecastData] = await Promise.all([
+        apiClient.get(`/inventory/items?outletId=${user.outletId}`),
+        analyticsApi.getInventoryForecast(user.outletId, 60).catch(() => null),
+      ])
+      setItems(itemsData)
+      setForecast(forecastData)
     } catch (e) {
-      console.error("Failed to fetch inventory", e)
+      console.error('Failed to fetch inventory & forecast', e)
+    } finally {
+      setLoadingForecast(false)
     }
   }
 
@@ -52,8 +79,32 @@ export default function InventoryPage() {
     fetchInventory()
   }, [user])
 
-  const totalValue = items.reduce((acc, item) => acc + (item.currentStock * item.costPerUnit), 0)
-  const lowStockCount = items.filter(i => i.currentStock <= i.reorderLevel).length
+  const predictionMap = useMemo(() => {
+    const map = new Map<string, InventoryItemPrediction>()
+    if (forecast?.items) {
+      for (const item of forecast.items) {
+        map.set(item.id, item)
+      }
+    }
+    return map
+  }, [forecast])
+
+  const totalValue = items.reduce((acc, item) => acc + item.currentStock * item.costPerUnit, 0)
+  const lowStockCount = items.filter((i) => i.currentStock <= i.reorderLevel).length
+  const criticalRestockCount = forecast?.criticalCount ?? 0
+
+  const filteredItems = useMemo(() => {
+    if (filterMode === 'critical') {
+      return items.filter((item) => {
+        const pred = predictionMap.get(item.id)
+        return pred?.urgency === 'CRITICAL' || pred?.urgency === 'WARNING'
+      })
+    }
+    if (filterMode === 'low') {
+      return items.filter((item) => item.currentStock <= item.reorderLevel)
+    }
+    return items
+  }, [items, filterMode, predictionMap])
 
   const handleStockIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,19 +117,19 @@ export default function InventoryPage() {
         outletId: user?.outletId,
         quantity: qty,
         costPerUnit: parseFloat(stockInCost) || selectedItem.costPerUnit,
-        referenceId: 'MANUAL_PROCUREMENT'
+        referenceId: 'MANUAL_PROCUREMENT',
       })
       alert(`Successfully added ${qty}${selectedItem.unit} to ${selectedItem.name}`)
-      
+
       setStockInModalOpen(false)
       setStockInQty('')
       setStockInCost('')
-      fetchInventory() // Refresh
+      fetchInventory()
       if (selectedItem) {
-          setSelectedItem({ ...selectedItem, currentStock: selectedItem.currentStock + qty })
+        setSelectedItem({ ...selectedItem, currentStock: selectedItem.currentStock + qty })
       }
     } catch (err) {
-      alert("Failed to stock in")
+      alert('Failed to stock in')
       console.error(err)
     }
   }
@@ -92,27 +143,35 @@ export default function InventoryPage() {
     try {
       await apiClient.post(`/inventory/items/${selectedItem.id}/adjust`, {
         outletId: user?.outletId,
-        quantity: -qty, // deduct
+        quantity: qty,
         type: adjustType,
-        notes: `Manual Adjustment: ${adjustType}`
+        notes: `Manual Adjustment: ${adjustType}`,
       })
       alert(`Adjusted ${qty}${selectedItem.unit} from ${selectedItem.name}`)
-      
+
       setAdjustModalOpen(false)
       setAdjustQty('')
-      fetchInventory() // Refresh
+      fetchInventory()
       if (selectedItem) {
-          setSelectedItem({ ...selectedItem, currentStock: Math.max(0, selectedItem.currentStock - qty) })
+        setSelectedItem({
+          ...selectedItem,
+          currentStock: Math.max(0, selectedItem.currentStock - qty),
+        })
       }
     } catch (err) {
-      alert("Failed to adjust stock")
+      alert('Failed to adjust stock')
       console.error(err)
     }
   }
 
   const handleDeleteItem = async () => {
     if (!selectedItem) return
-    if (!window.confirm(`Are you sure you want to delete ${selectedItem.name}? This action cannot be undone.`)) return
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedItem.name}? This action cannot be undone.`,
+      )
+    )
+      return
 
     try {
       await apiClient.delete(`/inventory/items/${selectedItem.id}`)
@@ -120,7 +179,7 @@ export default function InventoryPage() {
       setSelectedItem(null)
       fetchInventory()
     } catch (err) {
-      alert("Failed to delete ingredient")
+      alert('Failed to delete ingredient')
       console.error(err)
     }
   }
@@ -136,8 +195,9 @@ export default function InventoryPage() {
         category: newItemCategory,
         unit: newItemUnit,
         reorderLevel: parseFloat(newItemReorder),
+        leadTimeDays: parseFloat(newItemLeadTime) || 2,
         costPerUnit: parseFloat(newItemCost),
-        currentStock: 0
+        currentStock: 0,
       })
       alert(`Ingredient ${newItemName} added successfully!`)
       setAddModalOpen(false)
@@ -145,203 +205,485 @@ export default function InventoryPage() {
       setNewItemCategory('Produce')
       setNewItemUnit('kg')
       setNewItemReorder('5')
+      setNewItemLeadTime('2')
       setNewItemCost('0')
       fetchInventory()
     } catch (err) {
-      alert("Failed to add ingredient")
+      alert('Failed to add ingredient')
       console.error(err)
     }
   }
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleExportExcel = () => {
-    if (items.length === 0) return alert('No data to export');
+    if (items.length === 0) return alert('No data to export')
 
-    const worksheetData = items.map(item => ({
-      'ID (Do Not Edit)': item.id,
-      'Item Name': item.name,
-      'Category': item.category,
-      'Current Stock': item.currentStock,
-      'Unit': item.unit,
-      'Cost Per Unit (₹)': item.costPerUnit,
-      'Reorder Level': item.reorderLevel,
-    }));
+    const worksheetData = items.map((item) => {
+      const pred = predictionMap.get(item.id)
+      return {
+        'ID (Do Not Edit)': item.id,
+        'Item Name': item.name,
+        Category: item.category,
+        'Current Stock': item.currentStock,
+        Unit: item.unit,
+        'Cost Per Unit (₹)': item.costPerUnit,
+        'Reorder Level': item.reorderLevel,
+        'Lead Time (Days)': item.leadTimeDays ?? 2,
+        'Avg Daily Burn': pred?.avgDailyUse ?? 'N/A',
+        'Days Until Stockout': pred?.daysUntilStockout ?? 'N/A',
+        'Days Until Reorder': pred?.daysUntilReorder ?? 'N/A',
+        'Dynamic ROP': pred?.dynamicReorderPoint ?? 'N/A',
+        Urgency: pred?.urgency ?? 'HEALTHY',
+      }
+    })
 
-    const ws = XLSX.utils.json_to_sheet(worksheetData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Inventory");
-    XLSX.writeFile(wb, "Inventory_Export.xlsx");
-  };
+    const ws = XLSX.utils.json_to_sheet(worksheetData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Inventory & Forecast')
+    XLSX.writeFile(wb, 'Inventory_Forecast_Export.xlsx')
+  }
 
   const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.onload = async (evt) => {
       try {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json<any>(ws);
+        const bstr = evt.target?.result
+        const wb = XLSX.read(bstr, { type: 'binary' })
+        const wsname = wb.SheetNames[0]
+        const ws = wb.Sheets[wsname]
+        const data = XLSX.utils.sheet_to_json<any>(ws)
 
-        // Real processing: send bulk patch request
-        const updates = data.map(row => ({
-           id: row['ID (Do Not Edit)'],
-           data: {
-             costPerUnit: parseFloat(row['Cost Per Unit (₹)']),
-             reorderLevel: parseFloat(row['Reorder Level'])
-           }
-        })).filter(u => u.id); // Only update items with an ID
-        
+        const updates = data
+          .map((row) => ({
+            id: row['ID (Do Not Edit)'],
+            data: {
+              costPerUnit: parseFloat(row['Cost Per Unit (₹)']),
+              reorderLevel: parseFloat(row['Reorder Level']),
+              leadTimeDays: parseFloat(row['Lead Time (Days)']) || 2,
+            },
+          }))
+          .filter((u) => u.id)
+
         if (updates.length > 0) {
-            await apiClient.patch(`/inventory/items/bulk?outletId=${user?.outletId}`, updates);
-            alert(`Successfully updated ${updates.length} items from Excel.`);
+          await apiClient.patch(`/inventory/items/bulk?outletId=${user?.outletId}`, updates)
+          alert(`Successfully updated ${updates.length} items from Excel.`)
         }
-        
-        fetchInventory();
+
+        fetchInventory()
       } catch (err) {
-         console.error(err);
-         alert('Failed to import Excel file. Please ensure it follows the exported format.');
+        console.error(err)
+        alert('Failed to import Excel file. Please ensure it follows the exported format.')
       }
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    };
-    reader.readAsBinaryString(file);
-  };
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+    reader.readAsBinaryString(file)
+  }
+
+  const selectedPrediction = selectedItem ? predictionMap.get(selectedItem.id) : null
 
   return (
     <div className="flex h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white relative transition-colors duration-300">
-      
-      {/* LEFT PANE: Inventory List */}
+      {/* LEFT PANE: Inventory List & AI Forecast Dashboard */}
       <div className="flex-1 flex flex-col pt-6 px-8 h-full overflow-hidden">
-        
         {/* Header Stats */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Inventory Watchtower</h1>
-            <p className="text-zinc-400 text-sm mt-1">Real-time stock levels & procurement tracking</p>
-            <div className="mt-4 flex gap-2 flex-wrap">
-              <button 
-                  onClick={() => setAddModalOpen(true)}
-                  className="text-xs px-3 py-1.5 bg-accent text-zinc-900 font-bold rounded hover:bg-lime-400 transition-colors shadow-sm"
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight">Inventory Watchtower</h1>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent/10 text-accent border border-accent/20">
+                <Sparkles className="w-3 h-3" /> AI Demand Model Active
+              </span>
+            </div>
+            <p className="text-zinc-500 text-sm mt-1">
+              Real-time stock depletion, burn rate analytics, and predictive restock deadlines
+            </p>
+
+            <div className="mt-4 flex gap-2 flex-wrap items-center">
+              <button
+                onClick={() => setAddModalOpen(true)}
+                className="text-xs px-3 py-1.5 bg-accent text-zinc-900 font-bold rounded-lg hover:bg-lime-400 transition-colors shadow-sm flex items-center gap-1.5"
               >
-                  + Add Ingredient
+                <Plus className="w-3.5 h-3.5" /> Add Ingredient
               </button>
-              <button 
-                  onClick={handleExportExcel}
-                  className="text-xs px-3 py-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 font-semibold rounded hover:bg-emerald-100 transition-colors border border-emerald-200 dark:border-emerald-500/20"
+              <button
+                onClick={handleExportExcel}
+                className="text-xs px-3 py-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 font-semibold rounded-lg hover:bg-emerald-100 transition-colors border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-1.5"
               >
-                  Export Data (Excel)
+                <Download className="w-3.5 h-3.5" /> Export Data (Excel)
               </button>
-              <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-xs px-3 py-1.5 bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 font-semibold rounded hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors border border-zinc-300 dark:border-zinc-700"
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="text-xs px-3 py-1.5 bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 font-semibold rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors border border-zinc-300 dark:border-zinc-700 flex items-center gap-1.5"
               >
-                  Import Data (Excel)
+                <Upload className="w-3.5 h-3.5" /> Import Data (Excel)
               </button>
-              <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="hidden" onChange={handleImportExcel} />
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleImportExcel}
+              />
             </div>
           </div>
+
           <div className="flex gap-4">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-3 transition-colors duration-300">
-              <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block">Total Capital Value</span>
-              <span className="text-xl font-bold text-zinc-900 dark:text-white">₹{totalValue.toLocaleString()}</span>
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-3 shadow-sm transition-colors duration-300">
+              <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block">
+                Total Capital Value
+              </span>
+              <span className="text-xl font-bold text-zinc-900 dark:text-white">
+                ₹{totalValue.toLocaleString()}
+              </span>
             </div>
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-5 py-3 text-red-500">
-              <span className="text-red-500/80 text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
+
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-5 py-3 text-amber-600 dark:text-amber-400 shadow-sm">
+              <span className="text-xs font-semibold uppercase tracking-wider block">
+                Restock Urgency (&le;3d)
+              </span>
+              <span className="text-xl font-bold">{criticalRestockCount} Items</span>
+            </div>
+
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-5 py-3 text-red-500 shadow-sm">
+              <span className="text-red-500/80 text-xs font-semibold uppercase tracking-wider block">
+                Low Stock (&le; Reorder)
+              </span>
               <span className="text-xl font-bold">{lowStockCount} Items</span>
             </div>
           </div>
         </div>
 
+        {/* Filter Chips */}
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => setFilterMode('all')}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+              filterMode === 'all'
+                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+            }`}
+          >
+            All Items ({items.length})
+          </button>
+          <button
+            onClick={() => setFilterMode('critical')}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+              filterMode === 'critical'
+                ? 'bg-amber-500 text-white shadow-sm'
+                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
+            }`}
+          >
+            <Clock className="w-3 h-3" /> Restock Due Soon ({criticalRestockCount})
+          </button>
+          <button
+            onClick={() => setFilterMode('low')}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+              filterMode === 'low'
+                ? 'bg-red-500 text-white shadow-sm'
+                : 'bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20'
+            }`}
+          >
+            <AlertTriangle className="w-3 h-3" /> Low Stock Level ({lowStockCount})
+          </button>
+        </div>
+
         {/* Data Grid */}
         <div className="flex-1 overflow-y-auto pr-2 pb-8">
           <div className="grid gap-3">
-            {items.map(item => {
+            {filteredItems.map((item) => {
               const isLowStock = item.currentStock <= item.reorderLevel
               const isSelected = selectedItem?.id === item.id
-              
+              const pred = predictionMap.get(item.id)
+
+              const isCritical = pred?.urgency === 'CRITICAL'
+              const isWarning = pred?.urgency === 'WARNING'
+
               return (
-                <div 
+                <div
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
                   className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer ${
-                    isSelected 
-                      ? 'border-accent bg-accent/5 shadow-[0_0_20px_rgba(101,163,13,0.1)]' 
+                    isSelected
+                      ? 'border-accent bg-accent/5 shadow-[0_0_20px_rgba(101,163,13,0.1)]'
                       : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/80'
                   }`}
                 >
-                  <div className="flex items-center gap-4 w-1/3">
-                    <div className={`w-3 h-3 rounded-full ${isLowStock ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : 'bg-emerald-500'}`} />
+                  {/* Name & Basic Info */}
+                  <div className="flex items-center gap-4 w-1/4">
+                    <div
+                      className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                        isCritical
+                          ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]'
+                          : isWarning
+                          ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]'
+                          : isLowStock
+                          ? 'bg-red-500'
+                          : 'bg-emerald-500'
+                      }`}
+                    />
                     <div>
-                      <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{item.name}</h3>
-                      <p className="text-xs text-zinc-500">{item.category} • ₹{item.costPerUnit}/{item.unit}</p>
+                      <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        {item.name}
+                      </h3>
+                      <p className="text-xs text-zinc-500">
+                        {item.category} • ₹{item.costPerUnit}/{item.unit}
+                      </p>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-6 w-1/3 justify-end">
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-zinc-600 dark:text-zinc-300">Stock Available</div>
-                      <div className={`text-xl font-bold ${isLowStock ? 'text-red-500 dark:text-red-400' : 'text-zinc-900 dark:text-white'}`}>
-                        {item.currentStock} <span className="text-sm font-medium text-zinc-500">{item.unit}</span>
-                      </div>
+
+                  {/* Stock Available */}
+                  <div className="w-1/5 text-left">
+                    <div className="text-xs text-zinc-500 font-medium">Stock Level</div>
+                    <div
+                      className={`text-lg font-bold ${
+                        isLowStock
+                          ? 'text-red-500 dark:text-red-400'
+                          : 'text-zinc-900 dark:text-white'
+                      }`}
+                    >
+                      {item.currentStock}{' '}
+                      <span className="text-xs font-normal text-zinc-500">{item.unit}</span>
                     </div>
+                  </div>
+
+                  {/* Daily Burn Rate */}
+                  <div className="w-1/5 text-left">
+                    <div className="text-xs text-zinc-500 font-medium flex items-center gap-1">
+                      <TrendingDown className="w-3 h-3 text-zinc-400" /> Daily Burn (&mu;)
+                    </div>
+                    <div className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                      {pred && pred.avgDailyUse > 0
+                        ? `${pred.avgDailyUse} ${item.unit}/day`
+                        : '0 (No history)'}
+                    </div>
+                  </div>
+
+                  {/* Predicted Runout Period */}
+                  <div className="w-1/5 text-left">
+                    <div className="text-xs text-zinc-500 font-medium flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-zinc-400" /> Depletion Time
+                    </div>
+                    <div className="text-sm font-semibold">
+                      {pred && pred.avgDailyUse > 0 ? (
+                        <span
+                          className={
+                            pred.daysUntilStockout <= 2
+                              ? 'text-red-500 font-bold'
+                              : pred.daysUntilStockout <= 5
+                              ? 'text-amber-500 font-semibold'
+                              : 'text-zinc-700 dark:text-zinc-300'
+                          }
+                        >
+                          Lasts ~{pred.daysUntilStockout} days
+                        </span>
+                      ) : (
+                        <span className="text-zinc-400 text-xs">Indefinite</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Reorder Urgency Badge */}
+                  <div className="w-1/5 flex justify-end">
+                    {isCritical ? (
+                      <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 flex items-center gap-1.5 animate-pulse">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        {pred && pred.daysUntilReorder === 0
+                          ? 'Reorder Now'
+                          : `Reorder in ${pred?.daysUntilReorder}d`}
+                      </span>
+                    ) : isWarning ? (
+                      <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        Reorder in {pred?.daysUntilReorder}d
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Safe ({pred?.daysUntilReorder ?? '>7'}d)
+                      </span>
+                    )}
                   </div>
                 </div>
               )
             })}
+
+            {filteredItems.length === 0 && (
+              <div className="p-12 text-center text-zinc-400 italic bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                No inventory items found matching the current filter.
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* RIGHT PANE: Action Center */}
+      {/* RIGHT PANE: Action Center & AI Depletion Chart */}
       {selectedItem && (
-        <div className="w-96 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 p-6 flex flex-col shadow-2xl relative z-10 animate-in slide-in-from-right duration-200 transition-colors">
-          <div className="flex items-center justify-between mb-8">
+        <div className="w-[420px] bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 p-6 flex flex-col shadow-2xl relative z-10 animate-in slide-in-from-right duration-200 transition-colors overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Item Management</h2>
-            <button onClick={() => setSelectedItem(null)} className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 flex items-center justify-center transition-colors">
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 flex items-center justify-center transition-colors"
+            >
               ✕
             </button>
           </div>
 
-          <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 mb-8 transition-colors duration-300">
+          {/* Current Stock Card */}
+          <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 mb-5 transition-colors duration-300">
             <h3 className="text-lg font-bold text-accent mb-1">{selectedItem.name}</h3>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
                 <span className="text-xs text-zinc-500 block mb-1">Current Stock</span>
-                <span className="text-xl font-bold text-zinc-900 dark:text-white">{selectedItem.currentStock}{selectedItem.unit}</span>
+                <span className="text-xl font-bold text-zinc-900 dark:text-white">
+                  {selectedItem.currentStock} {selectedItem.unit}
+                </span>
               </div>
               <div>
-                <span className="text-xs text-zinc-500 block mb-1">Reorder Level</span>
-                <span className="text-lg font-medium text-zinc-600 dark:text-zinc-300">{selectedItem.reorderLevel}{selectedItem.unit}</span>
+                <span className="text-xs text-zinc-500 block mb-1">Static Reorder Level</span>
+                <span className="text-lg font-medium text-zinc-600 dark:text-zinc-300">
+                  {selectedItem.reorderLevel} {selectedItem.unit}
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 mt-auto">
-            <button 
+          {/* AI Restock Intelligence Card */}
+          {selectedPrediction && (
+            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 mb-5 transition-colors duration-300">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-accent flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5" /> AI Predictive Intelligence
+                </span>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    selectedPrediction.urgency === 'CRITICAL'
+                      ? 'bg-red-500/20 text-red-500'
+                      : selectedPrediction.urgency === 'WARNING'
+                      ? 'bg-amber-500/20 text-amber-500'
+                      : 'bg-emerald-500/20 text-emerald-500'
+                  }`}
+                >
+                  {selectedPrediction.urgency}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                  <span className="text-zinc-500 block">Daily Consumption (&mu;)</span>
+                  <span className="text-sm font-bold text-zinc-900 dark:text-white">
+                    {selectedPrediction.avgDailyUse} {selectedItem.unit}/day
+                  </span>
+                </div>
+
+                <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                  <span className="text-zinc-500 block">Supplier Lead Time (L)</span>
+                  <span className="text-sm font-bold text-zinc-900 dark:text-white">
+                    {selectedPrediction.leadTimeDays} days
+                  </span>
+                </div>
+
+                <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                  <span className="text-zinc-500 block">Dynamic ROP</span>
+                  <span className="text-sm font-bold text-amber-500">
+                    {selectedPrediction.dynamicReorderPoint} {selectedItem.unit}
+                  </span>
+                </div>
+
+                <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                  <span className="text-zinc-500 block">Safety Stock (95% Buffer)</span>
+                  <span className="text-sm font-bold text-emerald-500">
+                    {selectedPrediction.safetyStock} {selectedItem.unit}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-xs">
+                <div>
+                  <span className="text-zinc-500 block">Reorder Deadline</span>
+                  <span className="font-semibold text-zinc-900 dark:text-white">
+                    {selectedPrediction.reorderDeadlineDate ?? 'Safe (>30d)'}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-zinc-500 block">Estimated Stockout</span>
+                  <span className="font-semibold text-red-500">
+                    {selectedPrediction.projectedStockoutDate ?? 'Indefinite'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 14-Day Projected Stock Depletion Curve */}
+          {selectedPrediction && selectedPrediction.projectedDepletion.length > 0 && (
+            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 mb-6 transition-colors duration-300">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-200">
+                  14-Day Stock Depletion Curve
+                </span>
+                <span className="text-[10px] text-zinc-500">Projected Runout</span>
+              </div>
+              <div className="h-40 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={selectedPrediction.projectedDepletion} margin={{ top: 5, right: 10, bottom: 5, left: -20 }}>
+                    <XAxis dataKey="date" stroke={isDark ? '#71717a' : '#a1a1aa'} fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis stroke={isDark ? '#71717a' : '#a1a1aa'} fontSize={10} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: isDark ? '#18181b' : '#fff',
+                        borderColor: isDark ? '#27272a' : '#e4e4e7',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                      }}
+                    />
+                    <ReferenceLine
+                      y={selectedPrediction.dynamicReorderPoint}
+                      stroke="#ef4444"
+                      strokeDasharray="3 3"
+                      label={{ value: 'ROP', position: 'top', fill: '#ef4444', fontSize: 10 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="projectedStock"
+                      stroke="#a3e635"
+                      strokeWidth={2.5}
+                      dot={{ r: 2, fill: '#a3e635' }}
+                      name={`Stock (${selectedItem.unit})`}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="space-y-3 mt-auto">
+            <button
               onClick={() => setStockInModalOpen(true)}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(5,150,105,0.3)] flex items-center justify-center gap-2"
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(5,150,105,0.3)] flex items-center justify-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+              <ArrowDownCircle className="w-5 h-5" />
               Procurement Stock-in
             </button>
-            
-            <button 
+
+            <button
               onClick={() => setAdjustModalOpen(true)}
-              className="w-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-              Manual Adjustment
+              <Sliders className="w-5 h-5" />
+              Manual Adjustment / Wastage
             </button>
 
-            <button 
+            <button
               onClick={handleDeleteItem}
-              className="w-full bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-4"
+              className="w-full bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              <Trash2 className="w-5 h-5" />
               Delete Ingredient
             </button>
           </div>
@@ -352,19 +694,48 @@ export default function InventoryPage() {
       {isStockInModalOpen && selectedItem && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-            <h3 className="text-xl font-bold mb-4">Stock In: {selectedItem.name}</h3>
+            <h3 className="text-xl font-bold mb-4 text-white">Stock In: {selectedItem.name}</h3>
             <form onSubmit={handleStockIn} className="space-y-4">
               <div>
-                <label className="block text-sm text-zinc-400 mb-1">Quantity ({selectedItem.unit})</label>
-                <input type="number" step="0.01" required value={stockInQty} onChange={e => setStockInQty(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none" />
+                <label className="block text-sm text-zinc-400 mb-1">
+                  Quantity ({selectedItem.unit})
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={stockInQty}
+                  onChange={(e) => setStockInQty(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                />
               </div>
               <div>
-                <label className="block text-sm text-zinc-400 mb-1">Cost Per {selectedItem.unit} (Optional)</label>
-                <input type="number" step="0.01" value={stockInCost} onChange={e => setStockInCost(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none" placeholder={selectedItem.costPerUnit.toString()} />
+                <label className="block text-sm text-zinc-400 mb-1">
+                  Cost Per {selectedItem.unit} (Optional)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={stockInCost}
+                  onChange={(e) => setStockInCost(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                  placeholder={selectedItem.costPerUnit.toString()}
+                />
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setStockInModalOpen(false)} className="flex-1 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-medium">Cancel</button>
-                <button type="submit" className="flex-1 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium">Confirm</button>
+                <button
+                  type="button"
+                  onClick={() => setStockInModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium"
+                >
+                  Confirm
+                </button>
               </div>
             </form>
           </div>
@@ -374,23 +745,49 @@ export default function InventoryPage() {
       {isAdjustModalOpen && selectedItem && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-            <h3 className="text-xl font-bold mb-4 text-red-400">Reduce Stock: {selectedItem.name}</h3>
+            <h3 className="text-xl font-bold mb-4 text-red-400">
+              Reduce Stock: {selectedItem.name}
+            </h3>
             <form onSubmit={handleAdjust} className="space-y-4">
               <div>
-                <label className="block text-sm text-zinc-400 mb-1">Quantity to Remove ({selectedItem.unit})</label>
-                <input type="number" step="0.01" required value={adjustQty} onChange={e => setAdjustQty(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none" />
+                <label className="block text-sm text-zinc-400 mb-1">
+                  Quantity to Remove ({selectedItem.unit})
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={adjustQty}
+                  onChange={(e) => setAdjustQty(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                />
               </div>
               <div>
                 <label className="block text-sm text-zinc-400 mb-1">Reason</label>
-                <select value={adjustType} onChange={e => setAdjustType(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none">
+                <select
+                  value={adjustType}
+                  onChange={(e) => setAdjustType(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                >
                   <option value="Wastage">Wastage / Spoiled</option>
                   <option value="Correction">Inventory Correction</option>
                   <option value="StaffConsumption">Staff Consumption</option>
                 </select>
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setAdjustModalOpen(false)} className="flex-1 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-medium">Cancel</button>
-                <button type="submit" className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium">Confirm Deduct</button>
+                <button
+                  type="button"
+                  onClick={() => setAdjustModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium"
+                >
+                  Confirm Deduct
+                </button>
               </div>
             </form>
           </div>
@@ -399,43 +796,93 @@ export default function InventoryPage() {
 
       {isAddModalOpen && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <h3 className="text-xl font-bold mb-4 text-white">Add New Ingredient</h3>
             <form onSubmit={handleAddItem} className="space-y-4">
               <div>
                 <label className="block text-sm text-zinc-400 mb-1">Name</label>
-                <input required value={newItemName} onChange={e => setNewItemName(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none" />
+                <input
+                  required
+                  value={newItemName}
+                  onChange={(e) => setNewItemName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                />
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
                   <label className="block text-sm text-zinc-400 mb-1">Unit</label>
-                  <input required value={newItemUnit} onChange={e => setNewItemUnit(e.target.value)} placeholder="kg, L, pcs" className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none" />
+                  <input
+                    required
+                    value={newItemUnit}
+                    onChange={(e) => setNewItemUnit(e.target.value)}
+                    placeholder="kg, L, pcs"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                  />
                 </div>
                 <div className="flex-1">
                   <label className="block text-sm text-zinc-400 mb-1">Category</label>
-                  <input required value={newItemCategory} onChange={e => setNewItemCategory(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none" />
+                  <input
+                    required
+                    value={newItemCategory}
+                    onChange={(e) => setNewItemCategory(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                  />
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm text-zinc-400 mb-1">Reorder Level</label>
-                  <input type="number" required value={newItemReorder} onChange={e => setNewItemReorder(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none" />
+                  <label className="block text-sm text-zinc-400 mb-1">Static Reorder Level</label>
+                  <input
+                    type="number"
+                    required
+                    value={newItemReorder}
+                    onChange={(e) => setNewItemReorder(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                  />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm text-zinc-400 mb-1">Cost Per Unit (₹)</label>
-                  <input type="number" step="0.01" required value={newItemCost} onChange={e => setNewItemCost(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none" />
+                  <label className="block text-sm text-zinc-400 mb-1">Lead Time (Days)</label>
+                  <input
+                    type="number"
+                    required
+                    value={newItemLeadTime}
+                    onChange={(e) => setNewItemLeadTime(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                  />
                 </div>
               </div>
-               
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Cost Per Unit (₹)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={newItemCost}
+                  onChange={(e) => setNewItemCost(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                />
+              </div>
+
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setAddModalOpen(false)} className="flex-1 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-medium">Cancel</button>
-                <button type="submit" className="flex-1 py-2.5 rounded-lg bg-accent text-zinc-900 hover:bg-lime-400 font-bold">Add Ingredient</button>
+                <button
+                  type="button"
+                  onClick={() => setAddModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-lg bg-accent text-zinc-900 hover:bg-lime-400 font-bold"
+                >
+                  Add Ingredient
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
     </div>
   )
 }
+

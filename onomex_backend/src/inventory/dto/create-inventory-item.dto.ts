@@ -28,4 +28,9 @@ export class CreateInventoryItemDto {
   @IsNumber()
   @Min(0)
   reorderLevel?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  leadTimeDays?: number;
 }

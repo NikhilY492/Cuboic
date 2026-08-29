@@ -364,6 +364,7 @@ model InventoryItem {
   reservedStock Float    @default(0)
   costPerUnit   Float    @default(0)
   reorderLevel  Float    @default(10)
+  leadTimeDays  Float    @default(2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

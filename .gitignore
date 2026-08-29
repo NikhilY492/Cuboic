@@ -7,3 +7,4 @@ build/
 out/
 *.log
 graphify-out/cache/
+.graphify/

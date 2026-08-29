@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
+import { InventoryForecastService } from './inventory-forecast.service';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
 import { StockInDto, StockAdjustDto } from './dto/stock-operations.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -17,7 +18,20 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('inventory')
 export class InventoryController {
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(
+    private readonly inventoryService: InventoryService,
+    private readonly inventoryForecastService: InventoryForecastService,
+  ) {}
+
+  // ── AI Depletion & Restock Forecast ───────────────────────────────────────
+  @Get('forecast')
+  getForecast(
+    @Query('outletId') outletId: string,
+    @Query('historyDays') historyDays?: string,
+  ) {
+    const days = historyDays ? parseInt(historyDays, 10) : 60;
+    return this.inventoryForecastService.getForecast(outletId, days);
+  }
 
   // ── Items ────────────────────────────────────────────────────────────────
   @Post('items')

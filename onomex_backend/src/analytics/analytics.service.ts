@@ -33,17 +33,69 @@ export class AnalyticsService {
     const orderVolume = orders.length;
     const averageOrderValue = orderVolume > 0 ? totalRevenue / orderVolume : 0;
 
-    // Peak Hours
+    // ── Peak Hours Analysis (Weekday vs Weekend Z-score matching peak_hours.py) ───
     const peakHoursCount = new Array(24).fill(0);
+    const weekdayHours: { orders: number[]; revenues: number[] } = Array.from({ length: 24 }, () => ({ orders: [], revenues: [] })) as any;
+    const weekendHours: { orders: number[]; revenues: number[] } = Array.from({ length: 24 }, () => ({ orders: [], revenues: [] })) as any;
+
+    // Map by (date, hour)
+    const dateHourCounts = new Map<string, { count: number; revenue: number; isWeekend: boolean; hour: number }>();
+
     orders.forEach((order) => {
-      peakHoursCount[order.createdAt.getHours()]++;
+      const h = order.createdAt.getHours();
+      peakHoursCount[h]++;
+
+      const dow = order.createdAt.getDay(); // 0 is Sunday, 6 is Saturday
+      const isWeekend = dow === 0 || dow === 6;
+      const dateStr = order.createdAt.toISOString().split('T')[0];
+      const key = `${dateStr}_${h}`;
+
+      const current = dateHourCounts.get(key) || { count: 0, revenue: 0, isWeekend, hour: h };
+      current.count++;
+      current.revenue += order.total;
+      dateHourCounts.set(key, current);
     });
 
-    // Timeframe Grouping
-    const trends: { date: string; revenue: number; volume: number }[] = [];
+    for (const item of dateHourCounts.values()) {
+      const target = item.isWeekend ? weekendHours : weekdayHours;
+      (target as any)[item.hour].orders.push(item.count);
+      (target as any)[item.hour].revenues.push(item.revenue);
+    }
 
-    // Grouping by Date (ignoring weekly/monthly for simplicity in this implementation, can be extended)
-    // We will just do daily grouping since it's most common, and UI can aggregate if needed
+    const processCurve = (hourData: any[]) => {
+      const stats = hourData.map((h, hour) => {
+        const totalO = h.orders.reduce((a: number, b: number) => a + b, 0);
+        const totalR = h.revenues.reduce((a: number, b: number) => a + b, 0);
+        const count = h.orders.length || 1;
+        return {
+          hour,
+          avgOrders: totalO / count,
+          avgRevenue: totalR / count,
+        };
+      });
+
+      const avgList = stats.map((s) => s.avgOrders);
+      const mean = avgList.reduce((a, b) => a + b, 0) / 24;
+      const variance = avgList.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / 24;
+      const std = Math.sqrt(variance) || 1;
+
+      return stats.map((s) => {
+        const z = (s.avgOrders - mean) / std;
+        let label: 'peak' | 'slow' | 'normal' = 'normal';
+        if (z >= 0.75) label = 'peak';
+        else if (z <= -0.75) label = 'slow';
+        return {
+          ...s,
+          ordersZ: Number(z.toFixed(2)),
+          label,
+        };
+      });
+    };
+
+    const weekdayCurve = processCurve(weekdayHours as any);
+    const weekendCurve = processCurve(weekendHours as any);
+
+    // ── Timeframe Grouping (Daily trends) ──────────────────────────────────
     const grouped = orders.reduce(
       (acc, order) => {
         const dateStr = order.createdAt.toISOString().split('T')[0];
@@ -55,16 +107,72 @@ export class AnalyticsService {
       {} as Record<string, { revenue: number; volume: number }>,
     );
 
+    const trends: { date: string; revenue: number; volume: number }[] = [];
     for (const [date, data] of Object.entries(grouped)) {
-      trends.push({ date, ...data });
+      trends.push({ date, revenue: Number(data.revenue.toFixed(2)), volume: data.volume });
+    }
+    trends.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // ── 7-Day Revenue & Demand Forecast (matching revenue_forecast.py) ──────
+    const forecast: { date: string; revenue: number; volume: number; isForecast: boolean }[] = [];
+    if (trends.length >= 3) {
+      const recent = trends.slice(-14);
+      const avgRevenue = recent.reduce((sum, t) => sum + t.revenue, 0) / recent.length;
+      const avgVolume = recent.reduce((sum, t) => sum + t.volume, 0) / recent.length;
+
+      // Day of week factors
+      const dowSums = new Array(7).fill(0);
+      const dowCounts = new Array(7).fill(0);
+      for (const t of trends) {
+        const d = new Date(t.date).getDay();
+        dowSums[d] += t.revenue;
+        dowCounts[d]++;
+      }
+      const dowMultipliers = dowSums.map((sum, d) => {
+        const cnt = dowCounts[d] || 1;
+        const dowAvg = sum / cnt;
+        return avgRevenue > 0 ? dowAvg / avgRevenue : 1;
+      });
+
+      const lastDate = new Date(trends[trends.length - 1].date);
+      for (let i = 1; i <= 7; i++) {
+        const nextDate = new Date(lastDate);
+        nextDate.setDate(nextDate.getDate() + i);
+        const dow = nextDate.getDay();
+        const mult = dowMultipliers[dow] || (dow === 0 || dow === 6 ? 1.25 : 1.0);
+        const predictedRev = Math.max(0, avgRevenue * mult);
+        const predictedVol = Math.max(1, Math.round(avgVolume * mult));
+
+        forecast.push({
+          date: nextDate.toISOString().split('T')[0],
+          revenue: Number(predictedRev.toFixed(2)),
+          volume: predictedVol,
+          isForecast: true,
+        });
+      }
     }
 
     return {
-      totalRevenue,
+      totalRevenue: Number(totalRevenue.toFixed(2)),
       orderVolume,
-      averageOrderValue,
+      averageOrderValue: Number(averageOrderValue.toFixed(2)),
       trends,
+      forecast,
       peakHours: peakHoursCount.map((count, hour) => ({ hour, count })),
+      hourlyDemand: {
+        weekday: weekdayCurve,
+        weekend: weekendCurve,
+        summary: {
+          weekday: {
+            peakHours: weekdayCurve.filter((c) => c.label === 'peak').map((c) => c.hour),
+            slowHours: weekdayCurve.filter((c) => c.label === 'slow').map((c) => c.hour),
+          },
+          weekend: {
+            peakHours: weekendCurve.filter((c) => c.label === 'peak').map((c) => c.hour),
+            slowHours: weekendCurve.filter((c) => c.label === 'slow').map((c) => c.hour),
+          },
+        },
+      },
     };
   }
 
