@@ -21,9 +21,14 @@ export interface Order {
     method: string
   } | null
   createdAt: string
+  restaurant?: {
+    name?: string
+    address?: string
+    contactNumber?: string
+  } | null
 }
 
-export const printKOT = async (order: Order, printerName: string) => {
+export const printKOT = async (order: Order, printerName: string, options?: { paperWidth?: '80mm' | '58mm' }) => {
   if (!window.ipcRenderer) {
     throw new Error('Printing is only available in the desktop app.')
   }
@@ -31,31 +36,37 @@ export const printKOT = async (order: Order, printerName: string) => {
     throw new Error('No printer selected.')
   }
 
-  const printData = [
-    { type: 'text', value: 'KITCHEN ORDER TICKET', style: 'font-weight: 700; text-align: center; font-size: 22px;' },
-    { type: 'text', value: `Order ID: #${order.id.slice(-8).toUpperCase()}`, style: 'text-align: center; font-size: 14px;' },
-    { type: 'text', value: `Date: ${new Date(order.createdAt).toLocaleString()}`, style: 'text-align: center; font-size: 14px;' },
-    { type: 'text', value: order.orderType === 'Takeaway' ? 'Type: TAKEAWAY' : `Table: ${order.table?.table_number || 'N/A'}`, style: 'font-weight: 700; text-align: center; font-size: 18px; margin-bottom: 10px; margin-top: 5px;' },
-    { type: 'text', value: '--------------------------------', style: 'text-align: center;' }
+  const width = options?.paperWidth || '80mm'
+
+  const printData: any[] = [
+    { type: 'text', value: 'KITCHEN ORDER TICKET', style: { fontWeight: '800', textAlign: 'center', fontSize: '20px', fontFamily: 'monospace' } },
+    { type: 'text', value: `Order ID: #${order.id.slice(-8).toUpperCase()}`, style: { textAlign: 'center', fontSize: '13px', fontFamily: 'monospace' } },
+    { type: 'text', value: `Date: ${new Date(order.createdAt).toLocaleString()}`, style: { textAlign: 'center', fontSize: '12px', fontFamily: 'monospace' } },
+    { type: 'text', value: order.orderType === 'Takeaway' ? 'TYPE: TAKEAWAY' : `TABLE: ${order.table?.table_number || 'COUNTER'}`, style: { fontWeight: '800', textAlign: 'center', fontSize: '18px', marginBottom: '8px', marginTop: '4px', fontFamily: 'monospace' } },
+    { type: 'text', value: '========================================', style: { textAlign: 'center', fontSize: '12px', fontFamily: 'monospace' } }
   ]
 
   order.items.forEach(item => {
     printData.push({
       type: 'text',
-      value: `${item.quantity} x ${item.name}`,
-      style: 'font-weight: 700; font-size: 16px;'
+      value: `<div style="display:flex; justify-content:space-between; font-family:monospace; font-size:15px; font-weight:bold; padding:4px 0;"><span>${item.quantity} x ${item.name}</span></div>`,
+      style: { width: '100%' }
     })
   })
 
   if (order.notes) {
-    printData.push({ type: 'text', value: '--------------------------------', style: 'text-align: center;' })
-    printData.push({ type: 'text', value: `NOTES: ${order.notes}`, style: 'font-weight: 700; font-size: 14px;' })
+    printData.push(
+      { type: 'text', value: '----------------------------------------', style: { textAlign: 'center', fontSize: '12px', fontFamily: 'monospace' } },
+      { type: 'text', value: `SPECIAL INSTRUCTIONS:\n${order.notes}`, style: { fontWeight: '700', fontSize: '13px', fontFamily: 'monospace' } }
+    )
   }
 
-  printData.push({ type: 'text', value: '--------------------------------', style: 'text-align: center;' })
-  printData.push({ type: 'text', value: ' ', style: 'margin-bottom: 20px;' })
+  printData.push(
+    { type: 'text', value: '========================================', style: { textAlign: 'center', fontSize: '12px', fontFamily: 'monospace' } },
+    { type: 'text', value: '&nbsp;', style: { height: '35px', margin: '20px 0' } }
+  )
 
-  const result = await window.ipcRenderer.invoke('print:kot', printerName, printData)
+  const result = await window.ipcRenderer.invoke('print:kot', printerName, printData, { width })
   if (!result.success) {
     throw new Error(result.error || 'Failed to print KOT')
   }

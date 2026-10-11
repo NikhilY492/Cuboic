@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
     },
     imgPreviewHint: { fontSize: 13, fontWeight: '500' },
     imgUploadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         backgroundColor: 'rgba(0,0,0,0.55)',
         alignItems: 'center', justifyContent: 'center', gap: 8,
     },

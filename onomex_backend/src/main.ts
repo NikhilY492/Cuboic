@@ -21,15 +21,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(adminService));
 
   app.enableCors({
-    origin: [
-      'https://onomex.in',
-      'https://admin.onomex.in',
-      'https://thambi.in',
-      'https://admin.thambi.in',
-      'https://menu.thambi.in',
-      'http://localhost:3000',
-      'http://localhost:5173',
-    ],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Outlet-Id'],

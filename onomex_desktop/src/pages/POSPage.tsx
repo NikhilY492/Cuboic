@@ -55,10 +55,14 @@ export default function POSPage() {
     if (window.ipcRenderer) {
       window.ipcRenderer.invoke('print:get-printers').then((printersList: { name: string; isDefault: boolean }[]) => {
         setPrinters(printersList)
-        const saved = localStorage.getItem('onomex_kot_printer')
+        const saved = localStorage.getItem('onomex_receipt_printer') || localStorage.getItem('onomex_kot_printer')
+        const posPrinter = printersList.find(p => /pos|kpc|caysn|thermal|receipt/i.test(p.name))
         const defaultPrinter = printersList.find(p => p.isDefault)
         if (saved && printersList.some(p => p.name === saved)) {
           setSelectedPrinter(saved)
+        } else if (posPrinter) {
+          setSelectedPrinter(posPrinter.name)
+          localStorage.setItem('onomex_receipt_printer', posPrinter.name)
         } else if (defaultPrinter) {
           setSelectedPrinter(defaultPrinter.name)
         } else if (printersList.length > 0) {

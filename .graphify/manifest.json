@@ -296,8 +296,8 @@
     "hash": "e274181ae0ef56b7ddaa65d14cb82085"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\categories\\categories.controller.ts": {
-    "mtime": 1784138836537.0798,
-    "hash": "74a0d6125fec539564ecd0cc914d2c6c"
+    "mtime": 1791745522876.1777,
+    "hash": "9c3c01af3bacefa5d3dbf3441a389872"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\categories\\categories.module.ts": {
     "mtime": 1782178625546.293,
@@ -371,6 +371,10 @@
     "mtime": 1782894135847.7268,
     "hash": "48d97b1014ef102a61d0b1eae3c602f5"
   },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\inventory\\inventory-forecast.service.ts": {
+    "mtime": 1788038412028.2593,
+    "hash": "1af93e0f2c182a8ae8a0b1b5c99cf3b7"
+  },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\inventory\\inventory.controller.ts": {
     "mtime": 1788038440733.098,
     "hash": "8bba020b634e131f5900b5087c6da8e5"
@@ -384,8 +388,8 @@
     "hash": "cc18670243dc1a881fb369b0e11085fe"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\main.ts": {
-    "mtime": 1785710183852.4434,
-    "hash": "7046d00a8c3d7937293672432afed023"
+    "mtime": 1791745265526.8289,
+    "hash": "c0efdac6ef4b6947edf03cb881236ea1"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\menu\\dto\\create-menu-item.dto.ts": {
     "mtime": 1782178626062.1562,
@@ -400,8 +404,8 @@
     "hash": "6ddee0904dd431f9ccb382f123758aeb"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\menu\\menu.controller.ts": {
-    "mtime": 1785720459278.7117,
-    "hash": "fa9722df67d7c5b6f8d7e849911256a9"
+    "mtime": 1791745537840.1653,
+    "hash": "47972a80150a4248b6dcc92b1b76e758"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\menu\\menu.module.ts": {
     "mtime": 1782178626094.112,
@@ -432,8 +436,8 @@
     "hash": "70b90327da215ff33af47e5c5abc8724"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\orders\\orders.service.ts": {
-    "mtime": 1782894220592.5562,
-    "hash": "bbe72b09d47ea98835808cf4c51cf9de"
+    "mtime": 1791637817756.011,
+    "hash": "7acadf1bf8f48f34ddf67259daad0513"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\outlets\\dto\\create-outlet.dto.ts": {
     "mtime": 1775119940615.7273,
@@ -496,8 +500,8 @@
     "hash": "a1408b3c5f120197fd249f400a024c4f"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\printers\\printers.service.ts": {
-    "mtime": 1782178626576.0312,
-    "hash": "ffd4781382ad8a76eb8322c1f54720ab"
+    "mtime": 1791637945361.8396,
+    "hash": "fab06214b9487cac8df9e4beaba78ebb"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\src\\prisma\\prisma.module.ts": {
     "mtime": 1782178626587.711,
@@ -803,12 +807,40 @@
     "mtime": 1782173241204.662,
     "hash": "1d8011eb18769078bf77502b220daa5e"
   },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\data\\generate_synthetic_data.py": {
+    "mtime": 1788017878601.6643,
+    "hash": "917cec5faa74c0e2e178bef0a7cc1cba"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\features.py": {
+    "mtime": 1788017878577.6995,
+    "hash": "0cb011e2ffbb1ce969c49c00b36ab2c1"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\main.py": {
+    "mtime": 1788017878593.6636,
+    "hash": "8b19178be1e94d111479cebe612e8e08"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\models\\extrapolation.py": {
+    "mtime": 1788017878629.368,
+    "hash": "e7352b12873af107009d9f22dc7a3efa"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\models\\ingredient_restock.py": {
+    "mtime": 1788017878635.37,
+    "hash": "a37717113535cb2e3929133fe786fcac"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\models\\peak_hours.py": {
+    "mtime": 1788017878642.369,
+    "hash": "cef33b750c58a03939ae1005dd850331"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\models\\revenue_forecast.py": {
+    "mtime": 1788017878647.3767,
+    "hash": "bb16d201c38d4fba80a8b18ceec040e4"
+  },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\dist-electron\\main.js": {
-    "mtime": 1784097805566.0535,
-    "hash": "006d98f02c4209dc8fa40e44b2811a2c"
+    "mtime": 1791639648926.9702,
+    "hash": "b846ff08e3742770c405aa84bae21242"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\dist-electron\\preload.js": {
-    "mtime": 1784097805564.0654,
+    "mtime": 1791639043253.1184,
     "hash": "359d87e7d6d183ade2fc01ce8b23b061"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\dist-electron\\preload.mjs": {
@@ -816,8 +848,8 @@
     "hash": "359d87e7d6d183ade2fc01ce8b23b061"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\electron\\main.ts": {
-    "mtime": 1782793276443.3872,
-    "hash": "11c456dba31240b05b25593232e42dbc"
+    "mtime": 1791639648843.8523,
+    "hash": "a02f41e40a54c779ac01d46f1c3a4668"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\electron\\preload.ts": {
     "mtime": 1775124553004.4316,
@@ -864,8 +896,8 @@
     "hash": "024231865744af718bf32fdc9b649c3e"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\hooks\\useAutoPrint.ts": {
-    "mtime": 1782793276666.972,
-    "hash": "07b7c3fce454f2bd03a5a84fce909965"
+    "mtime": 1791637201597.4639,
+    "hash": "56db0fd56ace11611698005b58e314b0"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\hooks\\useMutationQueue.ts": {
     "mtime": 1782793276668.8875,
@@ -888,16 +920,16 @@
     "hash": "6b60aa6a0f5e5f1279608123bafcbc76"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\pages\\InventoryPage.tsx": {
-    "mtime": 1788038519467.6597,
-    "hash": "93a2e0870c2e99f9106aa3902db4514c"
+    "mtime": 1791638367488.4707,
+    "hash": "29a97e1ec94f84fc819fda65f183ec1b"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\pages\\OrdersPage.tsx": {
-    "mtime": 1782793276680.4556,
-    "hash": "352f53e5c6c2997ba35ef42867922531"
+    "mtime": 1791637523548.0938,
+    "hash": "45f18480c7d9a683dacb6c50488be377"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\pages\\POSPage.tsx": {
-    "mtime": 1782793276681.5913,
-    "hash": "3489164f4f7c42c10470bb326c8ba2e5"
+    "mtime": 1791637776907.3647,
+    "hash": "20aeb53c3aafb2d725dad6c1da1326f3"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\pages\\ProvisionPage.tsx": {
     "mtime": 1783149638108.4048,
@@ -936,8 +968,8 @@
     "hash": "7c05192b33a93b5fce216d60ba2877a7"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\pages\\settings\\PrinterSettingsTab.tsx": {
-    "mtime": 1780770666671.637,
-    "hash": "301ae6e01c2354ff2862768b2e992bc1"
+    "mtime": 1791637409353.3845,
+    "hash": "84ab41ac30cd74c9cfdd611b141d2faf"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\pages\\settings\\RestaurantSettingsTab.tsx": {
     "mtime": 1780770668705.3772,
@@ -956,16 +988,16 @@
     "hash": "39529208dfc584ff87969cf460d5f8e5"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\utils\\printKOT.ts": {
-    "mtime": 1780038705294.937,
-    "hash": "fa90ac35e540be330ec984590d37c261"
+    "mtime": 1791637115678.192,
+    "hash": "25cd99826fed2358899fc17e71ce7582"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\src\\vite-env.d.ts": {
     "mtime": 1775124887568.5918,
     "hash": "2a1df93052017ad7520cfc90efc20f27"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\vite.config.ts": {
-    "mtime": 1782173241216.9446,
-    "hash": "8494d79ab32e5573663239fd54ab1131"
+    "mtime": 1791638153975.9536,
+    "hash": "37045252fef943ae57cd86a10084a289"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\App.tsx": {
     "mtime": 1775219759245.8496,
@@ -996,8 +1028,8 @@
     "hash": "0ff9821f58c21d48defb8c9cbd81cffb"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\api\\client.ts": {
-    "mtime": 1784115817750.6924,
-    "hash": "e57661fbf42404c19714423a80f6ed52"
+    "mtime": 1788939500529.0537,
+    "hash": "7e2aef25f1610ca7572e9c92fdd93493"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\api\\deliveries.ts": {
     "mtime": 1773353632656.5066,
@@ -1008,8 +1040,8 @@
     "hash": "d4399b0bce78d2229875a4bf7baf320b"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\api\\orders.ts": {
-    "mtime": 1780039274724.5342,
-    "hash": "16e67277f11d8cec194125aef38e50e8"
+    "mtime": 1790527294319.2866,
+    "hash": "480d59bdf8b01d439f9d9eb09e1f6f57"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\api\\payments.ts": {
     "mtime": 1774071377422.6765,
@@ -1040,8 +1072,8 @@
     "hash": "6039131557d66fb4748520307a97a0a0"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\context\\SocketContext.tsx": {
-    "mtime": 1777312248131.059,
-    "hash": "6fbaa0b933bf684dae990890730d64cb"
+    "mtime": 1788939532211.8242,
+    "hash": "e0481793b2d622cdbdf003d18ed9da42"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\context\\ThemeContext.tsx": {
     "mtime": 1775219746862.5398,
@@ -1060,8 +1092,8 @@
     "hash": "8605ce48d313fb786405dbd796f422af"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\hooks\\useSocket.ts": {
-    "mtime": 1777312368558.9456,
-    "hash": "cb710cd7c5c3548be65904f6d5838ec9"
+    "mtime": 1788939545999.1665,
+    "hash": "081f78a2cc3593e55ab2baf3bd551910"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\navigation\\RootNavigator.tsx": {
     "mtime": 1779927312570.458,
@@ -1104,20 +1136,20 @@
     "hash": "b5da3f9e1fbd11b2b8253d0268cdde04"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\shared\\DashboardScreen.tsx": {
-    "mtime": 1779705039808.0881,
-    "hash": "af27d422667240251e90de31eac8d52e"
+    "mtime": 1790527336716.828,
+    "hash": "3d627b733ec73031b6569f03a8730cc8"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\shared\\DeliveriesScreen.tsx": {
     "mtime": 1779705107858.6758,
     "hash": "06c6961389388d379558604e415e01a7"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\shared\\MenuScreen.tsx": {
-    "mtime": 1779975977648.584,
-    "hash": "2e7e3aa5108382db58788c448c5b32a1"
+    "mtime": 1788937811953.1174,
+    "hash": "ffd8b8c60a3ce55d3aa3152327dcf4da"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\shared\\OrdersScreen.tsx": {
-    "mtime": 1779861574998.2478,
-    "hash": "7c132859a532e85f2116b9385bffbb42"
+    "mtime": 1790527317986.6228,
+    "hash": "8add85cefc21db25193e0b389414ba43"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\shared\\PaymentsScreen.tsx": {
     "mtime": 1782795022694.7527,
@@ -1136,16 +1168,16 @@
     "hash": "0d8f090381772a512b8a90d639399316"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\staff\\EditOrderModal.tsx": {
-    "mtime": 1779975640081.561,
-    "hash": "2812fbbac4b2078748b175d1b837bbfd"
+    "mtime": 1790527428456.0454,
+    "hash": "a5b4b4f9f7098efdd52ed84e7d6b80d4"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\staff\\KanbanOrdersScreen.tsx": {
-    "mtime": 1779975640083.557,
-    "hash": "c57085faa0c0309b8ce758edfe1adca0"
+    "mtime": 1790527387207.3474,
+    "hash": "1c56f0f399eee9506934f7cb029585ba"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\staff\\KitchenScreen.tsx": {
-    "mtime": 1780071998962.262,
-    "hash": "27302f6a4172f3ac0e54811871331767"
+    "mtime": 1790527412392.15,
+    "hash": "3d5a4cee7b8b1cdb558c51d4c222a662"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\staff\\OrderDetailScreen.tsx": {
     "mtime": 1775318416179.8772,
@@ -1160,8 +1192,8 @@
     "hash": "0d32fd362da8ce20ef67338f3245e97d"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\screens\\staff\\WaiterScreen.tsx": {
-    "mtime": 1780039318720.7007,
-    "hash": "9ebd2ccb7da9a10246767531aecb57b2"
+    "mtime": 1790527401182.0078,
+    "hash": "d0f15210f1857ef166ca838ffdab1c06"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\src\\theme.ts": {
     "mtime": 1775456276152.339,
@@ -1432,8 +1464,8 @@
     "hash": "f443ff55f7ddbfda0b621239f06fcaf5"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\.graphify\\GRAPH_REPORT.md": {
-    "mtime": 1782795051004.9639,
-    "hash": "78aecf5291cdfa6420b6ff983e4cabeb"
+    "mtime": 1791638608944.6118,
+    "hash": "11a93f5fb1ba6c5de7f210b27468f812"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\AGENTS.md": {
     "mtime": 1777571298655.6458,
@@ -1448,8 +1480,8 @@
     "hash": "0caa27584c1b4db0622d01f2dbc3a431"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\README.md": {
-    "mtime": 1782793276266.3823,
-    "hash": "ba26dabd066571c6b3971e73884a2be2"
+    "mtime": 1788937913120.697,
+    "hash": "f57f82dfaf25b2ac741016db472e9ece"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\graphify-out\\GRAPH_REPORT.md": {
     "mtime": 1782793276254.3125,
@@ -1464,8 +1496,8 @@
     "hash": "51fc6a393d85b1e426670006cd7ef4c3"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\README.md": {
-    "mtime": 1772462557593.2588,
-    "hash": "ad12c0560e2e514d356da443998e8208"
+    "mtime": 1788934773539.4897,
+    "hash": "1b00a63b7ac104cc08e2d57e991cb5f0"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_backend\\docker-compose.yml": {
     "mtime": 1784138626166.3574,
@@ -1520,16 +1552,16 @@
     "hash": "1827490c9532dea848261ef140e020d1"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_customer\\README.md": {
-    "mtime": 1772462557940.1472,
-    "hash": "b11a4fc9d75ea5862efa40b2441c7c75"
+    "mtime": 1788934784882.588,
+    "hash": "0abaa1857edb59eb8bfbf9762a63836f"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_customer\\index.html": {
     "mtime": 1773937914916.5837,
     "hash": "d274a48cf984e5bf2239f8df104a6e98"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\README.md": {
-    "mtime": 1775123288363.7507,
-    "hash": "f6e3faf55d738cf2affe1b44195f27cf"
+    "mtime": 1788934800947.4497,
+    "hash": "4f0627228244c7b9a1991e11c1181342"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\build_output.txt": {
     "mtime": 1775212215675.8354,
@@ -1540,8 +1572,8 @@
     "hash": "9f1fe0f86cfeabc79c9e068217af2a88"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\public\\print.html": {
-    "mtime": 1780042793641.3179,
-    "hash": "b9322ddfdab4d3d29a191d9decb09415"
+    "mtime": 1791636999203.03,
+    "hash": "c0238d93c3656126f932437eca4d69e5"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_mobile\\.graphify\\GRAPH_REPORT.md": {
     "mtime": 1779470580210.3735,
@@ -1556,8 +1588,8 @@
     "hash": "6df24a9277e9226efac8f0f6d9a636b5"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_public\\README.md": {
-    "mtime": 1776387277008.0813,
-    "hash": "f6e3faf55d738cf2affe1b44195f27cf"
+    "mtime": 1788934824051.0842,
+    "hash": "51c535896dc82000428ff2bfd2ecb6cd"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_public\\index.html": {
     "mtime": 1782795022703.097,
@@ -1610,6 +1642,26 @@
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_customer\\src\\assets\\react.svg": {
     "mtime": 1772462557953.6719,
     "hash": "f0402b67b6ce880f65666bb49e841696"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\outputs\\cold_start_extrapolation.png": {
+    "mtime": 1788017878659.3745,
+    "hash": "86a958aaedf43139fe026c0a9202c10d"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\outputs\\depletion_example_spice_pack.png": {
+    "mtime": 1788017878674.9067,
+    "hash": "4e00cb0296db8bf4b02150627324b9a2"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\outputs\\peak_slow_hours.png": {
+    "mtime": 1788017878689.904,
+    "hash": "dafe7ab0503670a412899f491238e900"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\outputs\\restock_urgency.png": {
+    "mtime": 1788017878703.9043,
+    "hash": "0a4be206eaabcd6d9c97e0e2a2e697cf"
+  },
+  "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\cuboic_demand_model\\cuboic_demand_model\\outputs\\revenue_forecast.png": {
+    "mtime": 1788017878709.9062,
+    "hash": "1a3ff564383b831904f372bd4e5d2952"
   },
   "C:\\Users\\H3X4N\\Documents\\GitHub\\Cuboic\\onomex_desktop\\public\\favicon.svg": {
     "mtime": 1775123289018.7808,

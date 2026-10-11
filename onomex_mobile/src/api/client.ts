@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.8:3000';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.thambi.in';
 
 const api = axios.create({
     baseURL: BASE_URL,

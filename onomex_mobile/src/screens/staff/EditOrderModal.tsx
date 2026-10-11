@@ -25,7 +25,8 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
 
     useEffect(() => {
         if (visible && order) {
-            setCart(order.items.map(i => ({
+            const items = Array.isArray(order.items) ? order.items : [];
+            setCart(items.map(i => ({
                 itemId: i.itemId,
                 name: i.name,
                 quantity: i.quantity,
@@ -145,7 +146,7 @@ export function EditOrderModal({ visible, order, restaurantId, onClose, onSaved 
                     <View style={styles.section}>
                         <Text style={[styles.sectionTitle, { color: colors.text }]}>Modify Ordered Items</Text>
                         <View style={styles.menuList}>
-                            {order.items.map(orderItem => {
+                            {(Array.isArray(order.items) ? order.items : []).map(orderItem => {
                                 const qty = getQuantity(orderItem.itemId);
                                 const isSelected = qty > 0;
                                 

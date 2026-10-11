@@ -13,7 +13,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { CacheInterceptor, CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import type { Cache } from 'cache-manager';
 import { MenuService } from './menu.service';
 import { QueryMenuDto } from './dto/query-menu.dto';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
@@ -28,6 +28,14 @@ export class MenuController {
     private readonly menuService: MenuService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
+
+  private async clearCache() {
+    if ((this.cacheManager as any).clear) {
+      await (this.cacheManager as any).clear();
+    } else if ((this.cacheManager as any).reset) {
+      await (this.cacheManager as any).reset();
+    }
+  }
 
   // Public — customer-facing (no auth)
   @UseInterceptors(CacheInterceptor)
@@ -55,7 +63,7 @@ export class MenuController {
   @Post()
   async createItem(@Body() dto: CreateMenuItemDto) {
     const item = await this.menuService.createItem(dto);
-    await this.cacheManager.reset();
+    await this.clearCache();
     return item;
   }
 
@@ -65,7 +73,7 @@ export class MenuController {
   @Put(':id')
   async updateItem(@Param('id') id: string, @Body() dto: UpdateMenuItemDto) {
     const item = await this.menuService.updateItem(id, dto);
-    await this.cacheManager.reset();
+    await this.clearCache();
     return item;
   }
 
@@ -77,7 +85,7 @@ export class MenuController {
     @Body() body: Array<{ id: string; data: Partial<UpdateMenuItemDto> }>,
   ) {
     const items = await this.menuService.bulkUpdate(restaurantId, body);
-    await this.cacheManager.reset();
+    await this.clearCache();
     return items;
   }
 
@@ -90,7 +98,7 @@ export class MenuController {
     @Req() req: any,
   ) {
     const item = await this.menuService.toggleAvailability(id, is_available, req.user.sub);
-    await this.cacheManager.reset();
+    await this.clearCache();
     return item;
   }
 }

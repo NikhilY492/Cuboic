@@ -86,6 +86,12 @@ export class PrintersService {
     return this.sendToPrinter(printer, commands, 'TEST');
   }
 
+  @OnEvent('order.created', { async: true })
+  async handleOrderCreated(order: any) {
+    this.logger.log(`Handling order.created event for order ${order.id}`);
+    await this.printBillReceiptCommand(order);
+  }
+
   @OnEvent('order.preparing', { async: true })
   async handleOrderPreparing(order: any) {
     this.logger.log(`Handling order.preparing event for order ${order.id}`);
@@ -107,6 +113,87 @@ export class PrintersService {
     if (!order) throw new NotFoundException('Order not found');
 
     return this.printKotCommand(order, true);
+  }
+
+  private async printBillReceiptCommand(order: any) {
+    const printers = await this.prisma.printer.findMany({
+      where: {
+        restaurantId: order.restaurantId,
+        type: 'BILL',
+        isEnabled: true,
+        connectionType: 'LAN',
+        ipAddress: { not: null },
+      },
+    });
+
+    if (printers.length === 0) return;
+
+    const restaurant =
+      order.restaurant ||
+      (await this.prisma.restaurant.findUnique({
+        where: { id: order.restaurantId },
+      }));
+
+    let tableStr = 'Takeaway';
+    if (order.tableId) {
+      const table =
+        order.table ||
+        (await this.prisma.table.findUnique({ where: { id: order.tableId } }));
+      if (table) tableStr = `Table ${table.table_number}`;
+    }
+
+    const orderNumber = order.id.slice(-8).toUpperCase();
+    const items = Array.isArray(order.items) ? order.items : [];
+    let itemsStr = '';
+    for (const item of items as any[]) {
+      const totalItem = ((item.quantity || 1) * (item.unitPrice || 0)).toFixed(2);
+      itemsStr += `${(item.quantity || 1).toString().padEnd(3)} ${(item.name || '').substring(0, 18).padEnd(19)} ${totalItem.padStart(8)}\n`;
+    }
+
+    const template = [
+      '\x1b\x40', // Init
+      '\x1b\x61\x01', // Center
+      '\x1d\x21\x11', // Double width/height
+      restaurant?.name || 'RECEIPT',
+      '\n',
+      '\x1d\x21\x00', // Normal size
+      restaurant?.address ? `${restaurant.address}\n` : '',
+      restaurant?.contactNumber ? `Tel: ${restaurant.contactNumber}\n` : '',
+      '================================\n',
+      'TAX INVOICE / RECEIPT\n',
+      '--------------------------------\n',
+      '\x1b\x61\x00', // Left
+      `Order: #${orderNumber}\n`,
+      `Type:  ${tableStr}\n`,
+      `Date:  ${new Date().toLocaleString()}\n`,
+      '--------------------------------\n',
+      'Qty Item                Price\n',
+      '--------------------------------\n',
+      itemsStr,
+      '--------------------------------\n',
+      `Subtotal:          Rs.${(order.subtotal || 0).toFixed(2)}\n`,
+      order.tax ? `Tax:               Rs.${(order.tax || 0).toFixed(2)}\n` : '',
+      '\x1b\x45\x01', // Bold on
+      `TOTAL:             Rs.${(order.total || 0).toFixed(2)}\n`,
+      '\x1b\x45\x00', // Bold off
+      '--------------------------------\n',
+      `Payment: ${order.payment?.method || 'Counter'} [${(order.payment?.status || 'PENDING').toUpperCase()}]\n`,
+      order.notes ? `Notes: ${order.notes}\n` : '',
+      '================================\n',
+      '\x1b\x61\x01', // Center
+      'Thank you! Visit again.\n\n\n\n',
+      '\x1d\x56\x00', // Cut
+    ].join('');
+
+    for (const printer of printers) {
+      try {
+        await this.sendToPrinter(printer, template, 'RECEIPT', order.id);
+      } catch (e: any) {
+        this.logger.error(
+          `Failed to print Bill Receipt on printer ${printer.name}: ${e.message}`,
+        );
+      }
+    }
   }
 
   private async printKotCommand(order: any, isReprint: boolean) {

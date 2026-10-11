@@ -1,73 +1,161 @@
-# React + TypeScript + Vite
+# 📱 Onomex Customer Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Mobile-first, zero-install customer dining application for the Onomex platform. Customers scan a table QR code on their smartphone to browse interactive menus, customize orders, pay, and track autonomous robot delivery in real-time.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📋 Table of Contents
 
-## React Compiler
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Environment Configuration](#-environment-configuration)
+- [Getting Started & Development](#-getting-started--development)
+- [Simulating Table QR Scans](#-simulating-table-qr-scans)
+- [Production Build & Docker](#-production-build--docker)
+- [Project Structure](#-project-structure)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## ✨ Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 📱 **QR Code Table Entry**: No app download or registration required; customers scan their table's QR code to enter a customized session.
+- 🍲 **Rich Visual Menu**: High-resolution imagery, category filtering, vegetarian / non-vegetarian badges, spice levels, and search.
+- 🛒 **Interactive Cart Drawer**: Floating cart badge with a slide-up drawer for item customization, notes, and quantities.
+- 💳 **Flexible Payment Selection**: Supports UPI, Card payment, and Cash-to-table checkout options.
+- 🤖 **Live Autonomous Delivery Tracker**: Real-time Socket.IO status tracker showing preparation status, robot dispatch, table arrival, and compartment PIN unlocking.
+- 🎉 **Celebratory Checkout**: Confetti animations and clear digital invoice generation.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🛠️ Tech Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Technology | Purpose |
+|---|---|
+| **[React 19](https://react.dev/)** | Component-driven user interface with latest React features |
+| **[Vite 6](https://vite.dev/)** | Next-generation blazing fast frontend tooling and HMR |
+| **[TypeScript](https://www.typescriptlang.org/)** | Strict type definitions for menu and order models |
+| **[Tailwind CSS v4](https://tailwindcss.com/)** | Modern utility-first responsive styling and animations |
+| **[Socket.IO Client](https://socket.io/)** | Real-time WebSocket connection for live order and delivery status |
+| **[Axios](https://axios-http.com/)** | HTTP client for interacting with the NestJS backend API |
+| **[Lucide React](https://lucide.dev/)** | Clean, responsive vector icons |
+| **[Canvas Confetti](https://www.npmjs.com/package/canvas-confetti)** | Interactive checkout completion celebration effect |
+
+---
+
+## 📦 Prerequisites
+
+Ensure you have the following installed on your machine:
+
+- **Node.js**: `v18.x` or later (LTS recommended)
+- **npm**: `v9.x` or later
+- Running instance of **`onomex_backend`** (typically running at `http://localhost:3000`)
+
+---
+
+## ⚙️ Environment Configuration
+
+Create a `.env` file in the root of `onomex_customer/`:
+
+```env
+# Backend REST API endpoint
+VITE_API_URL=http://localhost:3000
+
+# Backend WebSocket (Socket.IO) endpoint
+VITE_SOCKET_URL=http://localhost:3000
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+> [!NOTE]
+> When testing on a physical smartphone over local Wi-Fi, change `localhost` to your computer's local network IP address (e.g., `http://192.168.1.100:3000`) in both `.env` and when opening the web browser.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🚀 Getting Started & Development
+
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Vite will boot the development server on **`http://localhost:5173`** (or the next available port).
+
+3. **Code Quality & Linting**:
+   ```bash
+   npm run lint
+   ```
+
+---
+
+## 🏷️ Simulating Table QR Scans
+
+In production, each restaurant table has a physical QR code encoding a URL with table credentials. During local development, simulate this by adding query parameters to your browser URL:
+
+```
+http://localhost:5173/?r=<RESTAURANT_ID>&t=<TABLE_ID>
+```
+
+### Example Test URL:
+```
+http://localhost:5173/?r=67b8d9c2e4b0a1d2f3a4b5c6&t=67b8d9c2e4b0a1d2f3a4b5c7
+```
+
+> [!TIP]
+> You can retrieve valid `restaurant_id` and `table_id` values by running `npm run seed` in `onomex_backend` or checking Prisma Studio (`npx prisma studio` inside `onomex_backend`).
+
+---
+
+## 🚢 Production Build & Docker
+
+### Local Static Build
+```bash
+# Compile TypeScript and bundle assets into dist/
+npm run build
+
+# Preview the production build locally
+npm run preview
+```
+
+### Docker Containerization
+The folder includes a production-ready multi-stage `Dockerfile` using Nginx:
+
+```bash
+# Build Docker image
+docker build -t onomex-customer .
+
+# Run container on port 8082
+docker run -d -p 8082:80 --name onomex-customer-app onomex-customer
+```
+
+The app will be accessible at `http://localhost:8082`.
+
+---
+
+## 📁 Project Structure
+
+```
+onomex_customer/
+├── public/                 # Static assets, logos, and favicon
+├── src/
+│   ├── api/                # API service wrappers (menu.ts, orders.ts)
+│   ├── components/         # UI components:
+│   │   ├── ItemCard.tsx    # Menu item card with add-to-cart button
+│   │   ├── CartDrawer.tsx  # Bottom-sheet cart & checkout summary
+│   │   ├── StatusTimeline.tsx # Order tracking step progression
+│   │   └── Navbar.tsx      # Header with table number and cart pill
+│   ├── hooks/              # Custom React hooks (useCart, useSocket)
+│   ├── types/              # TypeScript interfaces (MenuItem, Order, Table)
+│   ├── pages/              # Main view screens:
+│   │   ├── MenuPage.tsx    # Category & item browsing
+│   │   ├── CheckoutPage.tsx# Order confirmation & payment mode
+│   │   └── OrderTrackerPage.tsx # Live robot delivery tracking
+│   ├── App.tsx             # Root layout and query parameter extraction
+│   ├── main.tsx            # Application entry point
+│   └── index.css           # Tailwind CSS directives and global theme styles
+├── Dockerfile              # Multi-stage Nginx production container
+├── vite.config.ts          # Vite configuration with React and Tailwind plugins
+└── package.json            # Project dependencies and build scripts
 ```

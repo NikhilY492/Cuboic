@@ -1,73 +1,122 @@
-# React + TypeScript + Vite
+# 🌐 Onomex Public Marketing & Landing Site
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> The public-facing marketing and product presentation website for Onomex — showcasing the future of autonomous robot food delivery, table QR menus, and restaurant POS software.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📋 Table of Contents
 
-## React Compiler
+- [Overview](#-overview)
+- [Tech Stack](#-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Getting Started & Development](#-getting-started--development)
+- [Building for Production](#-building-for-production)
+- [Docker Deployment](#-docker-deployment)
+- [Project Structure](#-project-structure)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 💡 Overview
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The **Onomex Public Site** serves as the primary digital storefront for restaurant partners, franchisees, and enterprise operators:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- 🤖 **Interactive Hero Presentation**: Dynamic showcase of the autonomous robot delivery workflow with smooth scroll animations powered by Motion.
+- 📐 **Product Ecosystem Walkthrough**: Highlights the integration between the Customer QR App, Kitchen KOT, Desktop POS, and Robot Fleet.
+- 💡 **Feature Comparisons & Benefits**: Explains cost reductions, delivery speed increases, and revenue improvements for restaurant operators.
+- 📝 **Demo Request & Contact Form**: Interactive inquiry forms with client-side validation using React Hook Form and Zod.
+- 🎨 **Modern Aesthetics**: Built with Tailwind CSS v4, dark glassmorphism, responsive navigation, and Radix UI components.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🛠️ Tech Stack
+
+| Component | Technology | Description |
+|---|---|---|
+| **Framework** | [React 19](https://react.dev/) | Latest React with high-performance concurrent rendering |
+| **Tooling** | [Vite 8](https://vite.dev/) | Lightning fast developer experience and optimized production bundling |
+| **Language** | TypeScript | Type safety across component props and animation states |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) | Next-generation Tailwind CSS with native `@theme` integration |
+| **Animations** | [Motion](https://motion.dev/) | Fluid micro-interactions, scroll-linked animations, and staggered entrances |
+| **UI Primitives** | [Radix UI](https://www.radix-ui.com/) | Accessible accordions, dialogs, dropdowns, and navigation menus |
+| **Routing** | [React Router 7](https://reactrouter.com/) | Client-side routing and layout management |
+| **Validation** | [Zod](https://zod.dev/) + React Hook Form | Type-safe form parsing and validation |
+
+---
+
+## 📦 Prerequisites
+
+- **Node.js**: `v18.x` or later (LTS recommended)
+- **npm**: `v9.x` or later
+
+---
+
+## 🚀 Getting Started & Development
+
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open your browser at **`http://localhost:5173`** (or the port shown in your terminal).
+
+3. **Code Quality & Linting**:
+   ```bash
+   npm run lint
+   ```
+
+---
+
+## 📦 Building for Production
+
+```bash
+# Type-check and build production bundle into dist/
+npm run build
+
+# Preview production build locally
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🐳 Docker Deployment
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+The project includes a multi-stage `Dockerfile` that builds static assets and serves them via an optimized Nginx web server:
+
+```bash
+# Build the Docker image
+docker build -t onomex-public .
+
+# Run the container on port 80
+docker run -d -p 80:80 --name onomex-public-site onomex-public
+```
+
+Access the site at `http://localhost`.
+
+---
+
+## 📁 Project Structure
+
+```
+onomex_public/
+├── public/                   # Static icons, favicons, illustrations
+├── src/
+│   ├── app/
+│   │   ├── App.tsx           # Router provider root
+│   │   ├── routes.tsx        # Route definitions
+│   │   └── components/       # Marketing site components (Hero, Navbar, Footer, Features, Pricing)
+│   ├── assets/               # Brand logos and vector graphics
+│   ├── styles/               # CSS theme definitions:
+│   │   ├── tailwind.css      # Tailwind v4 import
+│   │   ├── theme.css         # Color tokens & dark mode variables
+│   │   ├── fonts.css         # Typography styling
+│   │   └── index.css         # Global root resets
+│   ├── main.tsx              # Application entry point
+│   └── App.tsx               # Primary landing page layout
+├── Dockerfile                # Multi-stage production Nginx container
+├── vite.config.ts            # Vite configuration
+└── package.json              # Project scripts and dependencies
 ```

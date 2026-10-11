@@ -96,7 +96,7 @@ export function DashboardScreen() {
     const handleSettleAll = async (group: any) => {
         Alert.alert(
             'Settle All Orders',
-            `Are you sure you want to mark all ${group.count} orders for Table ${group.table?.table_number ?? 'Unknown'} as Paid? Total: ₹${group.total.toFixed(2)}`,
+            `Are you sure you want to mark all ${group.count} orders for Table ${group.table?.table_number ?? 'Unknown'} as Paid? Total: ₹${Number(group.total || 0).toFixed(2)}`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 {
@@ -125,7 +125,7 @@ export function DashboardScreen() {
         { 
             id: 'Revenue',
             icon: <Feather name="dollar-sign" size={24} color={colors.green} />, 
-            value: `₹${summary.total_revenue.toFixed(0)}`, 
+            value: `₹${Number(summary.total_revenue || 0).toFixed(0)}`, 
             label: "Today's Revenue", 
             sub: 'Total gross revenue today', 
             color: colors.green,
@@ -246,7 +246,7 @@ export function DashboardScreen() {
                                 </Text>
                             </View>
                             <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
-                                <Text style={[styles.unpaidAmount, { color: colors.amber }]}>₹{group.total.toFixed(2)}</Text>
+                                <Text style={[styles.unpaidAmount, { color: colors.amber }]}>₹{Number(group.total || 0).toFixed(2)}</Text>
                             </View>
                             <TouchableOpacity 
                                 style={[styles.settleBtn, { backgroundColor: colors.amber }]}

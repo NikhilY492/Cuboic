@@ -35,7 +35,7 @@ export default function InventoryPage() {
   const [forecast, setForecast] = useState<InventoryForecastSummary | null>(null)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
   const [filterMode, setFilterMode] = useState<'all' | 'critical' | 'low'>('all')
-  const [loadingForecast, setLoadingForecast] = useState(false)
+  const [, setLoadingForecast] = useState(false)
 
   // Modals state
   const [isStockInModalOpen, setStockInModalOpen] = useState(false)

@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { apiClient } from '../api/apiClient'
 import { useAuth } from '../contexts/AuthContext'
 import socket from '../api/socket'
-import { UtensilsCrossed, Clock, CheckCircle, XCircle, ChevronRight, RefreshCw, WifiOff } from 'lucide-react'
+import { UtensilsCrossed, Clock, CheckCircle, XCircle, ChevronRight, RefreshCw, WifiOff, FileText, Printer } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useMutationQueue } from '../hooks/useMutationQueue'
 import { printKOT, type Order } from '../utils/printKOT'
+import { printReceipt } from '../utils/printReceipt'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Table {
@@ -43,7 +44,7 @@ function timeAgo(dateStr: string) {
 }
 
 // ── Components ────────────────────────────────────────────────────────────
-function AllOrdersList({ orders, searchQuery, onPrintKOT, onSelectOrder }: any) {
+function AllOrdersList({ orders, searchQuery, onPrintKOT, onPrintReceipt, onSelectOrder }: any) {
   const filtered = orders.filter((o: any) => {
     if (!searchQuery) return true
     const q = searchQuery.toLowerCase()
@@ -80,8 +81,9 @@ function AllOrdersList({ orders, searchQuery, onPrintKOT, onSelectOrder }: any) 
               </td>
               <td className="py-3 font-medium">₹{order.total.toFixed(2)}</td>
               <td className="py-3 text-right">
-                <button onClick={() => onPrintKOT(order)} className="text-accent hover:underline mr-4 text-xs font-medium">Print KOT</button>
-                <button onClick={() => onSelectOrder(order)} className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white text-xs font-medium">Inspect</button>
+                <button onClick={() => onPrintReceipt(order)} className="text-accent hover:underline mr-3 text-xs font-bold">Print Bill</button>
+                <button onClick={() => onPrintKOT(order)} className="text-zinc-500 hover:underline mr-4 text-xs font-medium">Print KOT</button>
+                <button onClick={() => onSelectOrder(order)} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xs font-medium">Inspect</button>
               </td>
             </tr>
           ))}
@@ -140,17 +142,23 @@ export default function OrdersPage() {
   const [printers, setPrinters] = useState<{ name: string, isDefault: boolean }[]>([])
   const [selectedPrinter, setSelectedPrinter] = useState<string>('')
   const [autoPrint, setAutoPrint] = useState<boolean>(
-    localStorage.getItem('onomex_auto_print_kot') === 'true'
+    localStorage.getItem('onomex_auto_print_enabled') !== 'false' &&
+    localStorage.getItem('onomex_auto_print_kot') !== 'false'
   )
 
   useEffect(() => {
     if (window.ipcRenderer) {
       window.ipcRenderer.invoke('print:get-printers').then(printersList => {
         setPrinters(printersList)
-        const saved = localStorage.getItem('onomex_kot_printer')
+        const saved = localStorage.getItem('onomex_receipt_printer') || localStorage.getItem('onomex_kot_printer')
+        const posPrinter = printersList.find((p: any) => /pos|kpc|caysn|thermal|receipt/i.test(p.name))
         const defaultPrinter = printersList.find((p: any) => p.isDefault)
         if (saved && printersList.some((p: any) => p.name === saved)) {
           setSelectedPrinter(saved)
+        } else if (posPrinter) {
+          setSelectedPrinter(posPrinter.name)
+          localStorage.setItem('onomex_receipt_printer', posPrinter.name)
+          localStorage.setItem('onomex_kot_printer', posPrinter.name)
         } else if (defaultPrinter) {
           setSelectedPrinter(defaultPrinter.name)
         } else if (printersList.length > 0) {
@@ -235,10 +243,27 @@ export default function OrdersPage() {
   const handlePrintKOT = async (order: Order) => {
     try {
       setActionLoading(true)
-      await printKOT(order, selectedPrinter)
+      const width = (localStorage.getItem('onomex_paper_width') || '80mm') as any
+      await printKOT(order, selectedPrinter, { paperWidth: width })
       toast.success('Ticket sent to printer!')
     } catch (e: any) {
       toast.error(e.message || 'Failed to print')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handlePrintReceipt = async (order: Order) => {
+    try {
+      setActionLoading(true)
+      const width = (localStorage.getItem('onomex_paper_width') || '80mm') as any
+      await printReceipt(order, selectedPrinter, {
+        restaurantName: user?.restaurantId ? 'Restaurant Receipt' : 'Receipt',
+        paperWidth: width
+      })
+      toast.success('Receipt sent to printer!')
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to print receipt')
     } finally {
       setActionLoading(false)
     }
@@ -337,9 +362,10 @@ export default function OrdersPage() {
                   value={selectedPrinter} 
                   onChange={e => {
                     setSelectedPrinter(e.target.value)
+                    localStorage.setItem('onomex_receipt_printer', e.target.value)
                     localStorage.setItem('onomex_kot_printer', e.target.value)
                   }}
-                  className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-2 py-1 text-xs text-zinc-600 dark:text-zinc-300 focus:ring-1 focus:ring-accent max-w-[120px]"
+                  className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-2 py-1 text-xs text-zinc-600 dark:text-zinc-300 focus:ring-1 focus:ring-accent max-w-[130px]"
                 >
                   {printers.map(p => (
                     <option key={p.name} value={p.name}>{p.name}</option>
@@ -351,6 +377,7 @@ export default function OrdersPage() {
                     checked={autoPrint}
                     onChange={(e) => {
                       setAutoPrint(e.target.checked)
+                      localStorage.setItem('onomex_auto_print_enabled', e.target.checked ? 'true' : 'false')
                       localStorage.setItem('onomex_auto_print_kot', e.target.checked ? 'true' : 'false')
                     }}
                     className="rounded border-zinc-300 text-accent focus:ring-accent w-3 h-3"
@@ -501,6 +528,7 @@ export default function OrdersPage() {
             orders={orders} 
             searchQuery={searchQuery} 
             onPrintKOT={handlePrintKOT}
+            onPrintReceipt={handlePrintReceipt}
             onSelectOrder={(o: any) => {
               if (o.tableId) {
                 const table = tables.find(t => t.id === o.tableId)
@@ -627,13 +655,24 @@ export default function OrdersPage() {
                   )}
                   
                   {selectedOrder && (
-                    <button
-                      onClick={() => handlePrintKOT(selectedOrder)}
-                      disabled={actionLoading}
-                      className="w-full bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
-                    >
-                      Print KOT
-                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => handlePrintReceipt(selectedOrder)}
+                        disabled={actionLoading}
+                        className="bg-accent hover:bg-accent-dark text-white font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 text-xs shadow-sm"
+                      >
+                        <FileText size={15} />
+                        Print Receipt
+                      </button>
+                      <button
+                        onClick={() => handlePrintKOT(selectedOrder)}
+                        disabled={actionLoading}
+                        className="bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 text-xs"
+                      >
+                        <Printer size={15} />
+                        Print KOT
+                      </button>
+                    </div>
                   )}
                   
                   {(() => {

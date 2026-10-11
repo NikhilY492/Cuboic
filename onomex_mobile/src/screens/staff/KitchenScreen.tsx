@@ -79,7 +79,7 @@ function KitchenCard({
             <View style={styles.cardBody}>
                 {/* Items */}
                 <View style={styles.itemsList}>
-                    {item.items.map((it: any, idx: number) => (
+                    {(Array.isArray(item.items) ? item.items : []).map((it: any, idx: number) => (
                         <View key={idx} style={styles.itemRow}>
                             <View style={styles.itemQtyWrap}>
                                 <Text style={[styles.itemQty, { color: colors.text }]}>{it.quantity} x</Text>
@@ -237,7 +237,7 @@ export function KitchenScreen() {
                             </View>
                             
                             <ScrollView 
-                                ref={ref => scrollRefs.current[status] = ref}
+                                ref={ref => { scrollRefs.current[status] = ref; }}
                                 showsVerticalScrollIndicator={true}
                                 persistentScrollbar={true}
                                 contentContainerStyle={styles.columnBody}

@@ -289,29 +289,43 @@ electron.app.whenReady().then(() => {
 			return [];
 		}
 	});
-	electron.ipcMain.handle("print:kot", async (_, printerName, data) => {
-		console.log("[DEBUG] IPC handle: print:kot called for printer:", printerName, "with data length:", data?.length);
+	const executePrintJob = async (printerName, data, options) => {
+		console.log("[DEBUG] executePrintJob for printer:", printerName, "with data items:", data?.length);
+		if (!printerName) return {
+			success: false,
+			error: "No printer specified."
+		};
 		try {
 			const isPDF = printerName.toLowerCase().includes("pdf");
+			const width = options?.width || "80mm";
+			const copies = options?.copies || 1;
+			const silent = options?.silent !== void 0 ? options.silent : !isPDF;
+			const templatePath = node_fs.default.existsSync((0, node_path.join)(process.env.APP_ROOT, "node_modules/electron-pos-printer/dist/renderer/index.html")) ? (0, node_path.join)(process.env.APP_ROOT, "node_modules/electron-pos-printer/dist/renderer/index.html") : (0, node_path.join)(process.env.VITE_PUBLIC, "print.html");
 			await import_dist.PosPrinter.print(data, {
 				printerName,
 				preview: false,
-				width: "80mm",
+				width,
 				margin: "0 0 0 0",
-				copies: 1,
+				copies,
 				timeOutPerLine: 5e3,
-				silent: !isPDF,
+				silent,
 				boolean: true,
-				pathTemplate: (0, node_path.join)(process.env.VITE_PUBLIC, "print.html")
+				pathTemplate: templatePath
 			});
 			return { success: true };
 		} catch (error) {
 			console.error("Print Error:", error);
 			return {
 				success: false,
-				error: error.toString()
+				error: error?.message || error?.toString() || "Unknown print error"
 			};
 		}
+	};
+	electron.ipcMain.handle("print:kot", async (_, printerName, data, options) => {
+		return executePrintJob(printerName, data, options);
+	});
+	electron.ipcMain.handle("print:receipt", async (_, printerName, data, options) => {
+		return executePrintJob(printerName, data, options);
 	});
 });
 //#endregion

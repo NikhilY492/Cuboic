@@ -25,7 +25,7 @@ export function SocketProvider({ restaurantId, children }: SocketProviderProps) 
     useEffect(() => {
         if (!restaurantId) return;
 
-        const s = io(BASE_URL, { transports: ['websocket'] });
+        const s = io(BASE_URL, { transports: ['websocket', 'polling'] });
 
         s.on('connect', () => {
             if (__DEV__) console.log(`[Socket] Connected: ${s.id} → room: ${restaurantId}`);

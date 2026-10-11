@@ -220,7 +220,7 @@ function OrderCard({
 
             {/* Items */}
             <View style={styles.itemsRow}>
-                {item.items.map((it, i) => (
+                {(Array.isArray(item.items) ? item.items : []).map((it, i) => (
                     <View key={i} style={[styles.chip, { backgroundColor: colors.surface2 }]}>
                         <Text style={[styles.chipText, { color: colors.textMuted }]}>{it.name} ×{it.quantity}</Text>
                     </View>
@@ -237,7 +237,7 @@ function OrderCard({
 
             {/* Total + Actions */}
             <View style={styles.cardFooter}>
-                <Text style={[styles.total, { color: colors.text }]}>₹{item.total.toFixed(2)}</Text>
+                <Text style={[styles.total, { color: colors.text }]}>₹{Number(item.total || 0).toFixed(2)}</Text>
                 <View style={styles.actions}>
                     {canModify && item.payment?.status === 'Pending' && (
                         <TouchableOpacity
@@ -368,7 +368,8 @@ export function OrdersScreen({ route }: any) {
         isSpeakingRef.current = true;
         const messages = pending.map((o: Order) => {
             const tableNum = getTableNum(o);
-            const itemsList = o.items.map((it: any) => `${it.quantity} ${it.name}`).join(', ');
+            const items = Array.isArray(o.items) ? o.items : [];
+            const itemsList = items.map((it: any) => `${it.quantity} ${it.name}`).join(', ');
             return `New order for Table ${tableNum}. Items: ${itemsList}.`;
         });
         const fullMessage = messages.join(' ... ');

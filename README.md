@@ -1,255 +1,146 @@
-# 🤖 Onomex — Autonomous Robot Food Delivery Platform
+# 🤖 Onomex / Cuboic — Autonomous Robot Food Delivery Platform
 
-> A full-stack restaurant management system where robots autonomously deliver food to tables. Customers browse the menu on their phone via a QR code, place orders, and a robot navigates to their table and delivers the food — no human serving required.
+> A comprehensive full-stack restaurant automation ecosystem where autonomous mobile robots deliver food directly to dining tables. Patrons scan a table QR code on their smartphone to order and pay, while staff manage kitchen tickets, table turns, inventory, and robot fleets via native desktop and mobile applications.
 
 ---
 
-## 📐 Architecture
+## 📐 Platform Architecture
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│                     Onomex Monorepo                      │
-│                                                          │
-│  ┌────────────────┐   ┌────────────────┐                 │
-│  │ onomex_customer│   │  onomex_admin  │                 │
-│  │  Vite + React  │   │  Vite + React  │                 │
-│  │  Port: 5173    │   │  Port: 5174    │                 │
-│  └───────┬────────┘   └───────┬────────┘                 │
-│          │ REST + Socket.IO   │ REST + Socket.IO          │
-│          └─────────┬──────────┘                          │
-│                    ▼                                      │
-│          ┌──────────────────┐                            │
-│          │ onomex_backend   │                            │
-│          │  NestJS + Mongo  │                            │
-│          │  Port: 3000      │                            │
-│          └──────────────────┘                            │
-└──────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   Onomex Monorepo                                      │
+│                                                                                        │
+│  ┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────────────────┐  │
+│  │   onomex_customer    │  │    onomex_desktop    │  │        onomex_mobile         │  │
+│  │  Vite + React (Web)  │  │ Electron + React POS │  │    Expo / React Native App   │  │
+│  │      Port: 5173      │  │    Desktop Terminal  │  │       iOS & Android          │  │
+│  └──────────┬───────────┘  └──────────┬───────────┘  └──────────────┬───────────────┘  │
+│             │                         │                             │                  │
+│             │                         │ REST & Socket.IO            │                  │
+│             └─────────────────────────┼─────────────────────────────┘                  │
+│                                       ▼                                                │
+│                          ┌──────────────────────────┐                                  │
+│                          │      onomex_backend      │◄───────────┐                     │
+│                          │  NestJS 11 · Prisma ORM  │            │                     │
+│                          │    PostgreSQL · Redis    │            │ WebRTC Signaling    │
+│                          │        Port: 3000        │            │ & Telemetry         │
+│                          └────────────┬─────────────┘            │                     │
+│                                       │                          │                     │
+│                                       ▼                          │                     │
+│                          ┌──────────────────────────┐  ┌─────────┴──────────────────┐  │
+│                          │  PostgreSQL (Neon Cloud) │  │       robot_scripts        │  │
+│                          │    & Redis Cache Layer   │  │  Python WebRTC Robot Client│  │
+│                          └──────────────────────────┘  └────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Services at a glance
+---
 
-| Service | Stack | Port | Role |
+## 🗂️ Services & Sub-Projects Overview
+
+Each folder contains a self-contained application with its own configuration, dev scripts, and documentation:
+
+| Sub-Project | Stack | Port / Platform | Role & Documentation |
 |---|---|---|---|
-| `onomex_backend` | NestJS · Mongoose · Socket.IO · JWT | 3000 | REST API + real-time event bus |
-| `onomex_customer` | Vite · React · TypeScript | 5173 | Customer-facing QR menu |
-| `onomex_admin` | Vite · React · TypeScript | 5174 | Owner / Staff dashboard |
+| [**onomex_backend**](./onomex_backend/README.md) | NestJS 11 · Prisma 6 · PostgreSQL · Redis · Socket.IO | `3000` | REST API, real-time WebSocket bus, and WebRTC signaling. [Read Setup Guide →](./onomex_backend/README.md) |
+| [**onomex_customer**](./onomex_customer/README.md) | Vite 6 · React 19 · TypeScript · Tailwind CSS v4 | `5173` | Mobile-first customer QR code menu, cart, checkout, and live delivery tracker. [Read Setup Guide →](./onomex_customer/README.md) |
+| [**onomex_desktop**](./onomex_desktop/README.md) | Electron 41 · React 19 · Vite 8 · Tailwind CSS v4 | Desktop (Win / Mac) | "T Manager" POS, table floor layout, thermal KOT printing, and live robot WebRTC video feeds. [Read Setup Guide →](./onomex_desktop/README.md) |
+| [**onomex_mobile**](./onomex_mobile/README.md) | Expo SDK 57 · React Native 0.86 · React Navigation | Android / iOS / Web | Manager mobile app with voice speech alerts, fleet monitor, and live dispatch. [Read Setup Guide →](./onomex_mobile/README.md) |
+| [**onomex_public**](./onomex_public/README.md) | Vite 8 · React 19 · Tailwind CSS v4 · Motion | `5173+` | Public marketing, landing page, and interactive product showcase. [Read Setup Guide →](./onomex_public/README.md) |
+| [**robot_scripts**](./robot_scripts/README.md) | Python 3 · aiortc · OpenCV · asyncio | Hardware / Linux | Autonomous robot onboard WebRTC signaling and camera streamer. [Read Setup Guide →](./robot_scripts/README.md) |
+| [**cuboic_demand_model**](./onomex_desktop/cuboic_demand_model/README.md) | Python 3 · Scikit-Learn · Pandas · NumPy | ML / Analytics | Revenue forecasting, hourly peak rush classification, and ingredient restock predictions. [Read Setup Guide →](./onomex_desktop/cuboic_demand_model/README.md) |
 
 ---
 
-## ✨ Features
+## ⚡ Quick Start: Running the Full Stack Locally
 
-### Customer App (`onomex_customer`)
-- 📱 **QR Code access** — customers scan a table QR to open the menu, no login needed
-- 🌟 **Immersive menu** — hero banner with ambient glow, category pills, grouped item sections
-- 🛒 **Cart & checkout** — floating cart pill → bottom-sheet order summary → payment selection (Card / UPI / Cash)
-- 📦 **Live order tracking** — real-time status timeline (Confirmed → Preparing → Delivering → Delivered) via Socket.IO
-
-### Admin Dashboard (`onomex_admin`)
-- 🔐 **Role-based login** — Owner and Staff roles with JWT auth
-- 📊 **Live dashboard** — real-time KPIs: orders today, revenue, active deliveries, robots online
-- 🍽️ **Order management** — view and update order statuses with filter tabs
-- 🤖 **Robot Fleet** — see all robots, battery level, cabinet occupancy, and current mode
-- 🚀 **Delivery management** — create and monitor deliveries per robot
-- 💳 **Payments** — browse payment history with date + status filters
-
-### Backend (`onomex_backend`)
-- RESTful API with JWT + role guards
-- MongoDB with Mongoose schemas
-- Socket.IO gateway for real-time events (`order:new`, `order:updated`, `delivery:updated`)
-- Robot telemetry ingestion endpoint
-- Database seed script
+### 1. Prerequisites
+- **Node.js**: `v18.x` or `v20.x`+ (LTS)
+- **npm**: `v9.x` or later
+- **Python**: `3.9+` (for `robot_scripts` and `cuboic_demand_model`)
+- **PostgreSQL**: PostgreSQL instance or cloud database (e.g. Neon.tech)
+- **Redis**: Local Redis server or Docker (`redis:alpine`)
 
 ---
 
-## 🛠️ Prerequisites
-
-| Tool | Version |
-|---|---|
-| Node.js | ≥ 18 |
-| npm | ≥ 9 |
-| MongoDB | Community Server 6+ (local) |
-
-> **MongoDB must be running locally** before starting the backend.  
-> Install from [mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)  
-> On Windows, start it with: `net start MongoDB`
-
----
-
-## 🚀 Setup & Running
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/NikhilY492/Onomex.git
-cd Onomex
-```
-
-### 2. Backend
+### 2. Start the Backend API & Database
 
 ```bash
 cd onomex_backend
+
+# 1. Install dependencies & generate Prisma client
 npm install
-```
 
-Create the environment file:
+# 2. Configure .env
+# (Set your DATABASE_URL, JWT_SECRET, and REDIS connection parameters)
 
-```bash
-# onomex_backend/.env
-MONGODB_URI=mongodb://localhost:27017/onomex
-JWT_SECRET=onomex-super-secret-key-change-in-prod
-PORT=3000
-```
-
-Seed the database (creates a restaurant, tables, menu items, robots, and user accounts):
-
-```bash
+# 3. Synchronize database schema & seed initial accounts
+npx prisma db push
 npm run seed
-```
 
-> The seed script prints the `restaurant_id` and `table_id` — **save these**, you'll need them for the customer URL.
-
-Start the backend in development watch mode:
-
-```bash
+# 4. Start NestJS in watch mode (Port 3000)
 npm run start:dev
 ```
 
-The API is now running at **http://localhost:3000**
+> **Default Seed Credentials:**
+> - **Owner**: `owner01` / `password123`
+> - **Staff**: `staff01` / `password123`
 
 ---
 
-### 3. Admin Dashboard
+### 3. Launch the Desktop POS Terminal
+
+In a new terminal window:
 
 ```bash
-cd ../onomex_admin
+cd onomex_desktop
 npm install
 npm run dev
 ```
-
-Open **http://localhost:5174**
-
-**Seeded credentials:**
-
-| Role | User ID | Password |
-|---|---|---|
-| Owner | `owner01` | `password123` |
-| Staff | `staff01` | `password123` |
+*This launches the native Electron application window with live hot reloading.*
 
 ---
 
-### 4. Customer App
+### 4. Launch the Customer Web Menu
+
+In a new terminal window:
 
 ```bash
-cd ../onomex_customer
+cd onomex_customer
 npm install
 npm run dev
 ```
-
-Open the customer menu using the IDs printed by the seed script:
-
-```
-http://localhost:5173/?r=<restaurant_id>&t=<table_id>
-```
-
-Example:
-```
-http://localhost:5173/?r=69a6e1d86b10ed9cd787524d&t=69a6e1d86b10ed9cd787524e
-```
-
-> In production, this URL is encoded into a QR code placed on each table.
+*Open `http://localhost:5173/?r=<RESTAURANT_ID>&t=<TABLE_ID>` using the restaurant and table IDs printed by the backend seed script.*
 
 ---
 
-## 📂 Project Structure
+### 5. Launch the Mobile Management App (Optional)
 
+In a new terminal window:
+
+```bash
+cd onomex_mobile
+npm install
+npm start
 ```
-Onomex/
-├── onomex_backend/          # NestJS REST API + WebSocket gateway
-│   ├── src/
-│   │   ├── auth/            # JWT auth, guards, decorators
-│   │   ├── orders/          # Order CRUD + status updates
-│   │   ├── robots/          # Robot registry
-│   │   ├── deliveries/      # Delivery routing
-│   │   ├── payments/        # Payment records
-│   │   ├── events/          # Socket.IO gateway
-│   │   ├── robot-runtime/   # Live robot telemetry
-│   │   └── seed.ts          # Database seeder
-│   └── .env                 # Environment variables
-│
-├── onomex_admin/            # Owner / Staff React dashboard
-│   └── src/
-│       ├── pages/           # Dashboard, Orders, Robots, Deliveries, Payments
-│       ├── components/      # Sidebar, AppLayout, RobotCard, Toast ...
-│       ├── context/         # AuthContext (JWT + user info)
-│       ├── hooks/           # useSocket (real-time)
-│       └── api/             # Axios API clients
-│
-└── onomex_customer/         # Customer-facing React menu app
-    └── src/
-        ├── pages/           # MenuPage, CheckoutPage, OrderTrackerPage
-        ├── components/      # ItemCard, CartDrawer (bottom sheet), StatusTimeline
-        ├── hooks/           # useCart, useSocket
-        └── api/             # menu.ts, orders.ts
-```
+*Press `a` for Android emulator, `i` for iOS simulator, or scan the QR code using the Expo Go mobile app.*
 
 ---
 
-## 🔌 API Overview
+### 6. Run the Autonomous Robot WebRTC Streamer (Optional)
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/auth/login` | — | Login, returns JWT |
-| `GET` | `/auth/me` | JWT | Current user info |
-| `GET` | `/restaurants/:id` | — | Restaurant details |
-| `GET` | `/categories?restaurant_id=` | — | Menu categories |
-| `GET` | `/menu?restaurant_id=&category_id=` | — | Menu items |
-| `POST` | `/orders` | — | Place a new order |
-| `GET` | `/orders/:id` | — | Get order by ID |
-| `PATCH` | `/orders/:id/status` | JWT | Update order status |
-| `GET` | `/robots?restaurant_id=` | JWT | List robots |
-| `GET` | `/deliveries/active?restaurant_id=` | JWT | Active deliveries |
-| `GET` | `/payments/summary?restaurant_id=` | JWT | Payment summary / KPIs |
+In a new terminal window:
 
-### Socket.IO Events (real-time)
-
-| Event | Direction | Payload |
-|---|---|---|
-| `order:new:<restaurantId>` | Server → Client | New order object |
-| `order:updated:<restaurantId>` | Server → Client | Updated order object |
-| `delivery:updated:<restaurantId>` | Server → Client | Delivery status change |
-
----
-
-## 🌱 Seed Accounts
-
-The `npm run seed` command creates the following users:
-
-| Name | User ID | Password | Role |
-|---|---|---|---|
-| Restaurant Owner | `owner01` | `password123` | Owner |
-| Staff Member | `staff01` | `password123` | Staff |
-
----
-
-## 🧩 Environment Variables
-
-`onomex_backend/.env`:
-
-```env
-MONGODB_URI=mongodb://localhost:27017/onomex
-JWT_SECRET=onomex-super-secret-key-change-in-prod
-PORT=3000
-```
-
-`onomex_customer/.env` (optional — defaults to `http://localhost:3000`):
-
-```env
-VITE_API_URL=http://localhost:3000
-VITE_SOCKET_URL=http://localhost:3000
+```bash
+cd robot_scripts
+python -m venv venv
+# On Windows: .\venv\Scripts\Activate.ps1 | On Linux: source venv/bin/activate
+pip install -r requirements.txt
+python robot-webrtc-client.py
 ```
 
 ---
 
 ## 📜 License
 
-MIT
+MIT License. See individual sub-project directories for additional licensing or dependency terms.

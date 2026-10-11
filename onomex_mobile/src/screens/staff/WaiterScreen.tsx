@@ -81,7 +81,7 @@ function WaiterCard({
             <View style={styles.cardBody}>
                 {/* Items Summary */}
                 <View style={styles.itemsList}>
-                    {item.items.map((it: any, idx: number) => {
+                    {(Array.isArray(item.items) ? item.items : []).map((it: any, idx: number) => {
                         const isDelivered = it.isDelivered;
                         const isSelected = selectedItems.includes(it.itemId);
                         return (

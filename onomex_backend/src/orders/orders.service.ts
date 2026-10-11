@@ -171,7 +171,7 @@ export class OrdersService {
             },
           },
         },
-        include: { payment: true, customer: true, table: true },
+        include: { payment: true, customer: true, table: true, restaurant: true },
       });
 
       // Auto-create platform fee if order total > ₹100
@@ -195,6 +195,7 @@ export class OrdersService {
     });
 
     this.eventsGateway.emitToRestaurant(dto.restaurantId, 'order:new', order);
+    this.eventEmitter.emit('order.created', order);
 
     // Auto-create platform fee if order total > ₹100
     await this.platformFeesService.createIfEligible(

@@ -120,25 +120,45 @@ app.whenReady().then(() => {
     }
   })
 
-  ipcMain.handle('print:kot', async (_, printerName: string, data: any[]) => {
-    console.log('[DEBUG] IPC handle: print:kot called for printer:', printerName, 'with data length:', data?.length);
+  const executePrintJob = async (printerName: string, data: any[], options?: { width?: string; copies?: number; silent?: boolean }) => {
+    console.log('[DEBUG] executePrintJob for printer:', printerName, 'with data items:', data?.length);
+    if (!printerName) {
+      return { success: false, error: 'No printer specified.' };
+    }
     try {
       const isPDF = printerName.toLowerCase().includes('pdf');
+      const width = options?.width || '80mm';
+      const copies = options?.copies || 1;
+      const silent = options?.silent !== undefined ? options.silent : !isPDF;
+
+      const templatePath = fs.existsSync(join(process.env.APP_ROOT, 'node_modules/electron-pos-printer/dist/renderer/index.html'))
+        ? join(process.env.APP_ROOT, 'node_modules/electron-pos-printer/dist/renderer/index.html')
+        : join(process.env.VITE_PUBLIC as string, 'print.html');
+
       await PosPrinter.print(data, {
         printerName,
         preview: false,
-        width: '80mm',
+        width,
         margin: '0 0 0 0',
-        copies: 1,
+        copies,
         timeOutPerLine: 5000,
-        silent: !isPDF,
+        silent,
         boolean: true, // fixing rogue type error from package
-        pathTemplate: join(process.env.VITE_PUBLIC as string, 'print.html')
-      } as any)
-      return { success: true }
+        pathTemplate: templatePath
+      } as any);
+
+      return { success: true };
     } catch (error: any) {
-      console.error("Print Error:", error)
-      return { success: false, error: error.toString() }
+      console.error("Print Error:", error);
+      return { success: false, error: error?.message || error?.toString() || 'Unknown print error' };
     }
-  })
+  };
+
+  ipcMain.handle('print:kot', async (_, printerName: string, data: any[], options?: any) => {
+    return executePrintJob(printerName, data, options);
+  });
+
+  ipcMain.handle('print:receipt', async (_, printerName: string, data: any[], options?: any) => {
+    return executePrintJob(printerName, data, options);
+  });
 })

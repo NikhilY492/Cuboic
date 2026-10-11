@@ -108,7 +108,7 @@ function KanbanCard({
                 
                 {/* Items List */}
                 <View style={styles.itemsContainer}>
-                    {item.items.map((it, i) => (
+                    {(Array.isArray(item.items) ? item.items : []).map((it, i) => (
                         <View key={i} style={[styles.itemRowBlock, { borderBottomColor: colors.border }]}>
                             <View style={styles.itemRow}>
                                 <Text style={styles.itemName}>
@@ -276,7 +276,8 @@ export function KanbanOrdersScreen() {
         
         const messages = pending.map((o: Order) => {
             const tableNum = getTableNum(o);
-            const itemsList = o.items.map((it: any) => `${it.quantity} ${it.name}`).join(', ');
+            const items = Array.isArray(o.items) ? o.items : [];
+            const itemsList = items.map((it: any) => `${it.quantity} ${it.name}`).join(', ');
             return `New order for Table ${tableNum}. Items: ${itemsList}.`;
         });
         

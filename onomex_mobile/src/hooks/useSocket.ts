@@ -11,7 +11,7 @@ export function useSocket(restaurantId: string | null | undefined, events?: Even
         if (!restaurantId) return;
 
         const socket = io(BASE_URL, {
-            transports: ['websocket'],
+            transports: ['websocket', 'polling'],
         });
         socketRef.current = socket;
 
